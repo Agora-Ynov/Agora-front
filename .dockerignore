@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.angular/
+coverage/
+cypress/screenshots/
+cypress/videos/
+*.log
+.env
+.git/
+.gitignore
+README.md
+CONTEXT.md
+*.spec.ts
+cypress/
