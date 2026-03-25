@@ -1,0 +1,12 @@
+[
+  {
+    "id": "w001",
+    "resourceName": "Salle des fetes - Grande salle",
+    "slotDate": "2026-04-15",
+    "slotStart": "14:00",
+    "slotEnd": "18:00",
+    "position": 2,
+    "status": "WAITING",
+    "notifiedAt": null
+  }
+]

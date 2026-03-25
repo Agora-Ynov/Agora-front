@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ResourceDto } from '../../../core/api/models/resource.model';
+import { CatalogueMockService } from './catalogue-mock.service';
 
 type ResourceFamilyFilter = 'ALL' | 'ROOM' | 'EQUIPMENT';
 type FeatureFilter =
@@ -23,13 +27,7 @@ interface CatalogueResource {
   description: string;
   family: Exclude<ResourceFamilyFilter, 'ALL'>;
   typeLabel: string;
-  coverTheme:
-    | 'hall'
-    | 'conference'
-    | 'civic'
-    | 'balloons'
-    | 'bouquet'
-    | 'cocktail';
+  coverTheme: 'hall' | 'conference' | 'civic' | 'balloons' | 'bouquet' | 'cocktail';
   tags: string[];
   features: FeatureFilter[];
   pricePerBooking: number;
@@ -44,8 +42,12 @@ interface CatalogueResource {
   styleUrl: './catalogue.component.scss',
 })
 export class CatalogueComponent {
+  private readonly catalogueMockService = inject(CatalogueMockService);
+
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
+  readonly loading = signal(true);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly featureOptions: FeatureOption[] = [
     { id: 'PMR_ACCESS', label: 'Acces PMR', shortLabel: 'PMR' },
@@ -56,86 +58,7 @@ export class CatalogueComponent {
     { id: 'STREET_ACCESS', label: 'Acces rue directe', shortLabel: 'Rue' },
   ];
 
-  readonly resources = signal<CatalogueResource[]>([
-    {
-      id: 'room-fetes',
-      name: 'Salle des Fetes',
-      description:
-        'Grande salle polyvalente ideale pour les evenements, mariages et ceremonies.',
-      family: 'ROOM',
-      typeLabel: 'Salle',
-      coverTheme: 'hall',
-      tags: ['240 places', 'Scene mobile', 'Office traiteur'],
-      features: ['PMR_ACCESS', 'PARKING', 'KITCHEN', 'STREET_ACCESS'],
-      pricePerBooking: 180,
-      depositAmount: 400,
-    },
-    {
-      id: 'room-reunion',
-      name: 'Salle de Reunion',
-      description:
-        'Salle moderne equipee pour reunions, ateliers et formations en petit groupe.',
-      family: 'ROOM',
-      typeLabel: 'Salle',
-      coverTheme: 'civic',
-      tags: ['20 places', 'Ecran mural', 'Wifi'],
-      features: ['PMR_ACCESS', 'PROJECTOR'],
-      pricePerBooking: 75,
-      depositAmount: 120,
-    },
-    {
-      id: 'room-associative',
-      name: 'Salle Associative',
-      description:
-        'Espace dedie aux activites associatives, culturelles et reunions de quartier.',
-      family: 'ROOM',
-      typeLabel: 'Salle',
-      coverTheme: 'conference',
-      tags: ['80 places', 'Sonorisee', 'Loge'],
-      features: ['PARKING', 'SOUND_SYSTEM', 'PROJECTOR', 'STREET_ACCESS'],
-      pricePerBooking: 140,
-      depositAmount: 250,
-    },
-    {
-      id: 'equipment-barnum',
-      name: 'Barnums (x5)',
-      description:
-        'Lot de 5 barnums pliants 3x3m pour evenements exterieurs et festivites communales.',
-      family: 'EQUIPMENT',
-      typeLabel: 'Materiel',
-      coverTheme: 'balloons',
-      tags: ['Pliants', 'Resistants', 'Avec baches laterales'],
-      features: ['STREET_ACCESS'],
-      pricePerBooking: 120,
-      depositAmount: 250,
-    },
-    {
-      id: 'equipment-sound',
-      name: 'Sono portable',
-      description:
-        'Systeme de sonorisation professionnel avec micros, table de mixage et enceintes.',
-      family: 'EQUIPMENT',
-      typeLabel: 'Materiel',
-      coverTheme: 'bouquet',
-      tags: ['2 enceintes', 'Table de mixage', '4 micros', '+1'],
-      features: ['SOUND_SYSTEM'],
-      pricePerBooking: 90,
-      depositAmount: 200,
-    },
-    {
-      id: 'equipment-furniture',
-      name: 'Tables et chaises (50 pers.)',
-      description:
-        'Mobilier evenementiel compose de 10 tables et 50 chaises pliantes faciles a transporter.',
-      family: 'EQUIPMENT',
-      typeLabel: 'Materiel',
-      coverTheme: 'cocktail',
-      tags: ['Pliantes', 'Legeres', 'Faciles a transporter'],
-      features: ['STREET_ACCESS'],
-      pricePerBooking: 60,
-      depositAmount: 150,
-    },
-  ]);
+  readonly resources = signal<CatalogueResource[]>([]);
 
   readonly filteredResources = computed(() => {
     const family = this.familyFilter();
@@ -153,15 +76,33 @@ export class CatalogueComponent {
 
   readonly totalResources = computed(() => this.filteredResources().length);
 
+  constructor() {
+    this.catalogueMockService
+      .getResources()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: response => {
+          this.resources.set(
+            response.content
+              .filter(resource => resource.isActive)
+              .map(resource => this.mapResource(resource))
+          );
+          this.loading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.errorMessage.set(error.message || 'Impossible de charger le catalogue mock local.');
+          this.loading.set(false);
+        },
+      });
+  }
+
   setFamilyFilter(filter: ResourceFamilyFilter): void {
     this.familyFilter.set(filter);
   }
 
   toggleFeature(feature: FeatureFilter): void {
     this.selectedFeatures.update(current =>
-      current.includes(feature)
-        ? current.filter(item => item !== feature)
-        : [...current, feature]
+      current.includes(feature) ? current.filter(item => item !== feature) : [...current, feature]
     );
   }
 
@@ -175,5 +116,69 @@ export class CatalogueComponent {
 
   formatPrice(amount: number): string {
     return `${amount} EUR`;
+  }
+
+  private mapResource(resource: ResourceDto): CatalogueResource {
+    const description = resource.description ?? 'Description indisponible.';
+    const accessibilityTags = resource.accessibilityTags ?? [];
+    const depositAmountCents = resource.depositAmountCents ?? 0;
+
+    return {
+      id: resource.id,
+      name: resource.name,
+      description,
+      family: resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT',
+      typeLabel: resource.resourceType === 'IMMOBILIER' ? 'Salle' : 'Materiel',
+      coverTheme: this.resolveCoverTheme(resource.id),
+      tags: this.resolveTags(resource),
+      features: accessibilityTags,
+      pricePerBooking: this.resolvePrice(resource),
+      depositAmount: Math.round(depositAmountCents / 100),
+    };
+  }
+
+  private resolveCoverTheme(resourceId: string): CatalogueResource['coverTheme'] {
+    const coverThemeMap: Record<string, CatalogueResource['coverTheme']> = {
+      r001: 'hall',
+      r002: 'civic',
+      r003: 'conference',
+      r004: 'balloons',
+      r005: 'bouquet',
+      r006: 'cocktail',
+    };
+
+    return coverThemeMap[resourceId] ?? 'hall';
+  }
+
+  private resolvePrice(resource: ResourceDto): number {
+    const priceMap: Record<string, number> = {
+      r001: 180,
+      r002: 75,
+      r003: 140,
+      r004: 120,
+      r005: 90,
+      r006: 60,
+    };
+
+    const depositAmountCents = resource.depositAmountCents ?? 0;
+
+    return priceMap[resource.id] ?? Math.round(depositAmountCents / 200);
+  }
+
+  private resolveTags(resource: ResourceDto): string[] {
+    const tagMap: Record<string, string[]> = {
+      r001: ['250 places', 'Scene mobile', 'Office traiteur'],
+      r002: ['20 places', 'Ecran mural', 'Wifi'],
+      r003: ['80 places', 'Sonorisee', 'Loge'],
+      r004: ['Pliants', 'Resistants', 'Avec baches laterales'],
+      r005: ['2 enceintes', 'Table de mixage', '4 micros', '+1'],
+      r006: ['Pliantes', 'Legeres', 'Faciles a transporter'],
+    };
+
+    if (tagMap[resource.id]) {
+      return tagMap[resource.id];
+    }
+
+    return resource.capacity ? [`${resource.capacity} places`] : ['Disponible'];
   }
 }

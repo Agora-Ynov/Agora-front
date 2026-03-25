@@ -238,6 +238,31 @@
   gap: 1.5rem;
 }
 
+.catalogue-feedback {
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+  padding: 2rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #445065;
+  text-align: center;
+}
+
+.catalogue-feedback--error {
+  color: #9f1239;
+}
+
+.catalogue-feedback h2,
+.catalogue-feedback p {
+  margin: 0;
+}
+
+.catalogue-feedback p {
+  margin-top: 0.75rem;
+}
+
 .catalogue-card,
 .catalogue-empty {
   border: 1px solid rgba(17, 24, 39, 0.1);

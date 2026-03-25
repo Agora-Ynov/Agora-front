@@ -1,0 +1,74 @@
+{
+  "content": [
+    {
+      "id": "r001",
+      "name": "Salle des fetes - Grande salle",
+      "resourceType": "IMMOBILIER",
+      "capacity": 250,
+      "description": "Grande salle pour evenements jusqu'a 250 personnes, ceremonies et manifestations associatives.",
+      "depositAmountCents": 15000,
+      "imageUrl": "https://mairie-exemple.fr/images/salle-fetes.jpg",
+      "accessibilityTags": ["PMR_ACCESS", "PARKING", "SOUND_SYSTEM", "KITCHEN"],
+      "isActive": true
+    },
+    {
+      "id": "r002",
+      "name": "Salle de reunion - Espace civic",
+      "resourceType": "IMMOBILIER",
+      "capacity": 20,
+      "description": "Salle moderne equipee pour reunions, ateliers et formations en petit groupe.",
+      "depositAmountCents": 5000,
+      "imageUrl": "https://mairie-exemple.fr/images/salle-reunion.jpg",
+      "accessibilityTags": ["PMR_ACCESS", "PROJECTOR"],
+      "isActive": true
+    },
+    {
+      "id": "r003",
+      "name": "Salle associative",
+      "resourceType": "IMMOBILIER",
+      "capacity": 80,
+      "description": "Espace dedie aux activites associatives, culturelles et reunions de quartier.",
+      "depositAmountCents": 10000,
+      "imageUrl": "https://mairie-exemple.fr/images/salle-associative.jpg",
+      "accessibilityTags": ["PARKING", "SOUND_SYSTEM", "PROJECTOR", "STREET_ACCESS"],
+      "isActive": true
+    },
+    {
+      "id": "r004",
+      "name": "Barnums (x5)",
+      "resourceType": "MOBILIER",
+      "capacity": null,
+      "description": "Lot de 5 barnums pliants 3x3m pour evenements exterieurs.",
+      "depositAmountCents": 25000,
+      "imageUrl": "https://mairie-exemple.fr/images/barnums.jpg",
+      "accessibilityTags": ["STREET_ACCESS"],
+      "isActive": true
+    },
+    {
+      "id": "r005",
+      "name": "Sono portable",
+      "resourceType": "MOBILIER",
+      "capacity": null,
+      "description": "Systeme de sonorisation professionnel avec micros, table de mixage et enceintes.",
+      "depositAmountCents": 20000,
+      "imageUrl": "https://mairie-exemple.fr/images/sono.jpg",
+      "accessibilityTags": ["SOUND_SYSTEM"],
+      "isActive": true
+    },
+    {
+      "id": "r006",
+      "name": "Tables et chaises (50 pers.)",
+      "resourceType": "MOBILIER",
+      "capacity": null,
+      "description": "Mobilier pour evenements avec 10 tables et 50 chaises pliantes faciles a transporter.",
+      "depositAmountCents": 15000,
+      "imageUrl": "https://mairie-exemple.fr/images/tables-chaises.jpg",
+      "accessibilityTags": ["STREET_ACCESS"],
+      "isActive": true
+    }
+  ],
+  "totalElements": 6,
+  "totalPages": 1,
+  "page": 0,
+  "size": 20
+}
