@@ -119,17 +119,21 @@ export class CatalogueComponent {
   }
 
   private mapResource(resource: ResourceDto): CatalogueResource {
+    const description = resource.description ?? 'Description indisponible.';
+    const accessibilityTags = resource.accessibilityTags ?? [];
+    const depositAmountCents = resource.depositAmountCents ?? 0;
+
     return {
       id: resource.id,
       name: resource.name,
-      description: resource.description,
+      description,
       family: resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT',
       typeLabel: resource.resourceType === 'IMMOBILIER' ? 'Salle' : 'Materiel',
       coverTheme: this.resolveCoverTheme(resource.id),
       tags: this.resolveTags(resource),
-      features: resource.accessibilityTags,
+      features: accessibilityTags,
       pricePerBooking: this.resolvePrice(resource),
-      depositAmount: Math.round(resource.depositAmountCents / 100),
+      depositAmount: Math.round(depositAmountCents / 100),
     };
   }
 
@@ -156,7 +160,9 @@ export class CatalogueComponent {
       r006: 60,
     };
 
-    return priceMap[resource.id] ?? Math.round(resource.depositAmountCents / 200);
+    const depositAmountCents = resource.depositAmountCents ?? 0;
+
+    return priceMap[resource.id] ?? Math.round(depositAmountCents / 200);
   }
 
   private resolveTags(resource: ResourceDto): string[] {

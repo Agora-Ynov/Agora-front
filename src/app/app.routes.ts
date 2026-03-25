@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+// Temporary minimal routing kept to ensure the app stays runnable locally
+// while feature branches for auth/home/calendar UIs are still incomplete.
 export const routes: Routes = [
   {
     path: '',

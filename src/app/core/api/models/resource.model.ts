@@ -8,16 +8,28 @@ export type AccessibilityTag =
   | 'KITCHEN'
   | 'STREET_ACCESS';
 
+export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
+
 export interface ResourceDto {
   id: string;
   name: string;
   resourceType: ResourceType;
-  capacity: number | null;
-  description: string;
-  depositAmountCents: number;
-  imageUrl: string;
-  accessibilityTags: AccessibilityTag[];
-  isActive: boolean;
+  description?: string;
+  status?: ResourceStatus;
+  capacity?: number | null;
+  location?: string;
+  imageUrl?: string;
+  requiresDeposit?: boolean;
+  depositAmount?: number;
+  depositAmountCents?: number;
+  accessibilityTags?: AccessibilityTag[];
+  isActive?: boolean;
+  allowedRoles?: string[];
+  quotaPerUser?: number;
+  quotaPeriod?: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  availabilityStart?: string;
+  availabilityEnd?: string;
+  blackoutDates?: string[];
 }
 
 export interface ResourceSlotDto {
