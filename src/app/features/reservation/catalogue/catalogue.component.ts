@@ -27,13 +27,7 @@ interface CatalogueResource {
   description: string;
   family: Exclude<ResourceFamilyFilter, 'ALL'>;
   typeLabel: string;
-  coverTheme:
-    | 'hall'
-    | 'conference'
-    | 'civic'
-    | 'balloons'
-    | 'bouquet'
-    | 'cocktail';
+  coverTheme: 'hall' | 'conference' | 'civic' | 'balloons' | 'bouquet' | 'cocktail';
   tags: string[];
   features: FeatureFilter[];
   pricePerBooking: number;
@@ -89,14 +83,14 @@ export class CatalogueComponent {
       .subscribe({
         next: response => {
           this.resources.set(
-            response.content.filter(resource => resource.isActive).map(resource => this.mapResource(resource))
+            response.content
+              .filter(resource => resource.isActive)
+              .map(resource => this.mapResource(resource))
           );
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(
-            error.message || 'Impossible de charger le catalogue mock local.'
-          );
+          this.errorMessage.set(error.message || 'Impossible de charger le catalogue mock local.');
           this.loading.set(false);
         },
       });
@@ -108,9 +102,7 @@ export class CatalogueComponent {
 
   toggleFeature(feature: FeatureFilter): void {
     this.selectedFeatures.update(current =>
-      current.includes(feature)
-        ? current.filter(item => item !== feature)
-        : [...current, feature]
+      current.includes(feature) ? current.filter(item => item !== feature) : [...current, feature]
     );
   }
 
