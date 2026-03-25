@@ -1,0 +1,120 @@
+<section class="home-page">
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Réservation de salles et matériel</h1>
+      <p>
+        Réservez facilement les ressources municipales pour vos événements,
+        réunions et activités
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/catalogue" class="btn btn-primary">
+          Voir le catalogue
+          <span class="btn-arrow">→</span>
+        </a>
+
+        <a routerLink="/register" class="btn btn-secondary">
+          Créer un compte
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <div class="features-grid">
+      <article class="feature-card" *ngFor="let card of featureCards">
+        <div class="feature-icon">
+          <ng-container [ngSwitch]="card.icon">
+            <svg *ngSwitchCase="'calendar'" viewBox="0 0 24 24" fill="none">
+              <path d="M7 3V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M17 3V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M4 9H20" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+
+            <svg *ngSwitchCase="'building'" viewBox="0 0 24 24" fill="none">
+              <rect x="7" y="3" width="10" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M10 7H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 7H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 11H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 11H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 15H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 15H14.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+
+            <svg *ngSwitchCase="'box'" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3L19 7L12 11L5 7L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M19 7V17L12 21" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M5 7V17L12 21" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+
+            <svg *ngSwitchCase="'users'" viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M4.5 18C4.5 15.7909 6.29086 14 8.5 14H9.5C11.7091 14 13.5 15.7909 13.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M14.5 18C14.5 16.6193 15.6193 15.5 17 15.5H17.5C18.8807 15.5 20 16.6193 20 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </ng-container>
+        </div>
+
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="how-section">
+    <div class="how-card">
+      <h2>Comment ça marche ?</h2>
+
+      <div class="steps-grid">
+        <div class="step-item" *ngFor="let step of steps">
+          <div class="step-number">{{ step.number }}</div>
+          <p>{{ step.text }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="why-section">
+    <div class="why-content">
+      <div class="why-left">
+        <h2>Pourquoi réserver avec nous ?</h2>
+
+        <ul class="advantages-list">
+          <li *ngFor="let advantage of advantages">
+            <span class="check">✓</span>
+            <span>{{ advantage }}</span>
+          </li>
+        </ul>
+
+        <a routerLink="/catalogue" class="btn btn-primary small-btn">
+          Découvrir les ressources
+        </a>
+      </div>
+
+      <div class="why-right">
+        <img
+          src="assets/images/home-space.jpg"
+          alt="Salle ou espace municipal"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="help-section">
+    <div class="help-card">
+      <div class="help-text">
+        <h3>Besoin d'aide pour votre réservation ?</h3>
+        <p>Notre équipe est disponible du lundi au vendredi de 9h à 17h</p>
+      </div>
+
+      <div class="help-actions">
+        <a href="tel:0123456789" class="contact-btn">01 23 45 67 89</a>
+<a href="mailto:contact@agora-reservation.fr" class="contact-btn">
+  contact&#64;agora-reservation.fr
+</a>
+      </div>
+    </div>
+  </section>
+</section>

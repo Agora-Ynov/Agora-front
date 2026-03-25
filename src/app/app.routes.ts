@@ -1,18 +1,21 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
-// Temporary minimal routing kept to ensure the app stays runnable locally
-// while feature branches for auth/home/calendar UIs are still incomplete.
 export const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'login',
+    loadComponent: () =>
+      import('./features/home/home.component').then(m => m.HomeComponent),
   },
   {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
     path: 'catalogue',
@@ -23,16 +26,11 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'register',
-    loadComponent: () =>
-      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
-  },
-  {
     path: 'calendar',
-    redirectTo: 'login',
+    redirectTo: '',
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: '',
   },
 ];
