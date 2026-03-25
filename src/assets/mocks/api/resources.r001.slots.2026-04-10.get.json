@@ -1,0 +1,6 @@
+[
+  { "slotStart": "08:00", "slotEnd": "10:00", "isAvailable": true },
+  { "slotStart": "10:00", "slotEnd": "12:00", "isAvailable": false },
+  { "slotStart": "14:00", "slotEnd": "16:00", "isAvailable": true },
+  { "slotStart": "16:00", "slotEnd": "18:00", "isAvailable": true }
+]

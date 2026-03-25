@@ -1,0 +1,27 @@
+{
+  "year": 2026,
+  "month": 4,
+  "days": [
+    {
+      "date": "2026-04-10",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r001",
+          "resourceName": "Salle des fetes - Grande salle",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "08:00",
+          "slotEnd": "10:00",
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "date": "2026-04-14",
+      "isBlackout": true,
+      "blackoutReason": "Jour ferie",
+      "slots": []
+    }
+  ]
+}

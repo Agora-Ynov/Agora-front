@@ -1,0 +1,26 @@
+[
+  {
+    "id": "g001",
+    "name": "Habitants commune",
+    "isPreset": true,
+    "canBookImmobilier": true,
+    "canBookMobilier": false,
+    "discountType": "PERCENTAGE",
+    "discountValue": 50,
+    "discountAppliesTo": "ALL",
+    "discountLabel": "Reduction 50%",
+    "memberCount": 124
+  },
+  {
+    "id": "g002",
+    "name": "Association sportive locale",
+    "isPreset": false,
+    "canBookImmobilier": true,
+    "canBookMobilier": true,
+    "discountType": "FULL_EXEMPT",
+    "discountValue": 0,
+    "discountAppliesTo": "ALL",
+    "discountLabel": "Exoneration totale",
+    "memberCount": 18
+  }
+]

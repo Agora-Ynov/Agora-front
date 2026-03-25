@@ -1,0 +1,22 @@
+{
+  "content": [
+    {
+      "id": "res001",
+      "resourceName": "Salle des fetes - Grande salle",
+      "resourceType": "IMMOBILIER",
+      "date": "2026-04-10",
+      "slotStart": "14:00",
+      "slotEnd": "18:00",
+      "status": "CONFIRMED",
+      "depositStatus": "DEPOSIT_PENDING",
+      "depositAmountCents": 7500,
+      "depositAmountFullCents": 15000,
+      "discountLabel": "Reduction 50% (Habitants commune)",
+      "createdAt": "2026-03-24T10:30:00Z"
+    }
+  ],
+  "totalElements": 1,
+  "totalPages": 1,
+  "page": 0,
+  "size": 20
+}

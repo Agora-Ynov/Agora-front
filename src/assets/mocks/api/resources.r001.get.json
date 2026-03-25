@@ -1,0 +1,11 @@
+{
+  "id": "r001",
+  "name": "Salle des fetes - Grande salle",
+  "resourceType": "IMMOBILIER",
+  "capacity": 250,
+  "description": "Grande salle pour evenements jusqu'a 250 personnes",
+  "depositAmountCents": 15000,
+  "imageUrl": "https://mairie-exemple.fr/images/salle-fetes.jpg",
+  "accessibilityTags": ["PMR_ACCESS", "PARKING", "SOUND_SYSTEM"],
+  "isActive": true
+}
