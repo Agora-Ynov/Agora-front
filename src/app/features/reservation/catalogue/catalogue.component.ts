@@ -6,6 +6,14 @@ import { RouterLink } from '@angular/router';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueMockService } from './catalogue-mock.service';
+import {
+  getFeatureLabel,
+  getResourceCoverTheme,
+  getResourcePrice,
+  getResourceTags,
+  getResourceTypeLabel,
+  ResourceCoverTheme,
+} from './resource-presentation.utils';
 
 type ResourceFamilyFilter = 'ALL' | 'ROOM' | 'EQUIPMENT';
 type FeatureFilter =
@@ -28,7 +36,7 @@ interface CatalogueResource {
   description: string;
   family: Exclude<ResourceFamilyFilter, 'ALL'>;
   typeLabel: string;
-  coverTheme: 'hall' | 'conference' | 'civic' | 'balloons' | 'bouquet' | 'cocktail';
+  coverTheme: ResourceCoverTheme;
   tags: string[];
   features: FeatureFilter[];
   pricePerBooking: number;
@@ -115,7 +123,7 @@ export class CatalogueComponent {
   }
 
   featureLabel(feature: FeatureFilter): string {
-    return this.featureOptions.find(option => option.id === feature)?.label ?? feature;
+    return getFeatureLabel(feature);
   }
 
   formatPrice(amount: number): string {
@@ -136,57 +144,12 @@ export class CatalogueComponent {
       name: resource.name,
       description,
       family: resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT',
-      typeLabel: resource.resourceType === 'IMMOBILIER' ? 'Salle' : 'Materiel',
-      coverTheme: this.resolveCoverTheme(resource.id),
-      tags: this.resolveTags(resource),
+      typeLabel: getResourceTypeLabel(resource.resourceType),
+      coverTheme: getResourceCoverTheme(resource.id),
+      tags: getResourceTags(resource),
       features: accessibilityTags,
-      pricePerBooking: this.resolvePrice(resource),
+      pricePerBooking: getResourcePrice(resource),
       depositAmount: Math.round(depositAmountCents / 100),
     };
-  }
-
-  private resolveCoverTheme(resourceId: string): CatalogueResource['coverTheme'] {
-    const coverThemeMap: Record<string, CatalogueResource['coverTheme']> = {
-      r001: 'hall',
-      r002: 'civic',
-      r003: 'conference',
-      r004: 'balloons',
-      r005: 'bouquet',
-      r006: 'cocktail',
-    };
-
-    return coverThemeMap[resourceId] ?? 'hall';
-  }
-
-  private resolvePrice(resource: ResourceDto): number {
-    const priceMap: Record<string, number> = {
-      r001: 180,
-      r002: 75,
-      r003: 140,
-      r004: 120,
-      r005: 90,
-      r006: 60,
-    };
-
-    const depositAmountCents = resource.depositAmountCents ?? 0;
-
-    return priceMap[resource.id] ?? Math.round(depositAmountCents / 200);
-  }
-
-  private resolveTags(resource: ResourceDto): string[] {
-    const tagMap: Record<string, string[]> = {
-      r001: ['250 places', 'Scene mobile', 'Office traiteur'],
-      r002: ['20 places', 'Ecran mural', 'Wifi'],
-      r003: ['80 places', 'Sonorisee', 'Loge'],
-      r004: ['Pliants', 'Resistants', 'Avec baches laterales'],
-      r005: ['2 enceintes', 'Table de mixage', '4 micros', '+1'],
-      r006: ['Pliantes', 'Legeres', 'Faciles a transporter'],
-    };
-
-    if (tagMap[resource.id]) {
-      return tagMap[resource.id];
-    }
-
-    return resource.capacity ? [`${resource.capacity} places`] : ['Disponible'];
   }
 }

@@ -42,6 +42,17 @@ describe('routes', () => {
     expect(loadedComponent).toBeDefined();
   });
 
+  it('should expose the resource detail route', async () => {
+    const detailRoute = routes.find(route => route.path === 'catalogue/:id');
+
+    expect(detailRoute).toBeDefined();
+    expect(detailRoute?.loadComponent).toBeDefined();
+
+    const loadedComponent = await detailRoute?.loadComponent?.();
+
+    expect(loadedComponent).toBeDefined();
+  });
+
   it('should redirect unknown routes to login', () => {
     const fallbackRoute = routes[routes.length - 1];
 

@@ -141,9 +141,12 @@
               </div>
 
               <div class="catalogue-card__actions">
-                <button type="button" class="catalogue-card__button catalogue-card__button--ghost">
+                <a
+                  class="catalogue-card__button catalogue-card__button--ghost"
+                  [routerLink]="['/catalogue', resource.id]"
+                >
                   Details
-                </button>
+                </a>
                 @if (isAuthenticated()) {
                   <button
                     type="button"

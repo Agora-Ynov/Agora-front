@@ -23,6 +23,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'catalogue/:id',
+    loadComponent: () =>
+      import('./features/reservation/resource-detail/resource-detail.component').then(
+        m => m.ResourceDetailComponent
+      ),
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),

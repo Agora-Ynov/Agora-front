@@ -46,4 +46,28 @@ describe('CatalogueMockService', () => {
       size: 20,
     });
   });
+
+  it('should return a resource by its id from the local mock', () => {
+    let responseBody: unknown;
+
+    service.getResourceById('r002').subscribe(response => {
+      responseBody = response;
+    });
+
+    const request = httpMock.expectOne('/assets/mocks/api/resources.get.json');
+    expect(request.request.method).toBe('GET');
+
+    request.flush({
+      content: [
+        { id: 'r001', name: 'Salle 1' },
+        { id: 'r002', name: 'Salle 2' },
+      ],
+      totalElements: 2,
+      totalPages: 1,
+      page: 0,
+      size: 20,
+    });
+
+    expect(responseBody).toEqual({ id: 'r002', name: 'Salle 2' });
+  });
 });

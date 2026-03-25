@@ -1,0 +1,170 @@
+<section class="resource-detail-page">
+  <header class="resource-detail-topbar">
+    <a class="brand" routerLink="/catalogue">
+      <span class="brand__mark">A</span>
+      <span class="brand__text">
+        <strong>Agora</strong>
+        <small>Reservations</small>
+      </span>
+    </a>
+
+    <nav class="resource-detail-nav" aria-label="Navigation principale">
+      <a class="resource-detail-nav__link" routerLink="/catalogue">Accueil</a>
+      <a
+        class="resource-detail-nav__link resource-detail-nav__link--active"
+        routerLink="/catalogue"
+      >
+        Catalogue
+      </a>
+      <a class="resource-detail-nav__link" routerLink="/calendar">Calendrier</a>
+    </nav>
+
+    <div class="resource-detail-actions">
+      @if (isAuthenticated()) {
+        <div class="resource-detail-actions__user">
+          <span class="resource-detail-actions__welcome">
+            {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
+          </span>
+          <button type="button" class="resource-detail-actions__button" (click)="logout()">
+            Deconnexion
+          </button>
+        </div>
+      } @else {
+        <a class="resource-detail-actions__link" routerLink="/login">Connexion</a>
+        <a class="resource-detail-actions__button" routerLink="/register">Inscription</a>
+      }
+    </div>
+  </header>
+
+  <main class="resource-detail-main">
+    <a class="resource-detail-back" routerLink="/catalogue">Retour</a>
+
+    @if (loading()) {
+      <section class="resource-detail-feedback">
+        <p>Chargement du detail de la ressource...</p>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="resource-detail-feedback resource-detail-feedback--error">
+        <h1>Detail indisponible</h1>
+        <p>{{ errorMessage() }}</p>
+        <a class="resource-detail-feedback__link" routerLink="/catalogue">Revenir au catalogue</a>
+      </section>
+    } @else {
+      @if (resourceDetail(); as detail) {
+        <section class="resource-detail-hero">
+          <div class="resource-detail-media">
+            <div
+              class="resource-detail-cover"
+              [ngClass]="'resource-detail-cover--' + detail.coverTheme"
+            ></div>
+            <span class="resource-detail-type">{{ detail.typeLabel }}</span>
+          </div>
+
+          <div class="resource-detail-summary">
+            <h1>{{ detail.name }}</h1>
+            <p class="resource-detail-summary__lead">{{ detail.description }}</p>
+
+            <article class="resource-detail-card">
+              <p class="resource-detail-card__label">Capacite</p>
+              <strong>{{ detail.capacityLabel }}</strong>
+            </article>
+
+            <article class="resource-detail-card">
+              <p class="resource-detail-card__label">Tarif</p>
+              <strong>{{ detail.priceLabel }}</strong>
+              <small>Connectez-vous pour voir votre tarif selon votre profil et vos groupes.</small>
+            </article>
+
+            <article class="resource-detail-card resource-detail-card--deposit">
+              <p class="resource-detail-card__label">Caution a deposer en mairie</p>
+              <strong>{{ detail.depositLabel }}</strong>
+              <span class="resource-detail-pill">Peut etre exoneree</span>
+              <small>
+                Cette caution est remboursable apres restitution. Elle peut etre exoneree selon
+                votre situation ou votre groupe.
+              </small>
+            </article>
+
+            <article class="resource-detail-card">
+              <p class="resource-detail-card__label">Disponibilites</p>
+              <div class="resource-detail-chip-list">
+                @for (availability of detail.availability; track availability) {
+                  <span class="resource-detail-chip">{{ availability }}</span>
+                }
+              </div>
+            </article>
+
+            <section class="resource-detail-characteristics">
+              <h2>Caracteristiques</h2>
+              <ul>
+                @for (characteristic of detail.characteristics; track characteristic) {
+                  <li>{{ characteristic }}</li>
+                }
+              </ul>
+            </section>
+
+            @if (isAuthenticated()) {
+              <div class="resource-detail-cta">
+                <button type="button" class="resource-detail-cta__primary">
+                  Reserver cette ressource
+                </button>
+                <a class="resource-detail-cta__secondary" routerLink="/catalogue">
+                  Retour catalogue
+                </a>
+              </div>
+
+              <div class="resource-detail-note">
+                Votre caution et votre tarif reel seront calcules selon vos groupes et vos droits.
+              </div>
+            } @else {
+              <div class="resource-detail-cta">
+                <a class="resource-detail-cta__primary" routerLink="/login">
+                  Se connecter pour reserver
+                </a>
+                <a class="resource-detail-cta__secondary" routerLink="/register">
+                  Creer un compte
+                </a>
+              </div>
+
+              <div class="resource-detail-note">
+                Un compte est requis pour reserver. Les membres de groupes beneficient de reductions
+                automatiques selon leur profil.
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="resource-detail-extra">
+          <h2>Informations complementaires</h2>
+          <p>
+            <strong>Conditions d'utilisation :</strong> la ressource doit etre rendue dans l'etat
+            initial. Tout degat constate pourra etre facture.
+          </p>
+          <p>
+            <strong>Caution :</strong> une caution peut etre demandee lors de la reservation. Elle
+            sera restituee apres verification de l'etat de la ressource.
+          </p>
+          <p>
+            <strong>Annulation :</strong> les annulations doivent etre effectuees au moins 7 jours
+            avant la reservation pour un traitement simplifie.
+          </p>
+          <p>
+            <strong>Tarifs groupes :</strong> les membres d'un groupe peuvent beneficier de remises
+            ou d'exonerations selon leur rattachement et les regles de la commune.
+          </p>
+        </section>
+
+        <footer class="resource-detail-footer">
+          <div>
+            <strong>Agora - Service des Reservations</strong>
+            <p>&copy; 2026 Tous droits reserves</p>
+          </div>
+          <div>
+            <strong>Horaires d'ouverture : Lun-Ven 9h-17h</strong>
+            <p>Contact : 01 23 45 67 89</p>
+          </div>
+        </footer>
+      }
+    }
+  </main>
+</section>
