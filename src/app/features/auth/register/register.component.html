@@ -1,0 +1,143 @@
+<section class="register-page">
+  <div class="register-wrapper">
+    <div class="register-icon">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="8" width="24" height="48" rx="4" stroke="currentColor" stroke-width="3"/>
+        <path d="M28 18H36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M28 26H36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M28 34H36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <rect x="12" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3"/>
+        <rect x="44" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3"/>
+      </svg>
+    </div>
+
+    <h1 class="register-title">Créer un compte</h1>
+    <p class="register-subtitle">Gérez facilement vos réservations</p>
+
+    <div class="register-card">
+      <p class="login-text">
+        Déjà un compte ?
+        <a routerLink="/login">Se connecter</a>
+      </p>
+
+   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="row two-columns">
+          <div class="form-group">
+            <label for="firstName">Prénom *</label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              placeholder="Jean"
+            />
+            <small class="error" *ngIf="firstNameControl?.touched && firstNameControl?.invalid">
+              Le prénom est obligatoire.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Nom *</label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              placeholder="Dupont"
+            />
+            <small class="error" *ngIf="lastNameControl?.touched && lastNameControl?.invalid">
+              Le nom est obligatoire.
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 6H20V18H4V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M4 8L12 13L20 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="jean.dupont@email.fr"
+            />
+          </div>
+          <small class="error" *ngIf="emailControl?.touched && emailControl?.invalid">
+            Veuillez saisir un email valide.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6.5 4.5C6.5 4.22386 6.72386 4 7 4H9.4C9.63727 4 9.84271 4.16721 9.89043 4.39963L10.4 6.9C10.4382 7.0873 10.3668 7.28027 10.2162 7.4L8.7 8.6C9.29827 9.92573 10.3743 11.0017 11.7 11.6L12.9 10.0838C13.0197 9.93319 13.2127 9.86178 13.4 9.9L15.9004 10.4096C16.1328 10.4573 16.3 10.6627 16.3 10.9V13.3C16.3 13.5761 16.0761 13.8 15.8 13.8H15C9.20101 13.8 4.5 9.09899 4.5 3.3V2.5C4.5 2.22386 4.72386 2 5 2H7.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <input
+              id="phone"
+              type="text"
+              formControlName="phone"
+              placeholder="06 12 34 56 78"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe *</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <small class="error" *ngIf="passwordControl?.touched && passwordControl?.invalid">
+            Le mot de passe doit contenir au moins 8 caractères.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer le mot de passe *</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="••••••••"
+          />
+          <small class="error" *ngIf="confirmPasswordControl?.touched && confirmPasswordControl?.invalid">
+            La confirmation est obligatoire.
+          </small>
+          <small class="error" *ngIf="passwordsDoNotMatch">
+            Les mots de passe ne correspondent pas.
+          </small>
+        </div>
+
+        <div class="checkbox-group">
+          <input id="acceptedTerms" type="checkbox" formControlName="acceptedTerms" />
+          <label for="acceptedTerms">
+            J'accepte les conditions générales d'utilisation et la politique de confidentialité
+          </label>
+        </div>
+        <small class="error" *ngIf="acceptedTermsControl?.touched && acceptedTermsControl?.invalid">
+          Vous devez accepter les conditions.
+        </small>
+
+        <div class="success-box" *ngIf="successMessage">
+          {{ successMessage }}
+        </div>
+
+        <div class="error-box" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Création...' : 'Créer mon compte' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

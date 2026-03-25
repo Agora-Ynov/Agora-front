@@ -1,12 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, delay, throwError } from 'rxjs';
-import { LoginRequest, LoginResponse } from './auth.model';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse
+} from './auth.model';
 import { environment } from '../../../environments/environment';
 import { JwtService } from './jwt.service';
 import {
   MOCK_LOGIN_RESPONSE,
-  isMockLoginValid
+  MOCK_REGISTER_RESPONSE,
+  isMockLoginValid,
+  isMockRegisterEmailAlreadyExists
 } from './auth.mock';
 
 @Injectable({
@@ -38,6 +45,33 @@ export class AuthService {
         message: 'Email ou mot de passe incorrect.'
       }
     } as HttpErrorResponse));
+  }
+
+  register(payload: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.authUrl}/register`, payload, {
+      withCredentials: true
+    });
+  }
+
+  registerMock(payload: RegisterRequest): Observable<RegisterResponse> {
+    if (isMockRegisterEmailAlreadyExists(payload.email)) {
+      return throwError(() => ({
+        status: 409,
+        error: {
+          code: 'EMAIL_ALREADY_EXISTS',
+          message: 'Cet email est déjà associé à un compte.'
+        }
+      } as HttpErrorResponse));
+    }
+
+    const response: RegisterResponse = {
+      ...MOCK_REGISTER_RESPONSE,
+      email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName
+    };
+
+    return of(response).pipe(delay(700));
   }
 
   saveSession(response: LoginResponse): void {

@@ -1,9 +1,8 @@
-import { LoginRequest, LoginResponse } from './auth.model';
-
-export const MOCK_LOGIN_CREDENTIALS = {
-  email: 'jean.dupont@gmail.com',
-  password: 'MonMotDePasse123!'
-};
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterResponse
+} from './auth.model';
 
 export const MOCK_LOGIN_RESPONSE: LoginResponse = {
   accessToken: 'eyJhbGciOiJIUzI1NiJ9.mock-token',
@@ -18,9 +17,22 @@ export const MOCK_LOGIN_RESPONSE: LoginResponse = {
   }
 };
 
+export const MOCK_REGISTER_RESPONSE: RegisterResponse = {
+  id: 'u001',
+  email: 'jean.dupont@gmail.com',
+  firstName: 'Jean',
+  lastName: 'Dupont',
+  accountType: 'AUTONOMOUS',
+  status: 'ACTIVE'
+};
+
 export function isMockLoginValid(payload: LoginRequest): boolean {
   return (
-    payload.email === MOCK_LOGIN_CREDENTIALS.email &&
-    payload.password === MOCK_LOGIN_CREDENTIALS.password
+    payload.email === 'jean.dupont@gmail.com' &&
+    payload.password === 'MonMotDePasse123!'
   );
+}
+
+export function isMockRegisterEmailAlreadyExists(email: string): boolean {
+  return email === 'jean.dupont@gmail.com';
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { LoginUserSummary } from './auth.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,21 +16,21 @@ export class JwtService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  saveUser(user: unknown): void {
+  saveUser(user: LoginUserSummary): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
-  getUser(): unknown | null {
-    const rawUser = localStorage.getItem(this.USER_KEY);
-    return rawUser ? JSON.parse(rawUser) : null;
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  getUser(): LoginUserSummary | null {
+    const user = localStorage.getItem(this.USER_KEY);
+    return user ? JSON.parse(user) : null;
   }
 
   clearSession(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 }
