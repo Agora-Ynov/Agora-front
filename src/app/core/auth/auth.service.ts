@@ -1,10 +1,17 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { Observable, catchError, delay, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JwtService } from './jwt.service';
-import { LoginRequest, LoginResponse, RegisterRequest, UserProfile, UserRole } from './auth.model';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  UserProfile,
+  UserRole,
+} from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -24,34 +31,21 @@ export class AuthService {
 
   login(email: string, password: string): Observable<LoginResponse> {
     if (this.useMockAuth) {
-      return this.http
-        .get<
-          LoginResponse & { user?: Partial<UserProfile> }
-        >('/assets/mocks/api/auth.login.post.json')
-        .pipe(
-          map(response => ({
-            accessToken: this.createMockToken(email),
-            refreshToken: response.refreshToken ?? 'mock-refresh-token',
-            tokenType: response.tokenType ?? 'Bearer',
-            expiresIn: response.expiresIn ?? 900,
-          })),
-          tap(res => {
-            this.jwtService.setTokens(res.accessToken, res.refreshToken);
-            this.loadCurrentUser().subscribe();
-          })
-        );
+      return this.loginMock({ email, password }).pipe(tap(response => this.saveSession(response)));
     }
 
     const body: LoginRequest = { email, password };
-    return this.http.post<LoginResponse>(`${this.apiUrl}/api/auth/login`, body).pipe(
-      tap(res => {
-        this.jwtService.setTokens(res.accessToken, res.refreshToken);
-        this.loadCurrentUser().subscribe();
-      })
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/api/auth/login`, body)
+      .pipe(tap(response => this.saveSession(response)));
   }
 
   logout(): void {
+    if (this.useMockAuth) {
+      this.clearSession();
+      return;
+    }
+
     this.http
       .post(`${this.apiUrl}/api/auth/logout`, {})
       .pipe(catchError(() => throwError(() => null)))
@@ -61,8 +55,12 @@ export class AuthService {
       });
   }
 
-  register(data: RegisterRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/auth/register`, data);
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    if (this.useMockAuth) {
+      return this.registerMock(data);
+    }
+
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/api/auth/register`, data);
   }
 
   refreshToken(): Observable<LoginResponse> {
@@ -142,6 +140,56 @@ export class AuthService {
     return this.jwtService.getAccessToken();
   }
 
+  loginMock(payload: LoginRequest): Observable<LoginResponse> {
+    if (this.isMockLoginValid(payload)) {
+      return of(this.buildMockLoginResponse(payload.email)).pipe(delay(400));
+    }
+
+    return throwError(
+      () =>
+        ({
+          status: 401,
+          error: {
+            code: 'INVALID_CREDENTIALS',
+            message: 'Email ou mot de passe incorrect.',
+          },
+        }) as HttpErrorResponse
+    );
+  }
+
+  registerMock(payload: RegisterRequest): Observable<RegisterResponse> {
+    if (this.isMockRegisterEmailAlreadyExists(payload.email)) {
+      return throwError(
+        () =>
+          ({
+            status: 409,
+            error: {
+              code: 'EMAIL_ALREADY_EXISTS',
+              message: 'Cet email est deja associe a un compte.',
+            },
+          }) as HttpErrorResponse
+      );
+    }
+
+    const response: RegisterResponse = {
+      id: 'u001',
+      email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      accountType: 'AUTONOMOUS',
+      status: 'ACTIVE',
+    };
+
+    return of(response).pipe(delay(400));
+  }
+
+  saveSession(response: LoginResponse): void {
+    this.jwtService.setTokens(response.accessToken, response.refreshToken ?? 'mock-refresh-token');
+    this.loadCurrentUser().subscribe({
+      error: () => this._currentUser.set(null),
+    });
+  }
+
   private loadCurrentUser(): Observable<UserProfile> {
     return this.getCurrentUser();
   }
@@ -182,5 +230,32 @@ export class AuthService {
       .replace(/=+$/g, '');
 
     return `${header}.${payload}.mock-signature`;
+  }
+
+  private buildMockLoginResponse(email: string): LoginResponse {
+    return {
+      accessToken: this.createMockToken(email),
+      refreshToken: 'mock-refresh-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      user: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        accountType: 'AUTONOMOUS',
+        status: 'ACTIVE',
+      },
+    };
+  }
+
+  private isMockLoginValid(payload: LoginRequest): boolean {
+    return (
+      payload.email.trim().toLowerCase() === 'jean.dupont@gmail.com' &&
+      payload.password === 'MonMotDePasse123!'
+    );
+  }
+
+  private isMockRegisterEmailAlreadyExists(email: string): boolean {
+    return email.trim().toLowerCase() === 'jean.dupont@gmail.com';
   }
 }

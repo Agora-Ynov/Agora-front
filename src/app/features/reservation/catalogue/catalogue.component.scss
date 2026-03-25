@@ -67,6 +67,17 @@
   gap: 0.75rem;
 }
 
+.catalogue-actions__user {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.catalogue-actions__welcome {
+  color: #394150;
+  font-weight: 600;
+}
+
 .catalogue-nav__link,
 .catalogue-actions__link,
 .catalogue-actions__button {
@@ -107,6 +118,8 @@
   background: #0b1020;
   color: #fff;
   font-weight: 600;
+  font: inherit;
+  cursor: pointer;
 }
 
 .catalogue-main {

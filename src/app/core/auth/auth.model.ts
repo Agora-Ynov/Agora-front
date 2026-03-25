@@ -1,17 +1,8 @@
-export type UserRole =
-  | 'CITIZEN'
-  | 'SECRETARY_ADMIN'
-  | 'DELEGATE_ADMIN'
-  | 'GROUP_MANAGER';
+export type UserRole = 'CITIZEN' | 'SECRETARY_ADMIN' | 'DELEGATE_ADMIN' | 'GROUP_MANAGER';
 
 export type AccountType = 'AUTONOMOUS' | 'TUTORED';
 
-export type AccountStatus =
-  | 'PENDING_VALIDATION'
-  | 'ACTIVE'
-  | 'INACTIVE'
-  | 'SUSPENDED'
-  | 'REJECTED';
+export type AccountStatus = 'PENDING_VALIDATION' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 export interface TokenPayload {
   sub: string;
@@ -30,11 +21,20 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface LoginUserSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  accountType: AccountType;
+  status: AccountStatus;
+}
+
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  user?: LoginUserSummary;
 }
 
 export interface RegisterRequest {
@@ -45,8 +45,22 @@ export interface RegisterRequest {
   phone?: string;
 }
 
+export interface RegisterResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  accountType: AccountType;
+  status: AccountStatus;
+}
+
 export interface RefreshRequest {
   refreshToken: string;
+}
+
+export interface ApiErrorResponse {
+  code: string;
+  message: string;
 }
 
 export interface UserProfile {

@@ -1,47 +1,107 @@
 <section class="login-page">
-  <div class="login-shell">
-    <aside class="login-hero">
-      <p class="login-hero__eyebrow">Agora Reservations</p>
-      <h1>Connecte-toi pour acceder au catalogue.</h1>
-      <p class="login-hero__lead">
-        En mode local, ce formulaire utilise le mock front puis te redirige vers
-        <strong>/catalogue</strong>.
+  <div class="login-wrapper">
+    <div class="login-icon">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="8" width="24" height="48" rx="4" stroke="currentColor" stroke-width="3" />
+        <path d="M28 18H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M28 26H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M28 34H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <rect x="12" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3" />
+        <rect x="44" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3" />
+      </svg>
+    </div>
+
+    <h1 class="login-title">Connexion</h1>
+    <p class="login-subtitle">Accedez a votre espace personnel</p>
+
+    <div class="login-card">
+      <p class="register-text">
+        Pas encore de compte ?
+        <a routerLink="/register">S'inscrire</a>
       </p>
 
-      <div class="login-hero__card">
-        <p class="login-hero__label">Compte de demo</p>
-        <p><strong>Email</strong> jean.dupont@gmail.com</p>
-        <p><strong>Mot de passe</strong> MonMotDePasse123!</p>
-      </div>
-    </aside>
-
-    <main class="login-panel">
-      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submit()">
-        <div class="login-form__header">
-          <h2>Connexion</h2>
-          <p>Entre tes identifiants pour continuer.</p>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 6H20V18H4V6Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M4 8L12 13L20 8"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="votre.email&#64;exemple.fr"
+            />
+          </div>
+          <small class="error" *ngIf="emailControl?.touched && emailControl?.invalid">
+            Veuillez saisir un email valide.
+          </small>
         </div>
 
-        <label class="login-field">
-          <span>Email</span>
-          <input type="email" formControlName="email" placeholder="jean.dupont@gmail.com" />
-        </label>
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7 11V8C7 5.79086 8.79086 4 11 4H13C15.2091 4 17 5.79086 17 8V11"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <rect
+                  x="5"
+                  y="11"
+                  width="14"
+                  height="9"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </span>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+            />
+          </div>
+          <small class="error" *ngIf="passwordControl?.touched && passwordControl?.invalid">
+            Le mot de passe est obligatoire.
+          </small>
+        </div>
 
-        <label class="login-field">
-          <span>Mot de passe</span>
-          <input type="password" formControlName="password" placeholder="********" />
-        </label>
+        <div class="error-box" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
 
-        @if (errorMessage()) {
-          <p class="login-error">{{ errorMessage() }}</p>
-        }
-
-        <button type="submit" class="login-submit" [disabled]="submitting()">
-          {{ submitting() ? 'Connexion...' : 'Se connecter' }}
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Connexion...' : 'Se connecter' }}
         </button>
-
-        <a class="login-link" routerLink="/register">Inscription</a>
       </form>
-    </main>
+    </div>
+
+    <p class="login-footer">
+      Utilise le compte mock de demo
+      <strong>jean.dupont&#64;gmail.com</strong>
+      avec le mot de passe
+      <strong>MonMotDePasse123!</strong>
+    </p>
   </div>
 </section>

@@ -1,9 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { PagedResponse } from '../../../core/api/models/paged-response.model';
 import { ResourceDto } from '../../../core/api/models/resource.model';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueComponent } from './catalogue.component';
 import { CatalogueMockService } from './catalogue-mock.service';
 
@@ -49,6 +51,12 @@ const mockResources: PagedResponse<ResourceDto> = {
   size: 20,
 };
 
+const mockAuthService = {
+  currentUser: signal(null).asReadonly(),
+  isAuthenticated: () => false,
+  logout: jest.fn(),
+};
+
 describe('CatalogueComponent', () => {
   it('should load and map active mock resources', async () => {
     await TestBed.configureTestingModule({
@@ -60,6 +68,10 @@ describe('CatalogueComponent', () => {
           useValue: {
             getResources: () => of(mockResources),
           },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
     }).compileComponents();
@@ -99,6 +111,10 @@ describe('CatalogueComponent', () => {
             getResources: () => of(mockResources),
           },
         },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
       ],
     }).compileComponents();
 
@@ -134,6 +150,10 @@ describe('CatalogueComponent', () => {
           useValue: {
             getResources: () => of(mockResources),
           },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
     }).compileComponents();
@@ -181,6 +201,10 @@ describe('CatalogueComponent', () => {
                   })
               ),
           },
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
         },
       ],
     }).compileComponents();

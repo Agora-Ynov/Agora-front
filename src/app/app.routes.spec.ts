@@ -20,6 +20,17 @@ describe('routes', () => {
     expect(loadedComponent).toBeDefined();
   });
 
+  it('should expose the register route', async () => {
+    const registerRoute = routes.find(route => route.path === 'register');
+
+    expect(registerRoute).toBeDefined();
+    expect(registerRoute?.loadComponent).toBeDefined();
+
+    const loadedComponent = await registerRoute?.loadComponent?.();
+
+    expect(loadedComponent).toBeDefined();
+  });
+
   it('should expose the catalogue route', async () => {
     const catalogueRoute = routes.find(route => route.path === 'catalogue');
 

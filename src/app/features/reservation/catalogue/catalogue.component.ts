@@ -4,6 +4,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ResourceDto } from '../../../core/api/models/resource.model';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueMockService } from './catalogue-mock.service';
 
 type ResourceFamilyFilter = 'ALL' | 'ROOM' | 'EQUIPMENT';
@@ -43,6 +44,7 @@ interface CatalogueResource {
 })
 export class CatalogueComponent {
   private readonly catalogueMockService = inject(CatalogueMockService);
+  private readonly authService = inject(AuthService);
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
@@ -75,6 +77,8 @@ export class CatalogueComponent {
   });
 
   readonly totalResources = computed(() => this.filteredResources().length);
+  readonly currentUser = this.authService.currentUser;
+  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   constructor() {
     this.catalogueMockService
@@ -116,6 +120,10 @@ export class CatalogueComponent {
 
   formatPrice(amount: number): string {
     return `${amount} EUR`;
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   private mapResource(resource: ResourceDto): CatalogueResource {
