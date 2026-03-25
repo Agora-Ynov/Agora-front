@@ -1,0 +1,140 @@
+<section class="catalogue-page">
+  <header class="catalogue-topbar">
+    <a class="brand" routerLink="/">
+      <span class="brand__mark">A</span>
+      <span class="brand__text">
+        <strong>Agora</strong>
+        <small>Reservations</small>
+      </span>
+    </a>
+
+    <nav class="catalogue-nav" aria-label="Navigation principale">
+      <a class="catalogue-nav__link" routerLink="/">Accueil</a>
+      <a class="catalogue-nav__link catalogue-nav__link--active" routerLink="/catalogue">
+        Catalogue
+      </a>
+      <a class="catalogue-nav__link" routerLink="/calendar">Calendrier</a>
+    </nav>
+
+    <div class="catalogue-actions">
+      <a class="catalogue-actions__link" routerLink="/login">Connexion</a>
+      <a class="catalogue-actions__button" routerLink="/register">Inscription</a>
+    </div>
+  </header>
+
+  <main class="catalogue-main">
+    <section class="catalogue-hero">
+      <p class="catalogue-hero__eyebrow">J2-16</p>
+      <h1>Catalogue des ressources</h1>
+      <p class="catalogue-hero__lead">
+        Decouvrez toutes nos salles et materiels disponibles a la reservation.
+      </p>
+    </section>
+
+    <section class="catalogue-toolbar" aria-label="Filtres du catalogue">
+      <div class="catalogue-segmented">
+        <button
+          type="button"
+          class="catalogue-segmented__item"
+          [class.catalogue-segmented__item--active]="familyFilter() === 'ALL'"
+          (click)="setFamilyFilter('ALL')"
+        >
+          Tout
+        </button>
+        <button
+          type="button"
+          class="catalogue-segmented__item"
+          [class.catalogue-segmented__item--active]="familyFilter() === 'ROOM'"
+          (click)="setFamilyFilter('ROOM')"
+        >
+          Salles
+        </button>
+        <button
+          type="button"
+          class="catalogue-segmented__item"
+          [class.catalogue-segmented__item--active]="familyFilter() === 'EQUIPMENT'"
+          (click)="setFamilyFilter('EQUIPMENT')"
+        >
+          Materiel
+        </button>
+      </div>
+
+      <div class="catalogue-feature-bar">
+        <span class="catalogue-feature-bar__label">Equipements :</span>
+
+        <div class="catalogue-feature-bar__chips">
+          @for (option of featureOptions; track option.id) {
+            <button
+              type="button"
+              class="catalogue-chip"
+              [class.catalogue-chip--active]="isFeatureSelected(option.id)"
+              (click)="toggleFeature(option.id)"
+            >
+              <span class="catalogue-chip__symbol">{{ option.shortLabel }}</span>
+              <span>{{ option.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <p class="catalogue-toolbar__summary">
+        {{ totalResources() }}
+        {{ totalResources() > 1 ? 'ressources affichees.' : 'ressource affichee.' }}
+      </p>
+    </section>
+
+    <section class="catalogue-grid" aria-label="Liste des ressources">
+      @for (resource of filteredResources(); track resource.id) {
+        <article class="catalogue-card">
+          <div
+            class="catalogue-card__cover"
+            [ngClass]="'catalogue-card__cover--' + resource.coverTheme"
+          >
+            <span class="catalogue-card__type">{{ resource.typeLabel }}</span>
+          </div>
+
+          <div class="catalogue-card__body">
+            <h2>{{ resource.name }}</h2>
+            <p class="catalogue-card__description">{{ resource.description }}</p>
+
+            <div class="catalogue-card__tags">
+              @for (tag of resource.tags; track tag) {
+                <span class="catalogue-card__tag">{{ tag }}</span>
+              }
+            </div>
+
+            <div class="catalogue-card__features">
+              @for (feature of resource.features; track feature) {
+                <span class="catalogue-card__feature">{{ featureLabel(feature) }}</span>
+              }
+            </div>
+
+            <div class="catalogue-card__pricing">
+              <p class="catalogue-card__price">
+                <strong>{{ formatPrice(resource.pricePerBooking) }}</strong>
+                <span>/ reservation</span>
+              </p>
+              <p class="catalogue-card__deposit">
+                Caution : {{ formatPrice(resource.depositAmount) }}
+              </p>
+            </div>
+
+            <div class="catalogue-card__actions">
+              <button type="button" class="catalogue-card__button catalogue-card__button--ghost">
+                Details
+              </button>
+              <a class="catalogue-card__button catalogue-card__button--primary" routerLink="/login">
+                Connexion
+              </a>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <article class="catalogue-empty">
+          <h2>Aucune ressource ne correspond a ce filtre</h2>
+          <p>Retire un equipement ou repasse sur "Tout" pour elargir la recherche.</p>
+        </article>
+      }
+    </section>
+  </main>
+</section>
