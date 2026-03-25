@@ -1,12 +1,23 @@
 import { routes } from './app.routes';
 
 describe('routes', () => {
-  it('should redirect root path to catalogue', () => {
+  it('should redirect root path to login', () => {
     expect(routes[0]).toMatchObject({
       path: '',
       pathMatch: 'full',
-      redirectTo: 'catalogue',
+      redirectTo: 'login',
     });
+  });
+
+  it('should expose the login route', async () => {
+    const loginRoute = routes.find(route => route.path === 'login');
+
+    expect(loginRoute).toBeDefined();
+    expect(loginRoute?.loadComponent).toBeDefined();
+
+    const loadedComponent = await loginRoute?.loadComponent?.();
+
+    expect(loadedComponent).toBeDefined();
   });
 
   it('should expose the catalogue route', async () => {
@@ -20,12 +31,12 @@ describe('routes', () => {
     expect(loadedComponent).toBeDefined();
   });
 
-  it('should redirect unknown routes to catalogue', () => {
+  it('should redirect unknown routes to login', () => {
     const fallbackRoute = routes[routes.length - 1];
 
     expect(fallbackRoute).toMatchObject({
       path: '**',
-      redirectTo: 'catalogue',
+      redirectTo: 'login',
     });
   });
 });

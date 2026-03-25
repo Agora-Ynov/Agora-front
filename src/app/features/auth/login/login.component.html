@@ -1,0 +1,47 @@
+<section class="login-page">
+  <div class="login-shell">
+    <aside class="login-hero">
+      <p class="login-hero__eyebrow">Agora Reservations</p>
+      <h1>Connecte-toi pour acceder au catalogue.</h1>
+      <p class="login-hero__lead">
+        En mode local, ce formulaire utilise le mock front puis te redirige vers
+        <strong>/catalogue</strong>.
+      </p>
+
+      <div class="login-hero__card">
+        <p class="login-hero__label">Compte de demo</p>
+        <p><strong>Email</strong> jean.dupont@gmail.com</p>
+        <p><strong>Mot de passe</strong> MonMotDePasse123!</p>
+      </div>
+    </aside>
+
+    <main class="login-panel">
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+        <div class="login-form__header">
+          <h2>Connexion</h2>
+          <p>Entre tes identifiants pour continuer.</p>
+        </div>
+
+        <label class="login-field">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="jean.dupont@gmail.com" />
+        </label>
+
+        <label class="login-field">
+          <span>Mot de passe</span>
+          <input type="password" formControlName="password" placeholder="********" />
+        </label>
+
+        @if (errorMessage()) {
+          <p class="login-error">{{ errorMessage() }}</p>
+        }
+
+        <button type="submit" class="login-submit" [disabled]="submitting()">
+          {{ submitting() ? 'Connexion...' : 'Se connecter' }}
+        </button>
+
+        <a class="login-link" routerLink="/register">Inscription</a>
+      </form>
+    </main>
+  </div>
+</section>
