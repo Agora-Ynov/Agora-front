@@ -13,10 +13,59 @@ import {
   UserRole,
 } from './auth.model';
 
+interface MockAccount {
+  password: string;
+  profile: UserProfile;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
   private readonly useMockAuth = environment.useMockAuth;
+  private readonly mockAccounts: Record<string, MockAccount> = {
+    'jean.dupont@gmail.com': {
+      password: 'MonMotDePasse123!',
+      profile: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean.dupont@gmail.com',
+        phone: '0612345678',
+        role: 'CITIZEN',
+        accountType: 'AUTONOMOUS',
+        accountStatus: 'ACTIVE',
+        internalId: undefined,
+        exemptions: {
+          association: false,
+          social: false,
+          mandate: false,
+        },
+        groupIds: ['g001'],
+        createdAt: '2026-01-15T09:30:00Z',
+      },
+    },
+    'admin@agora.local': {
+      password: 'AdminAgora123!',
+      profile: {
+        id: 'b2c3d4e5-f678-9012-abcd-ef1234567801',
+        firstName: 'Marie',
+        lastName: 'Dupont',
+        email: 'admin@agora.local',
+        phone: '0102030405',
+        role: 'SECRETARY_ADMIN',
+        accountType: 'AUTONOMOUS',
+        accountStatus: 'ACTIVE',
+        internalId: 'ADM-001',
+        exemptions: {
+          association: false,
+          social: false,
+          mandate: true,
+        },
+        groupIds: [],
+        createdAt: '2025-11-04T08:15:00Z',
+      },
+    },
+  };
 
   private _currentUser = signal<UserProfile | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
@@ -72,39 +121,25 @@ export class AuthService {
 
   getCurrentUser(): Observable<UserProfile> {
     if (this.useMockAuth) {
-      return this.http
-        .get<{
-          id: string;
-          email: string;
-          firstName: string;
-          lastName: string;
-          phone?: string;
-          accountType: UserProfile['accountType'];
-          status: UserProfile['accountStatus'];
-          groups?: Array<{ id: string }>;
-          createdAt: string;
-        }>('/assets/mocks/api/auth.me.get.json')
-        .pipe(
-          map(user => ({
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            phone: user.phone,
-            role: 'CITIZEN' as UserRole,
-            accountType: user.accountType,
-            accountStatus: user.status,
-            internalId: undefined,
-            exemptions: {
-              association: false,
-              social: false,
-              mandate: false,
-            },
-            groupIds: user.groups?.map(group => group.id) ?? [],
-            createdAt: user.createdAt,
-          })),
-          tap(user => this._currentUser.set(user))
+      const profile = this.getMockProfileFromSession();
+
+      if (!profile) {
+        return throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 401,
+              error: {
+                code: 'INVALID_SESSION',
+                message: 'La session mock est invalide.',
+              },
+            })
         );
+      }
+
+      return of(profile).pipe(
+        delay(150),
+        tap(user => this._currentUser.set(user))
+      );
     }
 
     return this.http
@@ -141,8 +176,9 @@ export class AuthService {
   }
 
   loginMock(payload: LoginRequest): Observable<LoginResponse> {
-    if (this.isMockLoginValid(payload)) {
-      return of(this.buildMockLoginResponse(payload.email)).pipe(delay(400));
+    const account = this.getMockAccount(payload.email);
+    if (account && this.isMockLoginValid(payload)) {
+      return of(this.buildMockLoginResponse(account.profile)).pipe(delay(400));
     }
 
     return throwError(
@@ -208,19 +244,19 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  private createMockToken(email: string): string {
+  private createMockToken(profile: UserProfile): string {
     const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/g, '');
     const payload = btoa(
       JSON.stringify({
-        sub: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-        email,
-        role: 'CITIZEN',
-        accountType: 'AUTONOMOUS',
-        firstName: 'Jean',
-        lastName: 'Dupont',
+        sub: profile.id,
+        email: profile.email,
+        role: profile.role,
+        accountType: profile.accountType,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
       })
@@ -232,30 +268,54 @@ export class AuthService {
     return `${header}.${payload}.mock-signature`;
   }
 
-  private buildMockLoginResponse(email: string): LoginResponse {
+  private buildMockLoginResponse(profile: UserProfile): LoginResponse {
     return {
-      accessToken: this.createMockToken(email),
+      accessToken: this.createMockToken(profile),
       refreshToken: 'mock-refresh-token',
       tokenType: 'Bearer',
       expiresIn: 900,
       user: {
-        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        accountType: 'AUTONOMOUS',
-        status: 'ACTIVE',
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        accountType: profile.accountType,
+        status: profile.accountStatus,
       },
     };
   }
 
   private isMockLoginValid(payload: LoginRequest): boolean {
-    return (
-      payload.email.trim().toLowerCase() === 'jean.dupont@gmail.com' &&
-      payload.password === 'MonMotDePasse123!'
-    );
+    const account = this.getMockAccount(payload.email);
+    return !!account && payload.password === account.password;
   }
 
   private isMockRegisterEmailAlreadyExists(email: string): boolean {
-    return email.trim().toLowerCase() === 'jean.dupont@gmail.com';
+    return !!this.getMockAccount(email);
+  }
+
+  private getMockAccount(email: string): MockAccount | undefined {
+    return this.mockAccounts[email.trim().toLowerCase()];
+  }
+
+  private getMockProfileFromSession(): UserProfile | null {
+    const email = this.jwtService.getPayload()?.email;
+    if (!email) {
+      return null;
+    }
+
+    const account = this.getMockAccount(email);
+    if (!account) {
+      return null;
+    }
+
+    return this.cloneMockProfile(account.profile);
+  }
+
+  private cloneMockProfile(profile: UserProfile): UserProfile {
+    return {
+      ...profile,
+      exemptions: { ...profile.exemptions },
+      groupIds: [...profile.groupIds],
+    };
   }
 }

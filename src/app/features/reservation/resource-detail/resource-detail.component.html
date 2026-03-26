@@ -22,9 +22,9 @@
     <div class="resource-detail-actions">
       @if (isAuthenticated()) {
         <div class="resource-detail-actions__user">
-          <span class="resource-detail-actions__welcome">
+          <a class="resource-detail-actions__welcome" routerLink="/account">
             {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
-          </span>
+          </a>
           <button type="button" class="resource-detail-actions__button" (click)="logout()">
             Deconnexion
           </button>

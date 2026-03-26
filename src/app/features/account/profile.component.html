@@ -1,0 +1,297 @@
+<section class="account-page">
+  <header class="account-topbar">
+    <a class="brand" routerLink="/catalogue">
+      <span class="brand__mark">A</span>
+      <span class="brand__text">
+        <strong>Agora</strong>
+        <small>Reservations</small>
+      </span>
+    </a>
+
+    <nav class="account-nav" aria-label="Navigation principale">
+      <a class="account-nav__link" routerLink="/catalogue">Accueil</a>
+      <a class="account-nav__link" routerLink="/catalogue">Catalogue</a>
+      <a class="account-nav__link" routerLink="/calendar">Calendrier</a>
+    </nav>
+
+    <div class="account-actions">
+      <a class="account-actions__profile" routerLink="/account" aria-current="page">
+        <span class="account-actions__profile-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M5 19C6.8 15.9 9.1 14.4 12 14.4C14.9 14.4 17.2 15.9 19 19"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+        </span>
+        <span>{{ displayName() }}</span>
+      </a>
+
+      <button type="button" class="account-actions__button" (click)="logout()">Deconnexion</button>
+    </div>
+  </header>
+
+  <main class="account-main">
+    <section class="account-hero">
+      <h1>Bonjour {{ displayName() }}</h1>
+      <p>Bienvenue sur votre tableau de bord</p>
+    </section>
+
+    <section class="account-summary" aria-label="Indicateurs de reservation">
+      @for (card of summaryCards(); track card.label) {
+        <article class="summary-card">
+          <div>
+            <p class="summary-card__label">{{ card.label }}</p>
+            <strong>{{ card.value }}</strong>
+          </div>
+
+          <span class="summary-card__icon" [class]="'summary-card__icon--' + card.tone">
+            @switch (card.icon) {
+              @case ('check') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6.5 12.5L10.1 16.1L17.5 8.7"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                </svg>
+              }
+              @case ('clock') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                  <path
+                    d="M12 7V12L15 14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="4"
+                    y="5"
+                    width="16"
+                    height="15"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path d="M8 3V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M16 3V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M4 10H20" stroke="currentColor" stroke-width="2" />
+                </svg>
+              }
+            }
+          </span>
+        </article>
+      }
+    </section>
+
+    <section class="account-grid">
+      <article class="panel-card">
+        <h2>Mes informations</h2>
+
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-row__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
+                <path
+                  d="M5 19C6.8 15.9 9.1 14.4 12 14.4C14.9 14.4 17.2 15.9 19 19"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <div>
+              <p>Nom complet</p>
+              <strong>{{ displayName() }}</strong>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="info-row__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 7H20V17H4V7Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M4 9L12 14L20 9"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <div>
+              <p>Email</p>
+              <strong>{{ currentUser()?.email }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card__separator"></div>
+
+        <div class="pill-section">
+          <p>Role</p>
+          <span class="account-pill">{{ roleLabel() }}</span>
+        </div>
+
+        <div class="pill-section">
+          <p>Type de compte</p>
+          <span class="account-pill">{{ accountTypeLabel() }}</span>
+        </div>
+      </article>
+
+      <article class="panel-card" id="exemptions">
+        <h2>Mes exonerations</h2>
+
+        <div class="exemption-list">
+          @for (item of exemptions(); track item.label) {
+            <div class="exemption-row">
+              <span>{{ item.label }}</span>
+              <span class="status-pill" [class.status-pill--active]="item.active">
+                <span class="status-pill__dot" aria-hidden="true">
+                  @if (item.active) {
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M4 8.3L6.6 10.9L12.1 5.4"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M5.2 5.2L10.8 10.8"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M10.8 5.2L5.2 10.8"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  }
+                </span>
+                {{ item.active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          }
+        </div>
+
+        <div class="panel-card__separator"></div>
+
+        <p class="exemption-note" [class.exemption-note--inactive]="!hasActiveExemption()">
+          @if (hasActiveExemption()) {
+            Vous beneficiez d'exonerations sur vos reservations
+          } @else {
+            Aucune exoneration n'est active sur votre compte
+          }
+        </p>
+      </article>
+    </section>
+
+    <section class="quick-actions">
+      <h2>Actions rapides</h2>
+
+      <div class="quick-actions__list">
+        @for (action of quickActions(); track action.label) {
+          <a
+            class="quick-actions__item"
+            [class.quick-actions__item--primary]="action.variant === 'primary'"
+            [routerLink]="action.route"
+            [fragment]="action.fragment"
+          >
+            @if (action.icon) {
+              <span class="quick-actions__icon" aria-hidden="true">
+                @switch (action.icon) {
+                  @case ('reservation') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect
+                        x="4"
+                        y="5"
+                        width="16"
+                        height="15"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
+                      <path d="M8 3V7" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M16 3V7" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  }
+                  @case ('list') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M8 7H18" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M8 12H18" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M8 17H18" stroke="currentColor" stroke-width="1.8" />
+                      <circle cx="5" cy="7" r="1" fill="currentColor" />
+                      <circle cx="5" cy="12" r="1" fill="currentColor" />
+                      <circle cx="5" cy="17" r="1" fill="currentColor" />
+                    </svg>
+                  }
+                  @case ('group') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.8" />
+                      <circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.8" />
+                      <path
+                        d="M4.8 18.5C5.8 15.8 7.7 14.5 10 14.5C12.3 14.5 14.2 15.8 15.2 18.5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  }
+                  @default {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M9 4H15L19 8V18A2 2 0 0 1 17 20H7A2 2 0 0 1 5 18V6A2 2 0 0 1 7 4H9Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                      />
+                      <path d="M9 12H15" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M9 16H13" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  }
+                }
+              </span>
+            }
+            <span>{{ action.label }}</span>
+          </a>
+        }
+      </div>
+    </section>
+
+    <footer class="account-footer">
+      <div>
+        <strong>Agora - Service des Reservations</strong>
+        <p>&copy; 2026 Tous droits reserves</p>
+      </div>
+      <div>
+        <strong>Horaires d'ouverture : Lun-Ven 9h-17h</strong>
+        <p>Contact : 01 23 45 67 89</p>
+      </div>
+    </footer>
+  </main>
+</section>

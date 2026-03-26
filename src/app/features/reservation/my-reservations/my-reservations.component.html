@@ -1,0 +1,23 @@
+<section class="reservations-page">
+  <div class="reservations-shell">
+    <header class="reservations-topbar">
+      <a class="reservations-link" routerLink="/account">Retour au tableau de bord</a>
+      <span class="reservations-user">{{ displayName() }}</span>
+    </header>
+
+    <article class="reservations-card">
+      <h1>Mes reservations</h1>
+      <p>
+        Cet ecran est pret a accueillir l'historique et le suivi des reservations du compte
+        connecte. Pour l'instant, aucune reservation mock n'est encore rattachee au profil.
+      </p>
+
+      <div class="reservations-actions">
+        <a class="reservations-link reservations-link--primary" routerLink="/catalogue">
+          Nouvelle reservation
+        </a>
+        <a class="reservations-link" routerLink="/account">Revenir au profil</a>
+      </div>
+    </article>
+  </div>
+</section>

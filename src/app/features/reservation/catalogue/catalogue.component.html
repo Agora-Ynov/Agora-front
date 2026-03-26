@@ -19,9 +19,9 @@
     <div class="catalogue-actions">
       @if (isAuthenticated()) {
         <div class="catalogue-actions__user">
-          <span class="catalogue-actions__welcome">
+          <a class="catalogue-actions__welcome" routerLink="/account">
             {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
-          </span>
+          </a>
           <button type="button" class="catalogue-actions__button" (click)="logout()">
             Deconnexion
           </button>

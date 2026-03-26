@@ -1,0 +1,22 @@
+<section class="admin-page">
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <a class="admin-link" routerLink="/account">Retour au profil</a>
+      <span class="admin-user">{{ displayName() }}</span>
+    </header>
+
+    <article class="admin-card">
+      <p class="admin-card__eyebrow">Espace admin</p>
+      <h1>Administration Agora</h1>
+      <p>
+        Le point d'entree admin existe maintenant et il est reserve aux comptes administrateurs.
+        On pourra y brancher ensuite la gestion des utilisateurs, des reservations et des exports.
+      </p>
+
+      <div class="admin-actions">
+        <a class="admin-link admin-link--primary" routerLink="/catalogue">Aller au catalogue</a>
+        <a class="admin-link" routerLink="/account">Revenir au tableau de bord</a>
+      </div>
+    </article>
+  </div>
+</section>

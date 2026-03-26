@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 import { authGuard } from './core/guards/auth.guard';
 
-// Temporary minimal routing kept to ensure the app stays runnable locally
-// while feature branches for auth/home/calendar UIs are still incomplete.
 export const routes: Routes = [
   {
     path: '',
@@ -24,15 +23,45 @@ export const routes: Routes = [
   },
   {
     path: 'catalogue/:id',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/reservation/resource-detail/resource-detail.component').then(
         m => m.ResourceDetailComponent
       ),
   },
   {
+    path: 'account',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/profile.component').then(m => m.ProfileComponent),
+  },
+  {
+    path: 'reservations',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/reservation/my-reservations/my-reservations.component').then(
+        m => m.MyReservationsComponent
+      ),
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/dashboard/admin-dashboard.component').then(
+        m => m.AdminDashboardComponent
+      ),
+  },
+  {
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+  },
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./features/auth/unauthorized/unauthorized.component').then(
+        m => m.UnauthorizedComponent
+      ),
   },
   {
     path: 'calendar',
