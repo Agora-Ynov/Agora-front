@@ -20,7 +20,6 @@ export const routes: Routes = [
   },
   {
     path: 'catalogue',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/reservation/catalogue/catalogue.component').then(
         m => m.CatalogueComponent
@@ -28,12 +27,19 @@ export const routes: Routes = [
   },
   {
     path: 'catalogue/:id',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/reservation/resource-detail/resource-detail.component').then(
         m => m.ResourceDetailComponent
       ),
   },
+  {
+  path: 'admin/resources',
+  canActivate: [adminGuard],
+  loadComponent: () =>
+    import('./features/admin/resources/resource-management.component').then(
+      m => m.ResourceManagementComponent
+    ),
+ },
   {
     path: 'account',
     canActivate: [authGuard],

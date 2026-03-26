@@ -91,7 +91,11 @@
 
       <div class="action-grid">
         @for (action of quickActions; track action.label) {
-          <button type="button" class="action-tile">
+          <button
+            type="button"
+            class="action-tile"
+            [routerLink]="action.route ?? null"
+          >
             @if (action.badgeCount) {
               <span class="action-tile__badge">{{ action.badgeCount }}</span>
             }

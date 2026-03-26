@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 type AdminStatTone = 'warning' | 'success' | 'info' | 'violet';
 type AdminStatIcon = 'clock' | 'check' | 'resource' | 'affiliation';
@@ -26,6 +27,7 @@ interface AdminQuickAction {
   label: string;
   icon: AdminActionIcon;
   badgeCount?: number;
+  route?: string;
 }
 
 interface RecentReservation {
@@ -42,7 +44,7 @@ interface NewsColumn {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
@@ -81,7 +83,7 @@ export class AdminDashboardComponent {
     { label: 'Fermetures', icon: 'closures' },
     { label: 'Quotas', icon: 'quotas' },
     { label: 'Export CSV/PDF', icon: 'export' },
-    { label: 'Ressources', icon: 'resources' },
+    { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
     { label: 'Groupes', icon: 'groups' },
     { label: 'Affiliations', icon: 'affiliations', badgeCount: 2 },
   ];
