@@ -1,22 +1,377 @@
 <section class="admin-page">
-  <div class="admin-shell">
-    <header class="admin-topbar">
-      <a class="admin-link" routerLink="/account">Retour au profil</a>
-      <span class="admin-user">{{ displayName() }}</span>
-    </header>
+  <main class="admin-main">
+    <section class="admin-hero">
+      <h1>Administration</h1>
+      <p>Tableau de bord de gestion - Administrateur</p>
+    </section>
 
-    <article class="admin-card">
-      <p class="admin-card__eyebrow">Espace admin</p>
-      <h1>Administration Agora</h1>
-      <p>
-        Le point d'entree admin existe maintenant et il est reserve aux comptes administrateurs.
-        On pourra y brancher ensuite la gestion des utilisateurs, des reservations et des exports.
-      </p>
+    <section class="admin-summary" aria-label="Indicateurs administrateur">
+      @for (card of statCards; track card.label) {
+        <article class="summary-card">
+          <div class="summary-card__content">
+            <p class="summary-card__label">{{ card.label }}</p>
+            <strong>{{ card.value }}</strong>
+          </div>
 
-      <div class="admin-actions">
-        <a class="admin-link admin-link--primary" routerLink="/catalogue">Aller au catalogue</a>
-        <a class="admin-link" routerLink="/account">Revenir au tableau de bord</a>
+          <span class="summary-card__icon" [class]="'summary-card__icon--' + card.tone">
+            @switch (card.icon) {
+              @case ('clock') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                  <path
+                    d="M12 7V12L15 14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+              @case ('check') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6.5 12.5L10.1 16.1L17.5 8.7"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                </svg>
+              }
+              @case ('resource') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="7"
+                    y="4"
+                    width="10"
+                    height="16"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path d="M10 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M10 12H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M10 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path
+                    d="M4 8V20H13"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="2" />
+                  <path
+                    d="M4.75 18.25C5.75 15.55 7.65 14.25 10 14.25C12.35 14.25 14.25 15.55 15.25 18.25"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M16.5 8.5L18 10L20.75 7.25"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+            }
+          </span>
+        </article>
+      }
+    </section>
+
+    <section class="panel-card panel-card--actions">
+      <h2>Actions rapides</h2>
+
+      <div class="action-grid">
+        @for (action of quickActions; track action.label) {
+          <button type="button" class="action-tile">
+            @if (action.badgeCount) {
+              <span class="action-tile__badge">{{ action.badgeCount }}</span>
+            }
+
+            <span class="action-tile__icon" aria-hidden="true">
+              @switch (action.icon) {
+                @case ('users') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
+                    <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.9" />
+                    <path
+                      d="M4.6 18C4.6 15.9 6.3 14.2 8.4 14.2H9.6C11.7 14.2 13.4 15.9 13.4 18"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M15.1 18C15.1 16.8 16.05 15.85 17.25 15.85H17.75C18.95 15.85 19.9 16.8 19.9 18"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+                @case ('reservations') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="4.75"
+                      y="5.75"
+                      width="14.5"
+                      height="13.5"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                    />
+                    <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.9" />
+                  </svg>
+                }
+                @case ('audit') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.9" />
+                    <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M12 16H12.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                  </svg>
+                }
+                @case ('closures') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="4.75"
+                      y="5.75"
+                      width="14.5"
+                      height="13.5"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                    />
+                    <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path
+                      d="M7 17L17 7"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+                @case ('quotas') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9.5 11.9L11.2 13.6L14.9 9.9"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+                @case ('export') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 4V15"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M7.75 10.75L12 15L16.25 10.75"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M5 18.5H19"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+                @case ('resources') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="7"
+                      y="4"
+                      width="10"
+                      height="16"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                    />
+                    <path d="M10 8H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M10 12H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M10 16H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M4 20H20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                  </svg>
+                }
+                @case ('groups') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
+                    <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.9" />
+                    <path
+                      d="M4.6 18C4.6 15.9 6.3 14.2 8.4 14.2H9.6C11.7 14.2 13.4 15.9 13.4 18"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M15.1 18C15.1 16.8 16.05 15.85 17.25 15.85H17.75C18.95 15.85 19.9 16.8 19.9 18"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
+                    <path
+                      d="M4.75 18.25C5.75 15.55 7.65 14.25 10 14.25C12.35 14.25 14.25 15.55 15.25 18.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M16.5 8.5L18 10L20.75 7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+              }
+            </span>
+
+            <span class="action-tile__label">{{ action.label }}</span>
+          </button>
+        }
       </div>
-    </article>
-  </div>
+    </section>
+
+    <section class="admin-grid">
+      <article class="panel-card">
+        <h2>Reservations recentes</h2>
+
+        <div class="reservation-list">
+          @for (reservation of recentReservations; track reservation.title + reservation.date) {
+            <div class="reservation-item">
+              <div>
+                <strong>{{ reservation.title }}</strong>
+                <p>{{ reservation.requester }}</p>
+              </div>
+
+              <div class="reservation-item__meta">
+                <span class="reservation-item__date">{{ reservation.date }}</span>
+                <span
+                  class="reservation-status"
+                  [class.reservation-status--confirmed]="reservation.status === 'confirmed'"
+                  [class.reservation-status--pending]="reservation.status === 'pending'"
+                  [class.reservation-status--finished]="reservation.status === 'finished'"
+                >
+                  {{ statusLabel(reservation.status) }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="panel-link">Voir toutes les reservations</button>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-card__heading panel-card__heading--with-icon">
+          <span class="panel-card__heading-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 16L10 11L13 14L19 8"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path d="M15.5 8H19V11.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            </svg>
+          </span>
+          <h2>Statistiques</h2>
+        </div>
+
+        <div class="stats-block">
+          <div class="stats-row">
+            <span>Taux de validation</span>
+            <strong>{{ validationRate }}%</strong>
+          </div>
+
+          <div class="progress-track" aria-hidden="true">
+            <span class="progress-bar" [style.width.%]="validationRate"></span>
+          </div>
+
+          <div class="stats-list">
+            <div class="stats-row">
+              <span>Exonerations appliquees</span>
+              <strong>{{ appliedExemptions }}</strong>
+            </div>
+            <div class="stats-row">
+              <span>Paiements en attente</span>
+              <strong class="stats-row__warning">{{ pendingPayments }}</strong>
+            </div>
+          </div>
+
+          <div class="panel-card__separator"></div>
+
+          <div class="revenue-block">
+            <span>Revenu total (ce mois)</span>
+            <strong>{{ totalRevenue }}</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="news-card">
+      <div class="news-card__heading">
+        <span class="news-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+            <path d="M12 10V16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            <path d="M12 7H12.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" />
+          </svg>
+        </span>
+        <h2>Nouveautes - Alignement cahier fonctionnel</h2>
+      </div>
+
+      <div class="news-grid">
+        @for (column of newsColumns; track $index) {
+          <ul class="news-list">
+            @for (item of column.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+
+    <footer class="admin-footer">
+      <div>
+        <strong>Agora - Service des Reservations</strong>
+        <p>&copy; 2026 Tous droits reserves</p>
+      </div>
+      <div>
+        <strong>Horaires d'ouverture : Lun-Ven 9h-17h</strong>
+        <p>Contact : 01 23 45 67 89</p>
+      </div>
+    </footer>
+  </main>
 </section>

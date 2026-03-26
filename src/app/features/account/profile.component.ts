@@ -24,7 +24,7 @@ interface QuickAction {
   label: string;
   route: string;
   variant: 'primary' | 'secondary';
-  icon?: 'reservation' | 'list' | 'group' | 'admin';
+  icon?: 'reservation' | 'list' | 'group';
   fragment?: string;
   adminOnly?: boolean;
 }
@@ -95,7 +95,6 @@ export class ProfileComponent {
         label: 'Administration',
         route: '/admin',
         variant: 'secondary',
-        icon: 'admin',
         adminOnly: true,
       },
     ];

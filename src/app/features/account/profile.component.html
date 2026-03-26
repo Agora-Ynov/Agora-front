@@ -8,7 +8,7 @@
     <section class="account-summary" aria-label="Indicateurs de reservation">
       @for (card of summaryCards(); track card.label) {
         <article class="summary-card">
-          <div>
+          <div class="summary-card__content">
             <p class="summary-card__label">{{ card.label }}</p>
             <strong>{{ card.value }}</strong>
           </div>
@@ -78,7 +78,7 @@
                 />
               </svg>
             </span>
-            <div>
+            <div class="info-row__content">
               <p>Nom complet</p>
               <strong>{{ displayName() }}</strong>
             </div>
@@ -102,7 +102,7 @@
                 />
               </svg>
             </span>
-            <div>
+            <div class="info-row__content">
               <p>Email</p>
               <strong>{{ currentUser()?.email }}</strong>
             </div>
@@ -123,12 +123,31 @@
       </article>
 
       <article class="panel-card" id="exemptions">
-        <h2>Mes exonerations</h2>
+        <div class="panel-card__heading panel-card__heading--with-icon">
+          <span class="panel-card__heading-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 4L17.5 6V11.5C17.5 15.1 15.2 18.37 12 19.5C8.8 18.37 6.5 15.1 6.5 11.5V6L12 4Z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 8.25V12.25"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+              <path d="M12 15H12.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+            </svg>
+          </span>
+          <h2>Mes exonerations</h2>
+        </div>
 
         <div class="exemption-list">
           @for (item of exemptions(); track item.label) {
             <div class="exemption-row">
-              <span>{{ item.label }}</span>
+              <span class="exemption-row__label">{{ item.label }}</span>
               <span class="status-pill" [class.status-pill--active]="item.active">
                 <span class="status-pill__dot" aria-hidden="true">
                   @if (item.active) {
