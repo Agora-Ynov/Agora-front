@@ -1,0 +1,436 @@
+<section class="user-admin-page">
+  <main class="user-admin-main">
+    <section class="user-admin-hero">
+      <div>
+        <div class="user-admin-hero__title">
+          <span class="user-admin-hero__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
+              <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.9" />
+              <path
+                d="M4.6 18C4.6 15.9 6.3 14.2 8.4 14.2H9.6C11.7 14.2 13.4 15.9 13.4 18"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <path
+                d="M15.1 18C15.1 16.8 16.05 15.85 17.25 15.85H17.75C18.95 15.85 19.9 16.8 19.9 18"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <h1>Gestion des utilisateurs</h1>
+        </div>
+        <p>Gerez les comptes, exonerations, droits et activations</p>
+      </div>
+
+      <button type="button" class="user-admin-create" (click)="openCreateModal()">
+        <span class="user-admin-create__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path d="M17 8V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M14 11H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Creer un utilisateur</span>
+      </button>
+    </section>
+
+    <section class="user-admin-stats">
+      <article class="stat-card">
+        <strong>{{ totalCount() }}</strong>
+        <span>Total</span>
+      </article>
+      <article class="stat-card stat-card--blue">
+        <strong>{{ autonomousCount() }}</strong>
+        <span>Autonomes</span>
+      </article>
+      <article class="stat-card stat-card--orange">
+        <strong>{{ tutoredCount() }}</strong>
+        <span>Sous tutelle</span>
+      </article>
+      <article class="stat-card stat-card--red">
+        <strong>{{ suspendedCount() }}</strong>
+        <span>Suspendus</span>
+      </article>
+    </section>
+
+    <section class="search-card">
+      <label class="search-input">
+        <span class="search-input__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
+            <path d="M16 16L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          (input)="setSearchTerm(($any($event.target).value))"
+          placeholder="Rechercher par nom, email ou identifiant interne (ex. PERT-1948-001)..."
+        />
+      </label>
+    </section>
+
+    <section class="admin-note-card">
+      <div class="admin-note-card__heading">
+        <span class="admin-note-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <h2>Pouvoirs administrateur - Comptes sous tutelle</h2>
+      </div>
+
+      <div class="admin-note-card__grid">
+        <ul>
+          <li><strong>Impersonation :</strong> agir pour le compte de l'utilisateur (trace dans l'audit)</li>
+          <li><strong>Identifiant interne :</strong> format PERR-1948-042, genere automatiquement</li>
+          <li><strong>Notes admin :</strong> non visibles par l'usager</li>
+        </ul>
+        <ul>
+          <li><strong>Activation autonome :</strong> associer un email - lien Brevo 72h</li>
+          <li><strong>Fiche imprimable :</strong> remise en main propre au guichet</li>
+          <li><strong>Suspension / reactivation :</strong> gestion des acces</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="user-filter-bar" aria-label="Filtres utilisateurs">
+      <button
+        type="button"
+        class="user-filter-pill"
+        [class.user-filter-pill--active]="filter() === 'ALL'"
+        (click)="setFilter('ALL')"
+      >
+        Tous ({{ totalCount() }})
+      </button>
+      <button
+        type="button"
+        class="user-filter-pill"
+        [class.user-filter-pill--active]="filter() === 'AUTONOMOUS'"
+        (click)="setFilter('AUTONOMOUS')"
+      >
+        Autonomes ({{ autonomousCount() }})
+      </button>
+      <button
+        type="button"
+        class="user-filter-pill"
+        [class.user-filter-pill--active]="filter() === 'TUTORED'"
+        (click)="setFilter('TUTORED')"
+      >
+        Tutelle ({{ tutoredCount() }})
+      </button>
+      <button
+        type="button"
+        class="user-filter-pill"
+        [class.user-filter-pill--active]="filter() === 'SUSPENDED'"
+        (click)="setFilter('SUSPENDED')"
+      >
+        Suspendus ({{ suspendedCount() }})
+      </button>
+    </section>
+
+    <section class="user-list-card">
+      <h2>Liste des utilisateurs ({{ filteredUsers().length }})</h2>
+
+      @if (loading()) {
+        <p class="user-list-card__empty">Chargement des utilisateurs...</p>
+      } @else if (!filteredUsers().length) {
+        <p class="user-list-card__empty">Aucun utilisateur ne correspond a ce filtre.</p>
+      } @else {
+        <div class="user-table">
+          <div class="user-table__header">
+            <span>Utilisateur</span>
+            <span>Identifiant / Contact</span>
+            <span>Type</span>
+            <span>Statut</span>
+            <span>Exonerations</span>
+            <span>Actions</span>
+          </div>
+
+          @for (user of filteredUsers(); track user.id) {
+            <article class="user-row" [class]="getRowClass(user)">
+              <div class="user-row__identity">
+                <strong>{{ getUserLabel(user) }}</strong>
+                <span>Utilisateur</span>
+              </div>
+
+              <div class="user-row__contact">
+                <strong [class.user-row__internal]="!user.email">
+                  @if (user.email) {
+                    {{ user.email }}
+                  } @else {
+                    # {{ user.internalRef }}
+                  }
+                </strong>
+                @if (user.email) {
+                  <span>{{ user.phone }}</span>
+                } @else {
+                  <span>Sans email</span>
+                  <span>{{ user.phone }}</span>
+                }
+              </div>
+
+              <div>
+                <span
+                  class="table-pill"
+                  [class.table-pill--dark]="user.accountType === 'AUTONOMOUS'"
+                  [class.table-pill--light]="user.accountType === 'TUTORED'"
+                >
+                  {{ getTypeLabel(user.accountType) }}
+                </span>
+              </div>
+
+              <div>
+                <span
+                  class="table-pill"
+                  [class.table-pill--green]="user.status === 'ACTIVE'"
+                  [class.table-pill--yellow]="user.status === 'PENDING_VALIDATION'"
+                  [class.table-pill--red]="user.status === 'SUSPENDED'"
+                >
+                  {{ getStatusLabel(user.status) }}
+                </span>
+              </div>
+
+              <div>
+                @if (user.exemptions.length) {
+                  <span class="table-pill table-pill--outline">{{ getExemptionLabel(user) }}</span>
+                } @else {
+                  <span class="user-row__muted">Aucune</span>
+                }
+              </div>
+
+              <div class="user-row__actions" aria-label="Actions utilisateur">
+                <button type="button" class="icon-action" title="Voir">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M3.8 12C5.7 8.9 8.5 7.25 12 7.25C15.5 7.25 18.3 8.9 20.2 12C18.3 15.1 15.5 16.75 12 16.75C8.5 16.75 5.7 15.1 3.8 12Z"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    />
+                    <circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </button>
+                <button type="button" class="icon-action" title="Editer">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M4 19.5H8.2L18.3 9.4L14.1 5.2L4 15.3V19.5Z"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linejoin="round"
+                    />
+                    <path d="M12.9 6.4L17.1 10.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <button type="button" class="icon-action icon-action--orange" title="Bouclier">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                @if (user.accountType === 'TUTORED') {
+                  <button type="button" class="icon-action icon-action--green" title="Envoyer activation">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4.75" y="6.75" width="14.5" height="10.5" rx="2" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M5.5 8L12 12.75L18.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <button type="button" class="icon-action" title="Imprimer">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M7 8V4.75H17V8" stroke="currentColor" stroke-width="1.8" />
+                      <rect x="5" y="10" width="14" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M8 14.5H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path d="M8 19.25H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                }
+                @if (user.status === 'SUSPENDED') {
+                  <button type="button" class="icon-action icon-action--green" title="Reactiver">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                      <path
+                        d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path d="M17 8V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path d="M14 11H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                } @else {
+                  <button type="button" class="icon-action icon-action--red" title="Suspendre">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="6.5" y="10" width="11" height="8.5" rx="1.8" stroke="currentColor" stroke-width="1.8" />
+                      <path
+                        d="M9 10V7.9C9 6.3 10.3 5 11.9 5H12.1C13.7 5 15 6.3 15 7.9V10"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </main>
+
+  @if (isCreateModalOpen()) {
+    <div class="create-modal-backdrop" (click)="closeCreateModal()">
+      <section
+        class="create-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-user-modal-title"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="create-modal__header">
+          <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>
+          <button type="button" class="create-modal__close" aria-label="Fermer" (click)="closeCreateModal()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </header>
+
+        <div class="create-modal__body">
+          <section class="create-modal__account">
+            <div>
+              <strong>Type de compte</strong>
+              @if (createAccountType() === 'AUTONOMOUS') {
+                <p>Compte autonome - l'utilisateur se connecte avec email + mot de passe</p>
+              } @else {
+                <p>Compte sous tutelle - creation sans email ni mot de passe</p>
+              }
+            </div>
+
+            <div class="account-switch">
+              <span [class.account-switch__label--active]="createAccountType() === 'TUTORED'">Tutelle</span>
+              <button
+                type="button"
+                class="account-switch__track"
+                [class.account-switch__track--autonomous]="createAccountType() === 'AUTONOMOUS'"
+                (click)="setCreateAccountType(createAccountType() === 'AUTONOMOUS' ? 'TUTORED' : 'AUTONOMOUS')"
+              >
+                <span class="account-switch__thumb"></span>
+              </button>
+              <span [class.account-switch__label--active]="createAccountType() === 'AUTONOMOUS'">Autonome</span>
+            </div>
+          </section>
+
+          <div class="create-modal__grid">
+            <label class="modal-field">
+              <span>Prenom *</span>
+              <input
+                type="text"
+                [value]="createFirstName()"
+                (input)="updateCreateFirstName(($any($event.target).value))"
+              />
+            </label>
+
+            <label class="modal-field">
+              <span>Nom *</span>
+              <input
+                type="text"
+                [value]="createLastName()"
+                (input)="updateCreateLastName(($any($event.target).value))"
+              />
+            </label>
+          </div>
+
+          <label class="modal-field">
+            <span>
+              Email * @if (createAccountType() === 'AUTONOMOUS') { (requis pour compte autonome) }
+            </span>
+            <input
+              type="email"
+              [value]="createEmail()"
+              [disabled]="createAccountType() === 'TUTORED'"
+              (input)="updateCreateEmail(($any($event.target).value))"
+            />
+          </label>
+
+          <label class="modal-field">
+            <span>Telephone</span>
+            <input
+              type="tel"
+              [value]="createPhone()"
+              (input)="updateCreatePhone(($any($event.target).value))"
+            />
+          </label>
+
+          <section class="modal-exemptions">
+            <h3>Exonerations</h3>
+
+            <label class="exemption-option">
+              <div>
+                <strong>Association</strong>
+                <p>ASSOCIATION - pour les associations loi 1901</p>
+              </div>
+              <input
+                type="checkbox"
+                [checked]="createAssociation()"
+                (change)="toggleCreateAssociation(($any($event.target).checked))"
+              />
+            </label>
+
+            <label class="exemption-option">
+              <div>
+                <strong>Critere social</strong>
+                <p>SOCIAL - selon criteres de la collectivite</p>
+              </div>
+              <input
+                type="checkbox"
+                [checked]="createSocial()"
+                (change)="toggleCreateSocial(($any($event.target).checked))"
+              />
+            </label>
+
+            <label class="exemption-option">
+              <div>
+                <strong>Mandat electif</strong>
+                <p>MANDATE - pour les elus municipaux</p>
+              </div>
+              <input
+                type="checkbox"
+                [checked]="createMandate()"
+                (change)="toggleCreateMandate(($any($event.target).checked))"
+              />
+            </label>
+          </section>
+        </div>
+
+        <footer class="create-modal__footer">
+          <button
+            type="button"
+            class="create-modal__submit"
+            [disabled]="!isCreateFormValid()"
+            (click)="createUser()"
+          >
+            Creer l'utilisateur
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+</section>

@@ -77,7 +77,7 @@ export class AdminDashboardComponent {
   ];
 
   readonly quickActions: AdminQuickAction[] = [
-    { label: 'Utilisateurs', icon: 'users' },
+    { label: 'Utilisateurs', icon: 'users', route: '/admin/users' },
     { label: 'Reservations', icon: 'reservations' },
     { label: "Journal d'audit", icon: 'audit' },
     { label: 'Fermetures', icon: 'closures' },

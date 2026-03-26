@@ -49,6 +49,14 @@ export const routes: Routes = [
     ),
  },
   {
+    path: 'admin/users',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/users/user-management-page.component').then(
+        m => m.UserManagementPageComponent
+      ),
+  },
+  {
     path: 'account',
     canActivate: [authGuard],
     loadComponent: () =>
