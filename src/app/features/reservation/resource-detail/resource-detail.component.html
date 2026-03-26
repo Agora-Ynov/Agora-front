@@ -35,17 +35,14 @@
             <article class="resource-detail-card">
               <p class="resource-detail-card__label">Tarif</p>
               <strong>{{ detail.priceLabel }}</strong>
-              <small>Connectez-vous pour voir votre tarif selon votre profil et vos groupes.</small>
+              <small>{{ detail.priceHint }}</small>
             </article>
 
             <article class="resource-detail-card resource-detail-card--deposit">
               <p class="resource-detail-card__label">Caution a deposer en mairie</p>
               <strong>{{ detail.depositLabel }}</strong>
-              <span class="resource-detail-pill">Peut etre exoneree</span>
-              <small>
-                Cette caution est remboursable apres restitution. Elle peut etre exoneree selon
-                votre situation ou votre groupe.
-              </small>
+              <span class="resource-detail-pill">{{ detail.depositPill }}</span>
+              <small>{{ detail.depositHint }}</small>
             </article>
 
             <article class="resource-detail-card">
@@ -68,9 +65,12 @@
 
             @if (isAuthenticated()) {
               <div class="resource-detail-cta">
-                <button type="button" class="resource-detail-cta__primary">
+                <a
+                  class="resource-detail-cta__primary"
+                  [routerLink]="['/catalogue', detail.id, 'reserver']"
+                >
                   Reserver cette ressource
-                </button>
+                </a>
                 <a class="resource-detail-cta__secondary" routerLink="/catalogue">
                   Retour catalogue
                 </a>

@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+
 import { ResourceDto } from '../../../core/api/models/resource.model';
+import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueMockService } from './catalogue-mock.service';
+import { ReservationPricingGroup, resolveResourcePricing } from './resource-pricing.utils';
 import {
   getFeatureLabel,
   getResourceCoverTheme,
@@ -41,6 +44,7 @@ interface CatalogueResource {
   features: FeatureFilter[];
   pricePerBooking: number;
   depositAmount: number;
+  source: ResourceDto;
 }
 
 @Component({
@@ -51,6 +55,7 @@ interface CatalogueResource {
   styleUrl: './catalogue.component.scss',
 })
 export class CatalogueComponent {
+  private readonly http = inject(HttpClient);
   private readonly catalogueMockService = inject(CatalogueMockService);
   private readonly authService = inject(AuthService);
 
@@ -58,6 +63,7 @@ export class CatalogueComponent {
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
+  readonly userGroups = signal<ReservationPricingGroup[]>([]);
 
   readonly featureOptions: FeatureOption[] = [
     { id: 'PMR_ACCESS', label: 'Acces PMR', shortLabel: 'PMR' },
@@ -89,6 +95,13 @@ export class CatalogueComponent {
   readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   constructor() {
+    effect(
+      () => {
+        this.loadCurrentUserGroups(this.currentUser());
+      },
+      { allowSignalWrites: true }
+    );
+
     this.catalogueMockService
       .getResources()
       .pipe(takeUntilDestroyed())
@@ -126,8 +139,20 @@ export class CatalogueComponent {
     return getFeatureLabel(feature);
   }
 
-  formatPrice(amount: number): string {
-    return `${amount} EUR`;
+  getPriceLabel(resource: CatalogueResource): string {
+    const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());
+    return pricing.finalPriceCents === 0
+      ? 'Gratuit'
+      : this.formatPrice(pricing.finalPriceCents / 100);
+  }
+
+  showPriceSuffix(resource: CatalogueResource): boolean {
+    const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());
+    return pricing.finalPriceCents > 0;
+  }
+
+  getDepositLabel(resource: CatalogueResource): string {
+    return this.formatPrice(resource.depositAmount);
   }
 
   logout(): void {
@@ -150,6 +175,32 @@ export class CatalogueComponent {
       features: accessibilityTags,
       pricePerBooking: getResourcePrice(resource),
       depositAmount: Math.round(depositAmountCents / 100),
+      source: resource,
     };
+  }
+
+  private loadCurrentUserGroups(user: UserProfile | null): void {
+    if (!user?.groupIds.length) {
+      this.userGroups.set([]);
+      return;
+    }
+
+    this.userGroups.set([]);
+
+    this.http
+      .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: groups => {
+          this.userGroups.set(groups.filter(group => user.groupIds.includes(group.id)));
+        },
+        error: () => {
+          this.userGroups.set([]);
+        },
+      });
+  }
+
+  private formatPrice(amount: number): string {
+    return `${amount} EUR`;
   }
 }

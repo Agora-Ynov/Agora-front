@@ -21,6 +21,15 @@ export const featureLabelMap: Record<AccessibilityTag, string> = {
   STREET_ACCESS: 'Acces rue directe',
 };
 
+const featureCompactLabelMap: Record<AccessibilityTag, string> = {
+  PMR_ACCESS: 'PMR',
+  PARKING: 'Parking',
+  SOUND_SYSTEM: 'Sono',
+  PROJECTOR: 'Projecteur',
+  KITCHEN: 'Cuisine',
+  STREET_ACCESS: 'Acces direct',
+};
+
 const coverThemeMap: Record<string, ResourceCoverTheme> = {
   r001: 'hall',
   r002: 'civic',
@@ -68,6 +77,10 @@ const availabilityMap: Record<string, string[]> = {
 
 export function getFeatureLabel(feature: AccessibilityTag): string {
   return featureLabelMap[feature] ?? feature;
+}
+
+export function getFeatureCompactLabel(feature: AccessibilityTag): string {
+  return featureCompactLabelMap[feature] ?? getFeatureLabel(feature);
 }
 
 export function getResourceTypeLabel(resourceType: ResourceType): string {

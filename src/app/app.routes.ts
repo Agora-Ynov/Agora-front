@@ -26,6 +26,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'catalogue/:id/reserver',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/reservation/booking-form/booking-form.component').then(
+        m => m.BookingFormComponent
+      ),
+  },
+  {
     path: 'catalogue/:id',
     loadComponent: () =>
       import('./features/reservation/resource-detail/resource-detail.component').then(

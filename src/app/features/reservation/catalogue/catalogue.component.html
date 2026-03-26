@@ -98,11 +98,13 @@
 
               <div class="catalogue-card__pricing">
                 <p class="catalogue-card__price">
-                  <strong>{{ formatPrice(resource.pricePerBooking) }}</strong>
-                  <span>/ reservation</span>
+                  <strong>{{ getPriceLabel(resource) }}</strong>
+                  @if (showPriceSuffix(resource)) {
+                    <span>/ reservation</span>
+                  }
                 </p>
                 <p class="catalogue-card__deposit">
-                  Caution : {{ formatPrice(resource.depositAmount) }}
+                  Caution : {{ getDepositLabel(resource) }}
                 </p>
               </div>
 
@@ -114,12 +116,12 @@
                   Details
                 </a>
                 @if (isAuthenticated()) {
-                  <button
-                    type="button"
+                  <a
                     class="catalogue-card__button catalogue-card__button--primary"
+                    [routerLink]="['/catalogue', resource.id, 'reserver']"
                   >
                     Reserver
-                  </button>
+                  </a>
                 } @else {
                   <a
                     class="catalogue-card__button catalogue-card__button--primary"
