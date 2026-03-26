@@ -42,7 +42,7 @@ export interface RegisterRequest {
   lastName: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface RegisterResponse {
@@ -56,23 +56,6 @@ export interface RegisterResponse {
 
 export interface RefreshRequest {
   refreshToken: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-}
-
-export interface RegisterResponse {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  accountType: AccountType;
-  status: AccountStatus;
 }
 
 export interface ApiErrorResponse {
