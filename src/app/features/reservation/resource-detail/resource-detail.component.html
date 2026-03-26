@@ -1,41 +1,4 @@
 <section class="resource-detail-page">
-  <header class="resource-detail-topbar">
-    <a class="brand" routerLink="/catalogue">
-      <span class="brand__mark">A</span>
-      <span class="brand__text">
-        <strong>Agora</strong>
-        <small>Reservations</small>
-      </span>
-    </a>
-
-    <nav class="resource-detail-nav" aria-label="Navigation principale">
-      <a class="resource-detail-nav__link" routerLink="/catalogue">Accueil</a>
-      <a
-        class="resource-detail-nav__link resource-detail-nav__link--active"
-        routerLink="/catalogue"
-      >
-        Catalogue
-      </a>
-      <a class="resource-detail-nav__link" routerLink="/calendar">Calendrier</a>
-    </nav>
-
-    <div class="resource-detail-actions">
-      @if (isAuthenticated()) {
-        <div class="resource-detail-actions__user">
-          <a class="resource-detail-actions__welcome" routerLink="/account">
-            {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
-          </a>
-          <button type="button" class="resource-detail-actions__button" (click)="logout()">
-            Deconnexion
-          </button>
-        </div>
-      } @else {
-        <a class="resource-detail-actions__link" routerLink="/login">Connexion</a>
-        <a class="resource-detail-actions__button" routerLink="/register">Inscription</a>
-      }
-    </div>
-  </header>
-
   <main class="resource-detail-main">
     <a class="resource-detail-back" routerLink="/catalogue">Retour</a>
 

@@ -1,38 +1,4 @@
 <section class="catalogue-page">
-  <header class="catalogue-topbar">
-    <a class="brand" routerLink="/">
-      <span class="brand__mark">A</span>
-      <span class="brand__text">
-        <strong>Agora</strong>
-        <small>Reservations</small>
-      </span>
-    </a>
-
-    <nav class="catalogue-nav" aria-label="Navigation principale">
-      <a class="catalogue-nav__link" routerLink="/">Accueil</a>
-      <a class="catalogue-nav__link catalogue-nav__link--active" routerLink="/catalogue">
-        Catalogue
-      </a>
-      <a class="catalogue-nav__link" routerLink="/calendar">Calendrier</a>
-    </nav>
-
-    <div class="catalogue-actions">
-      @if (isAuthenticated()) {
-        <div class="catalogue-actions__user">
-          <a class="catalogue-actions__welcome" routerLink="/account">
-            {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
-          </a>
-          <button type="button" class="catalogue-actions__button" (click)="logout()">
-            Deconnexion
-          </button>
-        </div>
-      } @else {
-        <a class="catalogue-actions__link" routerLink="/login">Connexion</a>
-        <a class="catalogue-actions__button" routerLink="/register">Inscription</a>
-      }
-    </div>
-  </header>
-
   <main class="catalogue-main">
     <section class="catalogue-hero">
       <p class="catalogue-hero__eyebrow">J2-16</p>

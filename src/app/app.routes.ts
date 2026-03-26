@@ -5,13 +5,18 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'login',
+    loadComponent: () =>
+      import('./features/home/home.component').then(m => m.HomeComponent),
   },
   {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
   },
   {
     path: 'catalogue',
@@ -52,11 +57,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'register',
-    loadComponent: () =>
-      import('./features/auth/register/register.component').then(m => m.RegisterComponent),
-  },
-  {
     path: 'unauthorized',
     loadComponent: () =>
       import('./features/auth/unauthorized/unauthorized.component').then(
@@ -65,10 +65,10 @@ export const routes: Routes = [
   },
   {
     path: 'calendar',
-    redirectTo: 'login',
+    redirectTo: '',
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: '',
   },
 ];

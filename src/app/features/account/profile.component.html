@@ -1,39 +1,4 @@
 <section class="account-page">
-  <header class="account-topbar">
-    <a class="brand" routerLink="/catalogue">
-      <span class="brand__mark">A</span>
-      <span class="brand__text">
-        <strong>Agora</strong>
-        <small>Reservations</small>
-      </span>
-    </a>
-
-    <nav class="account-nav" aria-label="Navigation principale">
-      <a class="account-nav__link" routerLink="/catalogue">Accueil</a>
-      <a class="account-nav__link" routerLink="/catalogue">Catalogue</a>
-      <a class="account-nav__link" routerLink="/calendar">Calendrier</a>
-    </nav>
-
-    <div class="account-actions">
-      <a class="account-actions__profile" routerLink="/account" aria-current="page">
-        <span class="account-actions__profile-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
-            <path
-              d="M5 19C6.8 15.9 9.1 14.4 12 14.4C14.9 14.4 17.2 15.9 19 19"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
-        </span>
-        <span>{{ displayName() }}</span>
-      </a>
-
-      <button type="button" class="account-actions__button" (click)="logout()">Deconnexion</button>
-    </div>
-  </header>
-
   <main class="account-main">
     <section class="account-hero">
       <h1>Bonjour {{ displayName() }}</h1>

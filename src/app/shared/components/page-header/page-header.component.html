@@ -1,0 +1,55 @@
+<header class="app-header">
+  <div class="header-container">
+    <a routerLink="/" class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="24" fill="#3B82F6" />
+          <path
+            d="M15 18L24 13L33 18"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path d="M18 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M24 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M30 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M14 33H34" stroke="white" stroke-width="2" stroke-linecap="round" />
+          <path d="M16 18H32" stroke="white" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <div class="brand-text">
+        <span class="brand-title">Agora</span>
+        <span class="brand-subtitle">Reservations</span>
+      </div>
+    </a>
+
+    <nav class="main-nav">
+      <a
+        routerLink="/"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link"
+      >
+        Accueil
+      </a>
+
+      <a routerLink="/catalogue" routerLinkActive="active-link" class="nav-link">Catalogue</a>
+
+      <a routerLink="/calendar" routerLinkActive="active-link" class="nav-link">Calendrier</a>
+    </nav>
+
+    <div class="header-actions">
+      <ng-container *ngIf="currentUser(); else guestActions">
+        <a routerLink="/account" class="user-name">{{ fullName() }}</a>
+        <button type="button" class="action-btn" (click)="logout()">Deconnexion</button>
+      </ng-container>
+
+      <ng-template #guestActions>
+        <a routerLink="/login" class="action-link">Connexion</a>
+        <a routerLink="/register" class="action-btn">Inscription</a>
+      </ng-template>
+    </div>
+  </div>
+</header>
