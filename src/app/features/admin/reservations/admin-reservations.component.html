@@ -1,0 +1,127 @@
+<section class="admin-reservations-page">
+  <div class="page-header">
+    <div>
+      <h1>Gestion des reservations</h1>
+      <p>Validez, refusez et gerez toutes les reservations</p>
+    </div>
+  </div>
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <strong class="stat-card__value stat-card__value--warning">{{ stats().pending }}</strong>
+      <span>En attente</span>
+    </article>
+    <article class="stat-card">
+      <strong class="stat-card__value stat-card__value--success">{{ stats().confirmed }}</strong>
+      <span>Confirmees</span>
+    </article>
+    <article class="stat-card">
+      <strong class="stat-card__value stat-card__value--alert">{{ stats().paymentsPending }}</strong>
+      <span>Paiement en attente</span>
+    </article>
+    <article class="stat-card">
+      <strong class="stat-card__value stat-card__value--info">{{ stats().exemptions }}</strong>
+      <span>Exonerations</span>
+    </article>
+  </section>
+
+  <div class="feedback-box" *ngIf="feedbackMessage()">
+    {{ feedbackMessage() }}
+  </div>
+
+  <section class="filter-tabs" aria-label="Filtres des reservations">
+    @for (tab of tabs(); track tab.id) {
+      <button
+        type="button"
+        class="filter-tab"
+        [class.filter-tab--active]="filter() === tab.id"
+        (click)="setFilter(tab.id)"
+      >
+        <span>{{ tab.label }}</span>
+        @if (tab.id === 'PENDING' && tab.count > 0) {
+          <span class="filter-tab__badge">{{ tab.count }}</span>
+        }
+      </button>
+    }
+  </section>
+
+  <section class="reservations-panel">
+    <div class="reservations-panel__header">
+      <h2>Liste des reservations ({{ filteredReservations().length }})</h2>
+    </div>
+
+    <div class="reservations-table">
+      <div class="reservations-table__head">
+        <span>ID</span>
+        <span>Ressource</span>
+        <span>Utilisateur</span>
+        <span>Date</span>
+        <span>Statut</span>
+        <span>Paiement</span>
+        <span>Montant</span>
+        <span>Actions</span>
+      </div>
+
+      @for (reservation of filteredReservations(); track trackByReservationId($index, reservation)) {
+        <article
+          class="reservations-row"
+          [class.reservations-row--pending]="reservation.status === 'PENDING'"
+        >
+          <div class="cell cell--id">{{ reservation.id }}</div>
+          <div class="cell cell--resource">{{ reservation.resourceName }}</div>
+          <div class="cell cell--user">
+            <strong>{{ reservation.userName }}</strong>
+            <span>{{ reservation.userEmail || '—' }}</span>
+          </div>
+          <div class="cell">{{ reservation.date }}</div>
+          <div class="cell">
+            <span class="status-pill" [class]="'status-pill status-pill--' + reservation.status.toLowerCase()">
+              {{ statusLabel(reservation.status) }}
+            </span>
+          </div>
+          <div class="cell">
+            <span
+              class="payment-pill"
+              [class.payment-pill--paid]="reservation.paymentStatus === 'PAID'"
+              [class.payment-pill--alert]="reservation.paymentStatus === 'TO_SETTLE'"
+              [class.payment-pill--exempt]="reservation.paymentStatus === 'EXEMPT_GROUP'"
+              [class.payment-pill--exempt-admin]="reservation.paymentStatus === 'EXEMPT_SECRETARY'"
+              [class.payment-pill--refunded]="reservation.paymentStatus === 'REFUNDED'"
+            >
+              {{ paymentLabel(reservation.paymentStatus) }}
+            </span>
+          </div>
+          <div class="cell cell--amount">
+            <strong>{{ reservation.amountEuros }}EUR</strong>
+            @if (reservation.depositEuros > 0) {
+              <span>+{{ reservation.depositEuros }}EUR caution</span>
+            }
+          </div>
+          <div class="cell cell--actions">
+            <button type="button" class="icon-btn" (click)="viewReservation(reservation)" title="Voir">
+              Voir
+            </button>
+            @if (reservation.status === 'PENDING') {
+              <button
+                type="button"
+                class="icon-btn icon-btn--success"
+                (click)="confirmReservation(reservation.id)"
+                title="Confirmer"
+              >
+                Valider
+              </button>
+              <button
+                type="button"
+                class="icon-btn icon-btn--danger"
+                (click)="rejectReservation(reservation.id)"
+                title="Refuser"
+              >
+                Refuser
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+</section>

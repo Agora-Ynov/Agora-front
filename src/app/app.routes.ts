@@ -41,6 +41,14 @@ export const routes: Routes = [
       ),
   },
   {
+  path: 'admin/reservations',
+  canActivate: [adminGuard],
+  loadComponent: () =>
+    import('./features/admin/reservations/admin-reservations.component').then(
+      m => m.AdminReservationsComponent
+    ),
+ },
+  {
   path: 'admin/resources',
   canActivate: [adminGuard],
   loadComponent: () =>

@@ -1,0 +1,294 @@
+.admin-reservations-page {
+  padding: 24px;
+  background: #f6f7f9;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: #475569;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #d9dde4;
+  border-radius: 18px;
+
+  span {
+    color: #334155;
+  }
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.stat-card__value--warning {
+  color: #d97706;
+}
+
+.stat-card__value--success {
+  color: #16a34a;
+}
+
+.stat-card__value--alert {
+  color: #ea580c;
+}
+
+.stat-card__value--info {
+  color: #2563eb;
+}
+
+.feedback-box {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.filter-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  margin-bottom: 24px;
+  background: #e8ebf2;
+  border-radius: 18px;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-tab--active {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.filter-tab__badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #d79a00;
+  color: #111827;
+  font-size: 0.85rem;
+}
+
+.reservations-panel {
+  background: #fff;
+  border: 1px solid #d9dde4;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.reservations-panel__header {
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 800;
+  }
+}
+
+.reservations-table {
+  overflow-x: auto;
+}
+
+.reservations-table__head,
+.reservations-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.7fr 2fr 1.2fr 1.5fr 1.8fr 1.4fr 1.7fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.reservations-table__head {
+  padding: 12px 8px;
+  border-bottom: 1px solid #d9dde4;
+  color: #334155;
+  font-weight: 700;
+}
+
+.reservations-row {
+  padding: 14px 8px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.reservations-row--pending {
+  background: #fff9db;
+}
+
+.cell {
+  min-width: 0;
+}
+
+.cell--user,
+.cell--amount {
+  display: grid;
+  gap: 2px;
+}
+
+.cell--user strong,
+.cell--resource,
+.cell--amount strong {
+  font-weight: 700;
+}
+
+.cell--user span,
+.cell--amount span {
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.cell--actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-pill,
+.payment-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.status-pill--pending {
+  background: #fff3bf;
+  color: #a16207;
+}
+
+.status-pill--confirmed {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.status-pill--cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-pill--completed {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.payment-pill--paid {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #047857;
+}
+
+.payment-pill--alert {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+.payment-pill--exempt {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.payment-pill--exempt-admin {
+  background: #faf5ff;
+  border-color: #c026d3;
+  color: #c026d3;
+}
+
+.payment-pill--refunded {
+  background: #f8fafc;
+  border-color: #64748b;
+  color: #334155;
+}
+
+.icon-btn {
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #d9dde4;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.icon-btn--success {
+  color: #16a34a;
+  border-color: #86efac;
+}
+
+.icon-btn--danger {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+@media (max-width: 1180px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reservations-table__head,
+  .reservations-row {
+    min-width: 1080px;
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-reservations-page {
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reservations-panel {
+    padding: 18px;
+  }
+}
