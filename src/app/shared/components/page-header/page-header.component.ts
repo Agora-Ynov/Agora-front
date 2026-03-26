@@ -14,7 +14,7 @@ export class HeaderComponent {
   private readonly authService = inject(AuthService);
 
   currentUser = this.authService.currentUser;
-  homeLink = computed(() => (this.currentUser() ? '/account' : '/'));
+  homeLink = computed(() => '/');
 
   fullName = computed(() => {
     const user = this.currentUser();
