@@ -313,13 +313,20 @@
   </main>
 
   @if (isCreateModalOpen()) {
-    <div class="create-modal-backdrop" (click)="closeCreateModal()">
+    <div
+      class="create-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le modal de creation utilisateur"
+      (click)="$event.target === $event.currentTarget && closeCreateModal()"
+      (keydown.enter)="closeCreateModal()"
+      (keydown.space)="closeCreateModal()"
+    >
       <section
         class="create-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-user-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="create-modal__header">
           <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>
@@ -450,13 +457,20 @@
   }
 
   @if (viewedUser(); as user) {
-    <div class="detail-modal-backdrop" (click)="closeUserDetail()">
+    <div
+      class="detail-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le detail utilisateur"
+      (click)="$event.target === $event.currentTarget && closeUserDetail()"
+      (keydown.enter)="closeUserDetail()"
+      (keydown.space)="closeUserDetail()"
+    >
       <section
         class="detail-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="user-detail-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="detail-modal__header">
           <div>
@@ -548,13 +562,20 @@
   }
 
   @if (actingUser(); as user) {
-    <div class="acting-modal-backdrop" (click)="closeActingModal()">
+    <div
+      class="acting-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le modal agir pour le compte"
+      (click)="$event.target === $event.currentTarget && closeActingModal()"
+      (keydown.enter)="closeActingModal()"
+      (keydown.space)="closeActingModal()"
+    >
       <section
         class="acting-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="acting-user-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="acting-modal__header">
           <div class="acting-modal__title">
@@ -605,13 +626,20 @@
   }
 
   @if (suspendedUser(); as user) {
-    <div class="suspend-modal-backdrop" (click)="closeSuspendModal()">
+    <div
+      class="suspend-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le modal de suspension"
+      (click)="$event.target === $event.currentTarget && closeSuspendModal()"
+      (keydown.enter)="closeSuspendModal()"
+      (keydown.space)="closeSuspendModal()"
+    >
       <section
         class="suspend-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="suspend-user-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="suspend-modal__header">
           <div class="suspend-modal__title">
@@ -673,13 +701,20 @@
   }
 
   @if (reactivatedUser(); as user) {
-    <div class="reactivate-modal-backdrop" (click)="closeReactivateModal()">
+    <div
+      class="reactivate-modal-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer le modal de reactivation"
+      (click)="$event.target === $event.currentTarget && closeReactivateModal()"
+      (keydown.enter)="closeReactivateModal()"
+      (keydown.space)="closeReactivateModal()"
+    >
       <section
         class="reactivate-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="reactivate-user-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="reactivate-modal__header">
           <div class="reactivate-modal__title">

@@ -125,21 +125,22 @@
 
       <form [formGroup]="form" (ngSubmit)="submitForm()">
         <div class="form-group">
-          <label>Type de ressource *</label>
-          <select formControlName="resourceType">
+          <label for="resourceType">Type de ressource *</label>
+          <select id="resourceType" formControlName="resourceType">
             <option value="IMMOBILIER">Salle</option>
             <option value="MOBILIER">Materiel</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Nom de la ressource *</label>
-          <input type="text" formControlName="name" placeholder="Ex: Salle des Fetes" />
+          <label for="resourceName">Nom de la ressource *</label>
+          <input id="resourceName" type="text" formControlName="name" placeholder="Ex: Salle des Fetes" />
         </div>
 
         <div class="form-group">
-          <label>Description *</label>
+          <label for="resourceDescription">Description *</label>
           <textarea
+            id="resourceDescription"
             formControlName="description"
             rows="4"
             placeholder="Decrivez la ressource..."
@@ -148,20 +149,20 @@
 
         <div class="form-row">
           <div class="form-group" *ngIf="resourceType() === 'IMMOBILIER'; else quantityField">
-            <label>Capacite (personnes)</label>
-            <input type="number" formControlName="capacity" placeholder="100" />
+            <label for="resourceCapacity">Capacite (personnes)</label>
+            <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
           </div>
 
           <ng-template #quantityField>
             <div class="form-group">
-              <label>Quantite (unites)</label>
-              <input type="number" formControlName="quantity" placeholder="5" />
+              <label for="resourceQuantity">Quantite (unites)</label>
+              <input id="resourceQuantity" type="number" formControlName="quantity" placeholder="5" />
             </div>
           </ng-template>
 
           <div class="form-group">
-            <label>Tarif de base (EUR) *</label>
-            <input type="number" formControlName="basePriceEuros" placeholder="150" />
+            <label for="resourceBasePrice">Tarif de base (EUR) *</label>
+            <input id="resourceBasePrice" type="number" formControlName="basePriceEuros" placeholder="150" />
           </div>
         </div>
 
@@ -169,13 +170,13 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Montant de la caution (EUR)</label>
-            <input type="number" formControlName="depositAmountEuros" placeholder="0" />
+            <label for="resourceDeposit">Montant de la caution (EUR)</label>
+            <input id="resourceDeposit" type="number" formControlName="depositAmountEuros" placeholder="0" />
             <small>Laisser a 0 si aucune caution</small>
           </div>
 
           <div class="form-group checkbox-inline">
-            <label>Exonerable ?</label>
+            <span>Exonerable ?</span>
             <div class="checkbox-line">
               <input id="depositExemptible" type="checkbox" formControlName="depositExemptible" />
               <label for="depositExemptible">
@@ -186,8 +187,9 @@
         </div>
 
         <div class="form-group">
-          <label>Caracteristiques</label>
+          <label for="resourceTags">Caracteristiques</label>
           <input
+            id="resourceTags"
             type="text"
             formControlName="accessibilityTagsText"
             placeholder="PMR_ACCESS, PARKING, SOUND_SYSTEM"
@@ -196,8 +198,8 @@
         </div>
 
         <div class="form-group">
-          <label>Image URL</label>
-          <input type="url" formControlName="imageUrl" placeholder="https://..." />
+          <label for="resourceImageUrl">Image URL</label>
+          <input id="resourceImageUrl" type="url" formControlName="imageUrl" placeholder="https://..." />
         </div>
 
         <div class="form-actions">

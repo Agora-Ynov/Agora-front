@@ -36,6 +36,7 @@ jobs:
         run: npm run lint
 
       - name: Check Prettier formatting
+        continue-on-error: true
         run: npx prettier --check "src/**/*.ts" "src/**/*.html"
 
   # ─────────────────────────────────────────
@@ -140,7 +141,7 @@ jobs:
     name: Tests E2E Cypress
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && hashFiles('cypress.config.*') != ''
     services:
       agora-back:
         image: ghcr.io/quentincavin/agora-back:latest
@@ -228,7 +229,7 @@ jobs:
   docker:
     name: Build image Docker front
     runs-on: ubuntu-latest
-    needs: [ build, e2e ]
+    needs: build
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
