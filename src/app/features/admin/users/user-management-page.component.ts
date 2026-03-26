@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthService } from '../../../core/auth/auth.service';
 
 type AccountTypeFilter = 'ALL' | 'AUTONOMOUS' | 'TUTORED' | 'SUSPENDED';
 type UserAccountType = 'AUTONOMOUS' | 'TUTORED';
@@ -36,12 +37,18 @@ interface AdminUsersResponse {
 })
 export class UserManagementPageComponent {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly users = signal<AdminUserMockDto[]>([]);
   readonly searchTerm = signal('');
   readonly filter = signal<AccountTypeFilter>('ALL');
   readonly isCreateModalOpen = signal(false);
+  readonly viewedUser = signal<AdminUserMockDto | null>(null);
+  readonly actingUser = signal<AdminUserMockDto | null>(null);
+  readonly suspendedUser = signal<AdminUserMockDto | null>(null);
+  readonly reactivatedUser = signal<AdminUserMockDto | null>(null);
+  readonly suspensionReason = signal('');
   readonly createAccountType = signal<UserAccountType>('AUTONOMOUS');
   readonly createFirstName = signal('Jean');
   readonly createLastName = signal('Dupont');
@@ -102,6 +109,10 @@ export class UserManagementPageComponent {
   readonly suspendedCount = computed(
     () => this.users().filter(user => user.status === 'SUSPENDED').length
   );
+  readonly adminDisplayName = computed(() => {
+    const admin = this.authService.currentUser();
+    return admin ? `${admin.firstName} ${admin.lastName}` : 'Marie Dupont';
+  });
 
   constructor() {
     this.http
@@ -134,6 +145,88 @@ export class UserManagementPageComponent {
 
   closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
+  }
+
+  openUserDetail(user: AdminUserMockDto): void {
+    this.viewedUser.set(user);
+  }
+
+  closeUserDetail(): void {
+    this.viewedUser.set(null);
+  }
+
+  openActingModal(user: AdminUserMockDto): void {
+    this.actingUser.set(user);
+  }
+
+  closeActingModal(): void {
+    this.actingUser.set(null);
+  }
+
+  confirmActingModal(): void {
+    this.closeActingModal();
+  }
+
+  openSuspendModal(user: AdminUserMockDto): void {
+    this.suspendedUser.set(user);
+    this.suspensionReason.set('');
+  }
+
+  closeSuspendModal(): void {
+    this.suspendedUser.set(null);
+    this.suspensionReason.set('');
+  }
+
+  openReactivateModal(user: AdminUserMockDto): void {
+    this.reactivatedUser.set(user);
+  }
+
+  closeReactivateModal(): void {
+    this.reactivatedUser.set(null);
+  }
+
+  updateSuspensionReason(value: string): void {
+    this.suspensionReason.set(value);
+  }
+
+  confirmSuspension(): void {
+    const target = this.suspendedUser();
+    if (!target || !this.suspensionReason().trim()) {
+      return;
+    }
+
+    this.users.update(users =>
+      users.map(user =>
+        user.id === target.id
+          ? {
+              ...user,
+              status: 'SUSPENDED',
+            }
+          : user
+      )
+    );
+
+    this.closeSuspendModal();
+  }
+
+  confirmReactivation(): void {
+    const target = this.reactivatedUser();
+    if (!target) {
+      return;
+    }
+
+    this.users.update(users =>
+      users.map(user =>
+        user.id === target.id
+          ? {
+              ...user,
+              status: 'ACTIVE',
+            }
+          : user
+      )
+    );
+
+    this.closeReactivateModal();
   }
 
   setCreateAccountType(value: UserAccountType): void {
@@ -242,6 +335,18 @@ export class UserManagementPageComponent {
 
   getExemptionLabel(user: AdminUserMockDto): string {
     return user.exemptions[0] ?? 'Aucune';
+  }
+
+  canConfirmSuspension(): boolean {
+    return this.suspensionReason().trim().length > 0;
+  }
+
+  getAccountTypeSentence(type: UserAccountType): string {
+    return type === 'AUTONOMOUS' ? 'Compte autonome' : 'Compte sous tutelle';
+  }
+
+  formatCreatedAt(date: string): string {
+    return new Intl.DateTimeFormat('fr-FR').format(new Date(date));
   }
 
   private resetCreateForm(): void {
