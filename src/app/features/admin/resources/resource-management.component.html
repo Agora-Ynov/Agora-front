@@ -195,9 +195,9 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="resourceDeposit">Montant de la caution (EUR)</label>
+            <label for="resourceDepositAmount">Montant de la caution (EUR)</label>
             <input
-              id="resourceDeposit"
+              id="resourceDepositAmount"
               type="number"
               formControlName="depositAmountEuros"
               placeholder="0"
@@ -206,7 +206,7 @@
           </div>
 
           <div class="form-group checkbox-inline">
-            <span>Exonerable ?</span>
+            <div class="form-group-title">Exonerable ?</div>
             <div class="checkbox-line">
               <input id="depositExemptible" type="checkbox" formControlName="depositExemptible" />
               <label for="depositExemptible">
@@ -217,9 +217,9 @@
         </div>
 
         <div class="form-group">
-          <label for="resourceTags">Caracteristiques</label>
+          <label for="resourceAccessibilityTags">Caracteristiques</label>
           <input
-            id="resourceTags"
+            id="resourceAccessibilityTags"
             type="text"
             formControlName="accessibilityTagsText"
             placeholder="PMR_ACCESS, PARKING, SOUND_SYSTEM"
