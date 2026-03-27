@@ -85,7 +85,7 @@ export class AdminDashboardComponent {
     { label: 'Export CSV/PDF', icon: 'export' },
     { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
     { label: 'Groupes', icon: 'groups' },
-    { label: 'Affiliations', icon: 'affiliations', badgeCount: 2 },
+    { label: 'Affiliations', icon: 'affiliations', badgeCount: 2, route: '/admin/affiliations' },
   ];
 
   readonly recentReservations: RecentReservation[] = [

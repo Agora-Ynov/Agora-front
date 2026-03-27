@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="12" failures="4" errors="0" time="95.387">
+  <testsuite name="CatalogueComponent" errors="0" failures="4" skipped="0" timestamp="2026-03-27T10:55:11" time="49.022" tests="4">
+    <testcase classname="CatalogueComponent should load and map active mock resources" name="CatalogueComponent should load and map active mock resources" time="0.118">
+      <failure>NullInjectorError: R3InjectorError(Standalone[CatalogueComponent])[_HttpClient -&gt; _HttpClient -&gt; _HttpClient]: 
+  NullInjectorError: No provider for _HttpClient!
+    at NullInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1654:27)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at ChainedInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15723:36)
+    at lookupTokenUsingModuleInjector (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5730:39)
+    at getOrCreateInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5778:12)
+    at ɵɵdirectiveInject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:11050:19)
+    at ɵɵinject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1106:42)
+    at inject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1192:12)
+    at new CatalogueComponent (C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.ts:58:33)
+    at NodeInjectorFactory.CatalogueComponent_Factory [as factory] (ng:///CatalogueComponent/ɵfac.js:5:10)
+    at getNodeInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5984:44)
+    at createRootComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15998:35)
+    at ComponentFactory.create (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15858:29)
+    at initComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1979:51)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:416:32)
+    at Object.onInvoke (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14882:33)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:415:38)
+    at ZoneImpl.run (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:147:47)
+    at NgZone.run (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14733:28)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1990:41)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1783:37)
+    at C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.spec.ts:79:29
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)</failure>
+    </testcase>
+    <testcase classname="CatalogueComponent should filter resources by family and features" name="CatalogueComponent should filter resources by family and features" time="0.008">
+      <failure>NullInjectorError: R3InjectorError(Standalone[CatalogueComponent])[_HttpClient -&gt; _HttpClient -&gt; _HttpClient]: 
+  NullInjectorError: No provider for _HttpClient!
+    at NullInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1654:27)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at ChainedInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15723:36)
+    at lookupTokenUsingModuleInjector (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5730:39)
+    at getOrCreateInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5778:12)
+    at ɵɵdirectiveInject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:11050:19)
+    at ɵɵinject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1106:42)
+    at inject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1192:12)
+    at new CatalogueComponent (C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.ts:58:33)
+    at NodeInjectorFactory.CatalogueComponent_Factory [as factory] (ng:///CatalogueComponent/ɵfac.js:5:10)
+    at getNodeInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5984:44)
+    at createRootComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15998:35)
+    at ComponentFactory.create (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15858:29)
+    at initComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1979:51)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:416:32)
+    at Object.onInvoke (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14882:33)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:415:38)
+    at ZoneImpl.run (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:147:47)
+    at NgZone.run (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14733:28)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1990:41)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1783:37)
+    at C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.spec.ts:121:29
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)</failure>
+    </testcase>
+    <testcase classname="CatalogueComponent should expose labels, prices and fallback mappings" name="CatalogueComponent should expose labels, prices and fallback mappings" time="0.007">
+      <failure>NullInjectorError: R3InjectorError(Standalone[CatalogueComponent])[_HttpClient -&gt; _HttpClient -&gt; _HttpClient]: 
+  NullInjectorError: No provider for _HttpClient!
+    at NullInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1654:27)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at ChainedInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15723:36)
+    at lookupTokenUsingModuleInjector (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5730:39)
+    at getOrCreateInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5778:12)
+    at ɵɵdirectiveInject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:11050:19)
+    at ɵɵinject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1106:42)
+    at inject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1192:12)
+    at new CatalogueComponent (C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.ts:58:33)
+    at NodeInjectorFactory.CatalogueComponent_Factory [as factory] (ng:///CatalogueComponent/ɵfac.js:5:10)
+    at getNodeInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5984:44)
+    at createRootComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15998:35)
+    at ComponentFactory.create (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15858:29)
+    at initComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1979:51)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:416:32)
+    at Object.onInvoke (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14882:33)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:415:38)
+    at ZoneImpl.run (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:147:47)
+    at NgZone.run (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14733:28)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1990:41)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1783:37)
+    at C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.spec.ts:161:29
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)</failure>
+    </testcase>
+    <testcase classname="CatalogueComponent should expose a readable error when mock loading fails" name="CatalogueComponent should expose a readable error when mock loading fails" time="0.005">
+      <failure>NullInjectorError: R3InjectorError(Standalone[CatalogueComponent])[_HttpClient -&gt; _HttpClient -&gt; _HttpClient]: 
+  NullInjectorError: No provider for _HttpClient!
+    at NullInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1654:27)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at R3Injector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:3093:33)
+    at ChainedInjector.get (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15723:36)
+    at lookupTokenUsingModuleInjector (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5730:39)
+    at getOrCreateInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5778:12)
+    at ɵɵdirectiveInject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:11050:19)
+    at ɵɵinject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1106:42)
+    at inject (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:1192:12)
+    at new CatalogueComponent (C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.ts:58:33)
+    at NodeInjectorFactory.CatalogueComponent_Factory [as factory] (ng:///CatalogueComponent/ɵfac.js:5:10)
+    at getNodeInjectable (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:5984:44)
+    at createRootComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15998:35)
+    at ComponentFactory.create (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:15858:29)
+    at initComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1979:51)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:416:32)
+    at Object.onInvoke (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14882:33)
+    at _ZoneDelegate.invoke (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:415:38)
+    at ZoneImpl.run (C:\Users\kevin\Documents\Agora-front\node_modules\zone.js\bundles\zone.umd.js:147:47)
+    at NgZone.run (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\core.mjs:14733:28)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1990:41)
+    at _TestBedImpl.createComponent (C:\Users\kevin\Documents\Agora-front\node_modules\@angular\core\fesm2022\testing.mjs:1783:37)
+    at C:\Users\kevin\Documents\Agora-front\src\app\features\reservation\catalogue\catalogue.component.spec.ts:204:29
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="routes" errors="0" failures="0" skipped="0" timestamp="2026-03-27T10:54:57" time="63.229" tests="6">
+    <testcase classname="routes should expose the home route on root path" name="routes should expose the home route on root path" time="0.02">
+    </testcase>
+    <testcase classname="routes should expose the login route" name="routes should expose the login route" time="0.354">
+    </testcase>
+    <testcase classname="routes should expose the register route" name="routes should expose the register route" time="0.137">
+    </testcase>
+    <testcase classname="routes should expose the catalogue route" name="routes should expose the catalogue route" time="0.032">
+    </testcase>
+    <testcase classname="routes should expose the resource detail route" name="routes should expose the resource detail route" time="0.139">
+    </testcase>
+    <testcase classname="routes should redirect unknown routes to home" name="routes should redirect unknown routes to home" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="CatalogueMockService" errors="0" failures="0" skipped="0" timestamp="2026-03-27T10:56:00" time="5.219" tests="2">
+    <testcase classname="CatalogueMockService should request the local resources mock" name="CatalogueMockService should request the local resources mock" time="0.041">
+    </testcase>
+    <testcase classname="CatalogueMockService should return a resource by its id from the local mock" name="CatalogueMockService should return a resource by its id from the local mock" time="0.01">
+    </testcase>
+  </testsuite>
+</testsuites>
