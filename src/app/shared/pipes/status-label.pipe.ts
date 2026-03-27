@@ -11,7 +11,7 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: 'Annulée',
   REJECTED: 'Refusée',
   COMPLETED: 'Terminée',
-  WAITLISTED: 'Liste d\'attente',
+  WAITLISTED: "Liste d'attente",
   DEPOSIT_PENDING: 'Caution en attente',
   DEPOSIT_PAID: 'Caution versée',
   EXEMPT: 'Exempté',

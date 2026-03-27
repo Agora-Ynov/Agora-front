@@ -35,9 +35,7 @@ export class ApiService {
     return this.http.post<T>(`${this.base}${path}`, formData);
   }
 
-  private buildParams(
-    params?: Record<string, string | number | boolean>
-  ): HttpParams {
+  private buildParams(params?: Record<string, string | number | boolean>): HttpParams {
     if (!params) return new HttpParams();
     return Object.entries(params)
       .filter(([, v]) => v !== undefined && v !== null && v !== '')

@@ -68,13 +68,18 @@
         <span class="search-input__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
-            <path d="M16 16L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path
+              d="M16 16L20 20"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
           </svg>
         </span>
         <input
           type="search"
           [value]="searchTerm()"
-          (input)="setSearchTerm(($any($event.target).value))"
+          (input)="setSearchTerm($any($event.target).value)"
           placeholder="Rechercher par nom, email ou identifiant interne (ex. PERT-1948-001)..."
         />
       </label>
@@ -97,8 +102,13 @@
 
       <div class="admin-note-card__grid">
         <ul>
-          <li><strong>Impersonation :</strong> agir pour le compte de l'utilisateur (trace dans l'audit)</li>
-          <li><strong>Identifiant interne :</strong> format PERR-1948-042, genere automatiquement</li>
+          <li>
+            <strong>Impersonation :</strong> agir pour le compte de l'utilisateur (trace dans
+            l'audit)
+          </li>
+          <li>
+            <strong>Identifiant interne :</strong> format PERR-1948-042, genere automatiquement
+          </li>
           <li><strong>Notes admin :</strong> non visibles par l'usager</li>
         </ul>
         <ul>
@@ -233,7 +243,12 @@
                       stroke-width="1.8"
                       stroke-linejoin="round"
                     />
-                    <path d="M12.9 6.4L17.1 10.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <path
+                      d="M12.9 6.4L17.1 10.6"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </button>
                 <button type="button" class="icon-action icon-action--orange" title="Bouclier">
@@ -247,18 +262,54 @@
                   </svg>
                 </button>
                 @if (user.accountType === 'TUTORED') {
-                  <button type="button" class="icon-action icon-action--green" title="Envoyer activation">
+                  <button
+                    type="button"
+                    class="icon-action icon-action--green"
+                    title="Envoyer activation"
+                  >
                     <svg viewBox="0 0 24 24" fill="none">
-                      <rect x="4.75" y="6.75" width="14.5" height="10.5" rx="2" stroke="currentColor" stroke-width="1.8" />
-                      <path d="M5.5 8L12 12.75L18.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                      <rect
+                        x="4.75"
+                        y="6.75"
+                        width="14.5"
+                        height="10.5"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
+                      <path
+                        d="M5.5 8L12 12.75L18.5 8"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                   </button>
                   <button type="button" class="icon-action" title="Imprimer">
                     <svg viewBox="0 0 24 24" fill="none">
                       <path d="M7 8V4.75H17V8" stroke="currentColor" stroke-width="1.8" />
-                      <rect x="5" y="10" width="14" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8" />
-                      <path d="M8 14.5H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                      <path d="M8 19.25H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <rect
+                        x="5"
+                        y="10"
+                        width="14"
+                        height="6.5"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
+                      <path
+                        d="M8 14.5H16"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M8 19.25H16"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   </button>
                 }
@@ -272,14 +323,32 @@
                         stroke-width="1.8"
                         stroke-linecap="round"
                       />
-                      <path d="M17 8V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                      <path d="M14 11H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path
+                        d="M17 8V14"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M14 11H20"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   </button>
                 } @else {
                   <button type="button" class="icon-action icon-action--red" title="Suspendre">
                     <svg viewBox="0 0 24 24" fill="none">
-                      <rect x="6.5" y="10" width="11" height="8.5" rx="1.8" stroke="currentColor" stroke-width="1.8" />
+                      <rect
+                        x="6.5"
+                        y="10"
+                        width="11"
+                        height="8.5"
+                        rx="1.8"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
                       <path
                         d="M9 10V7.9C9 6.3 10.3 5 11.9 5H12.1C13.7 5 15 6.3 15 7.9V10"
                         stroke="currentColor"
@@ -307,7 +376,12 @@
       >
         <header class="create-modal__header">
           <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>
-          <button type="button" class="create-modal__close" aria-label="Fermer" (click)="closeCreateModal()">
+          <button
+            type="button"
+            class="create-modal__close"
+            aria-label="Fermer"
+            (click)="closeCreateModal()"
+          >
             <span aria-hidden="true">&times;</span>
           </button>
         </header>
@@ -324,16 +398,24 @@
             </div>
 
             <div class="account-switch">
-              <span [class.account-switch__label--active]="createAccountType() === 'TUTORED'">Tutelle</span>
+              <span [class.account-switch__label--active]="createAccountType() === 'TUTORED'"
+                >Tutelle</span
+              >
               <button
                 type="button"
                 class="account-switch__track"
                 [class.account-switch__track--autonomous]="createAccountType() === 'AUTONOMOUS'"
-                (click)="setCreateAccountType(createAccountType() === 'AUTONOMOUS' ? 'TUTORED' : 'AUTONOMOUS')"
+                (click)="
+                  setCreateAccountType(
+                    createAccountType() === 'AUTONOMOUS' ? 'TUTORED' : 'AUTONOMOUS'
+                  )
+                "
               >
                 <span class="account-switch__thumb"></span>
               </button>
-              <span [class.account-switch__label--active]="createAccountType() === 'AUTONOMOUS'">Autonome</span>
+              <span [class.account-switch__label--active]="createAccountType() === 'AUTONOMOUS'"
+                >Autonome</span
+              >
             </div>
           </section>
 
@@ -343,7 +425,7 @@
               <input
                 type="text"
                 [value]="createFirstName()"
-                (input)="updateCreateFirstName(($any($event.target).value))"
+                (input)="updateCreateFirstName($any($event.target).value)"
               />
             </label>
 
@@ -352,20 +434,23 @@
               <input
                 type="text"
                 [value]="createLastName()"
-                (input)="updateCreateLastName(($any($event.target).value))"
+                (input)="updateCreateLastName($any($event.target).value)"
               />
             </label>
           </div>
 
           <label class="modal-field">
             <span>
-              Email * @if (createAccountType() === 'AUTONOMOUS') { (requis pour compte autonome) }
+              Email *
+              @if (createAccountType() === 'AUTONOMOUS') {
+                (requis pour compte autonome)
+              }
             </span>
             <input
               type="email"
               [value]="createEmail()"
               [disabled]="createAccountType() === 'TUTORED'"
-              (input)="updateCreateEmail(($any($event.target).value))"
+              (input)="updateCreateEmail($any($event.target).value)"
             />
           </label>
 
@@ -374,7 +459,7 @@
             <input
               type="tel"
               [value]="createPhone()"
-              (input)="updateCreatePhone(($any($event.target).value))"
+              (input)="updateCreatePhone($any($event.target).value)"
             />
           </label>
 
@@ -389,7 +474,7 @@
               <input
                 type="checkbox"
                 [checked]="createAssociation()"
-                (change)="toggleCreateAssociation(($any($event.target).checked))"
+                (change)="toggleCreateAssociation($any($event.target).checked)"
               />
             </label>
 
@@ -401,7 +486,7 @@
               <input
                 type="checkbox"
                 [checked]="createSocial()"
-                (change)="toggleCreateSocial(($any($event.target).checked))"
+                (change)="toggleCreateSocial($any($event.target).checked)"
               />
             </label>
 
@@ -413,7 +498,7 @@
               <input
                 type="checkbox"
                 [checked]="createMandate()"
-                (change)="toggleCreateMandate(($any($event.target).checked))"
+                (change)="toggleCreateMandate($any($event.target).checked)"
               />
             </label>
           </section>

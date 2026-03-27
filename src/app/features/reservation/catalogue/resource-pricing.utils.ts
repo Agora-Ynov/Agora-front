@@ -110,8 +110,7 @@ export function resolveResourcePricing(
   }
 
   const bestOption =
-    buildReservationActorOptions(resource, user, groups).sort(compareReservationOptions)[0] ??
-    null;
+    buildReservationActorOptions(resource, user, groups).sort(compareReservationOptions)[0] ?? null;
 
   if (!bestOption) {
     return {

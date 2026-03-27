@@ -9,7 +9,10 @@ import { ResourceDto } from '../../../core/api/models/resource.model';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueMockService } from '../catalogue/catalogue-mock.service';
-import { ReservationPricingGroup, resolveResourcePricing } from '../catalogue/resource-pricing.utils';
+import {
+  ReservationPricingGroup,
+  resolveResourcePricing,
+} from '../catalogue/resource-pricing.utils';
 import {
   getResourceAvailability,
   getResourceCharacteristics,

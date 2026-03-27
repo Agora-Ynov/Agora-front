@@ -50,9 +50,24 @@
                     stroke="currentColor"
                     stroke-width="2"
                   />
-                  <path d="M10 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M10 12H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M10 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path
+                    d="M10 8H14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M10 12H14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M10 16H14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
                   <path
                     d="M4 8V20H13"
                     stroke="currentColor"
@@ -91,11 +106,7 @@
 
       <div class="action-grid">
         @for (action of quickActions; track action.label) {
-          <button
-            type="button"
-            class="action-tile"
-            [routerLink]="action.route ?? null"
-          >
+          <button type="button" class="action-tile" [routerLink]="action.route ?? null">
             @if (action.badgeCount) {
               <span class="action-tile__badge">{{ action.badgeCount }}</span>
             }
@@ -131,16 +142,36 @@
                       stroke="currentColor"
                       stroke-width="1.9"
                     />
-                    <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path
+                      d="M8 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M16 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
                     <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.9" />
                   </svg>
                 }
                 @case ('audit') {
                   <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.9" />
-                    <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M12 16H12.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+                    <path
+                      d="M12 8V12"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M12 16H12.01"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 }
                 @case ('closures') {
@@ -154,8 +185,18 @@
                       stroke="currentColor"
                       stroke-width="1.9"
                     />
-                    <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path
+                      d="M8 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M16 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
                     <path
                       d="M7 17L17 7"
                       stroke="currentColor"
@@ -215,10 +256,30 @@
                       stroke="currentColor"
                       stroke-width="1.9"
                     />
-                    <path d="M10 8H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M10 12H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M10 16H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
-                    <path d="M4 20H20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path
+                      d="M10 8H14"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M10 12H14"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M10 16H14"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M4 20H20"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 }
                 @case ('groups') {
@@ -309,7 +370,12 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-              <path d="M15.5 8H19V11.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+              <path
+                d="M15.5 8H19V11.5"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
             </svg>
           </span>
           <h2>Statistiques</h2>

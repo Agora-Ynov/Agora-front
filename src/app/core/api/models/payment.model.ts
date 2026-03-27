@@ -1,9 +1,4 @@
-export type PaymentStatus =
-  | 'DEPOSIT_PENDING'
-  | 'DEPOSIT_PAID'
-  | 'EXEMPT'
-  | 'WAIVED'
-  | 'REFUNDED';
+export type PaymentStatus = 'DEPOSIT_PENDING' | 'DEPOSIT_PAID' | 'EXEMPT' | 'WAIVED' | 'REFUNDED';
 
 export interface PaymentDto {
   id: string;

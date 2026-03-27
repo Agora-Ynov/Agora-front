@@ -16,7 +16,9 @@
       <span>Confirmees</span>
     </article>
     <article class="stat-card">
-      <strong class="stat-card__value stat-card__value--alert">{{ stats().paymentsPending }}</strong>
+      <strong class="stat-card__value stat-card__value--alert">{{
+        stats().paymentsPending
+      }}</strong>
       <span>Paiement en attente</span>
     </article>
     <article class="stat-card">
@@ -62,7 +64,10 @@
         <span>Actions</span>
       </div>
 
-      @for (reservation of filteredReservations(); track trackByReservationId($index, reservation)) {
+      @for (
+        reservation of filteredReservations();
+        track trackByReservationId($index, reservation)
+      ) {
         <article
           class="reservations-row"
           [class.reservations-row--pending]="reservation.status === 'PENDING'"
@@ -75,7 +80,10 @@
           </div>
           <div class="cell">{{ reservation.date }}</div>
           <div class="cell">
-            <span class="status-pill" [class]="'status-pill status-pill--' + reservation.status.toLowerCase()">
+            <span
+              class="status-pill"
+              [class]="'status-pill status-pill--' + reservation.status.toLowerCase()"
+            >
               {{ statusLabel(reservation.status) }}
             </span>
           </div>
@@ -140,8 +148,18 @@
                 aria-label="Refuser"
               >
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 8L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M16 8L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path
+                    d="M8 8L16 16"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M16 8L8 16"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             }
@@ -153,7 +171,12 @@
 
   @if (selectedReservation(); as reservation) {
     <div class="modal-backdrop">
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="reservation-details-title">
+      <section
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reservation-details-title"
+      >
         <header class="modal-header">
           <div>
             <h3 id="reservation-details-title">Gestion de la reservation</h3>
@@ -164,7 +187,10 @@
           <div class="modal-header__side">
             <div>
               <p>Statut</p>
-              <span class="status-pill" [class]="'status-pill status-pill--' + reservation.status.toLowerCase()">
+              <span
+                class="status-pill"
+                [class]="'status-pill status-pill--' + reservation.status.toLowerCase()"
+              >
                 {{ statusLabel(reservation.status) }}
               </span>
             </div>
@@ -206,7 +232,8 @@
             </div>
             <div>
               <span>Statut</span>
-              <strong class="payment-pill"
+              <strong
+                class="payment-pill"
                 [class.payment-pill--paid]="paymentDraft() === 'PAID'"
                 [class.payment-pill--alert]="paymentDraft() === 'TO_SETTLE'"
                 [class.payment-pill--exempt]="paymentDraft() === 'EXEMPT_GROUP'"
@@ -270,7 +297,11 @@
         </section>
 
         <div class="modal-actions">
-          <button type="button" class="secondary-action secondary-action--wide" (click)="sendReminder()">
+          <button
+            type="button"
+            class="secondary-action secondary-action--wide"
+            (click)="sendReminder()"
+          >
             Envoyer un rappel
           </button>
           <button type="button" class="primary-action" (click)="saveReservationDetails()">
@@ -285,14 +316,29 @@
 
   @if (rejectingReservation(); as reservation) {
     <div class="modal-backdrop">
-      <section class="modal-card modal-card--reject" role="dialog" aria-modal="true" aria-labelledby="reject-reservation-title">
+      <section
+        class="modal-card modal-card--reject"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reject-reservation-title"
+      >
         <header class="modal-header modal-header--reject">
           <div class="modal-title-inline">
             <span class="danger-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-                <path d="M8 8L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                <path d="M16 8L8 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path
+                  d="M8 8L16 16"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M16 8L8 16"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
               </svg>
             </span>
             <h3 id="reject-reservation-title">Refuser la reservation</h3>
@@ -301,8 +347,8 @@
         </header>
 
         <div class="warning-box">
-          Vous allez refuser la reservation <strong>{{ reservation.id }}</strong>. Un email sera
-          envoye a l'utilisateur avec la raison du refus.
+          Vous allez refuser la reservation <strong>{{ reservation.id }}</strong
+          >. Un email sera envoye a l'utilisateur avec la raison du refus.
         </div>
 
         <label class="field-label" for="rejectReason">Raison du refus *</label>
@@ -315,10 +361,17 @@
         ></textarea>
 
         <div class="modal-actions modal-actions--split">
-          <button type="button" class="danger-action" (click)="rejectReservation()" [disabled]="!rejectReason().trim()">
+          <button
+            type="button"
+            class="danger-action"
+            (click)="rejectReservation()"
+            [disabled]="!rejectReason().trim()"
+          >
             Confirmer le refus
           </button>
-          <button type="button" class="secondary-action" (click)="closeRejectModal()">Annuler</button>
+          <button type="button" class="secondary-action" (click)="closeRejectModal()">
+            Annuler
+          </button>
         </div>
       </section>
     </div>
