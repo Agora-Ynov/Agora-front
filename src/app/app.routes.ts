@@ -72,6 +72,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/blackouts',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/blackouts/admin-blackouts.component').then(
+        m => m.AdminBlackoutsComponent
+      ),
+  },
+  {
     path: 'admin/users',
     canActivate: [adminGuard],
     loadComponent: () =>
