@@ -12,7 +12,8 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { ApiErrorResponse, RegisterRequest } from '../../../core/auth/auth.model';
+import { ApiErrorResponse } from '../../../core/auth/auth.model';
+import { RegisterRequestDto } from '../../../core/api';
 
 function passwordMatchValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -74,7 +75,7 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const payload: RegisterRequest = {
+    const payload: RegisterRequestDto = {
       firstName: this.registerForm.value.firstName ?? '',
       lastName: this.registerForm.value.lastName ?? '',
       email: this.registerForm.value.email ?? '',
@@ -82,7 +83,7 @@ export class RegisterComponent {
       password: this.registerForm.value.password ?? '',
     };
 
-    this.authService.registerMock(payload).subscribe({
+    this.authService.register(payload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.successMessage = 'Compte cree avec succes. Vous pouvez maintenant vous connecter.';

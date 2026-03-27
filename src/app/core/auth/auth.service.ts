@@ -3,19 +3,16 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, delay, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthControllerService } from '../api/api/authController.service';
-import { AuthMeResponseDto } from '../api/model/authMeResponseDto';
-import { LoginRequestDto } from '../api/model/loginRequestDto';
-import { LoginResponseDto } from '../api/model/loginResponseDto';
-import { RegisterResponseDto } from '../api/model/registerResponseDto';
+import {
+  AuthControllerService,
+  AuthMeResponseDto,
+  LoginRequestDto,
+  LoginResponseDto,
+  RegisterRequestDto,
+  RegisterResponseDto,
+} from '../api';
 import { JwtService } from './jwt.service';
 import {
-  AccountStatus,
-  AccountType,
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  RegisterResponse,
   UserProfile,
   UserRole,
 } from './auth.model';
@@ -85,16 +82,13 @@ export class AuthService {
     this.restoreSession();
   }
 
-  login(email: string, password: string): Observable<LoginResponse> {
+  login(email: string, password: string): Observable<LoginResponseDto> {
     if (this.useMockAuth) {
       return this.loginMock({ email, password }).pipe(tap(response => this.saveSession(response)));
     }
 
     const body: LoginRequestDto = { email, password };
-    return this.authController.login(body).pipe(
-      map(response => this.mapLoginResponse(response)),
-      tap(response => this.saveSession(response))
-    );
+    return this.authController.login(body).pipe(tap(response => this.saveSession(response)));
   }
 
   logout(): void {
@@ -112,18 +106,20 @@ export class AuthService {
       });
   }
 
-  register(data: RegisterRequest): Observable<RegisterResponse> {
+  register(data: RegisterRequestDto): Observable<RegisterResponseDto> {
     if (this.useMockAuth) {
       return this.registerMock(data);
     }
 
-    return this.authController.register(data).pipe(map(response => this.mapRegisterResponse(response)));
+    return this.authController.register(data);
   }
 
-  refreshToken(): Observable<LoginResponse> {
+  refreshToken(): Observable<{ accessToken: string; refreshToken: string }> {
     const refreshToken = this.jwtService.getRefreshToken();
     return this.http
-      .post<LoginResponse>(`${this.apiUrl}/api/auth/refresh`, { refreshToken })
+      .post<{ accessToken: string; refreshToken: string }>(`${this.apiUrl}/api/auth/refresh`, {
+        refreshToken,
+      })
       .pipe(tap(res => this.jwtService.setTokens(res.accessToken, res.refreshToken)));
   }
 
@@ -184,7 +180,7 @@ export class AuthService {
     return this.jwtService.getAccessToken();
   }
 
-  loginMock(payload: LoginRequest): Observable<LoginResponse> {
+  loginMock(payload: LoginRequestDto): Observable<LoginResponseDto> {
     const account = this.getMockAccount(payload.email);
     if (account && this.isMockLoginValid(payload)) {
       return of(this.buildMockLoginResponse(account.profile)).pipe(delay(400));
@@ -202,7 +198,7 @@ export class AuthService {
     );
   }
 
-  registerMock(payload: RegisterRequest): Observable<RegisterResponse> {
+  registerMock(payload: RegisterRequestDto): Observable<RegisterResponseDto> {
     if (this.isMockRegisterEmailAlreadyExists(payload.email)) {
       return throwError(
         () =>
@@ -216,20 +212,22 @@ export class AuthService {
       );
     }
 
-    const response: RegisterResponse = {
+    const response: RegisterResponseDto = {
       id: 'u001',
       email: payload.email,
       firstName: payload.firstName,
       lastName: payload.lastName,
       accountType: 'AUTONOMOUS',
-      status: 'ACTIVE',
+      accountStatus: 'ACTIVE',
     };
 
     return of(response).pipe(delay(400));
   }
 
-  saveSession(response: LoginResponse): void {
-    this.jwtService.setTokens(response.accessToken, response.refreshToken ?? 'mock-refresh-token');
+  saveSession(response: LoginResponseDto): void {
+    const accessToken = response.accessToken ?? '';
+    const refreshToken = this.jwtService.getRefreshToken() ?? 'mock-refresh-token';
+    this.jwtService.setTokens(accessToken, refreshToken);
     this.loadCurrentUser().subscribe({
       error: () => this._currentUser.set(null),
     });
@@ -277,10 +275,9 @@ export class AuthService {
     return `${header}.${payload}.mock-signature`;
   }
 
-  private buildMockLoginResponse(profile: UserProfile): LoginResponse {
+  private buildMockLoginResponse(profile: UserProfile): LoginResponseDto {
     return {
       accessToken: this.createMockToken(profile),
-      refreshToken: 'mock-refresh-token',
       tokenType: 'Bearer',
       expiresIn: 900,
       user: {
@@ -288,12 +285,12 @@ export class AuthService {
         firstName: profile.firstName,
         lastName: profile.lastName,
         accountType: profile.accountType,
-        status: profile.accountStatus,
+        accountStatus: profile.accountStatus === 'ACTIVE' ? 'ACTIVE' : 'DELETED',
       },
     };
   }
 
-  private isMockLoginValid(payload: LoginRequest): boolean {
+  private isMockLoginValid(payload: LoginRequestDto): boolean {
     const account = this.getMockAccount(payload.email);
     return !!account && payload.password === account.password;
   }
@@ -328,35 +325,6 @@ export class AuthService {
     };
   }
 
-  private mapLoginResponse(response: LoginResponseDto): LoginResponse {
-    return {
-      accessToken: response.accessToken ?? '',
-      refreshToken: this.jwtService.getRefreshToken() ?? 'server-refresh-token',
-      tokenType: response.tokenType ?? 'Bearer',
-      expiresIn: response.expiresIn ?? 0,
-      user: response.user
-        ? {
-            id: response.user.id ?? '',
-            firstName: response.user.firstName ?? '',
-            lastName: response.user.lastName ?? '',
-            accountType: this.mapAccountType(response.user.accountType),
-            status: this.mapAccountStatus(response.user.accountStatus),
-          }
-        : undefined,
-    };
-  }
-
-  private mapRegisterResponse(response: RegisterResponseDto): RegisterResponse {
-    return {
-      id: response.id ?? '',
-      email: response.email ?? '',
-      firstName: response.firstName ?? '',
-      lastName: response.lastName ?? '',
-      accountType: this.mapAccountType(response.accountType),
-      status: this.mapAccountStatus(response.accountStatus),
-    };
-  }
-
   private mapUserProfile(response: AuthMeResponseDto): UserProfile {
     const tokenRole = this.jwtService.getPayload()?.role ?? 'CITIZEN';
     return {
@@ -366,8 +334,8 @@ export class AuthService {
       email: response.email ?? '',
       phone: response.phone,
       role: tokenRole,
-      accountType: this.mapAccountType(response.accountType),
-      accountStatus: this.mapAccountStatus(response.status),
+      accountType: response.accountType === 'TUTORED' ? 'TUTORED' : 'AUTONOMOUS',
+      accountStatus: response.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
       exemptions: {
         association: false,
         social: false,
@@ -376,26 +344,5 @@ export class AuthService {
       groupIds: (response.groups ?? []).map(group => group.id ?? '').filter(Boolean),
       createdAt: response.createdAt ?? new Date(0).toISOString(),
     };
-  }
-
-  private mapAccountType(value: string | undefined): AccountType {
-    return value === 'TUTORED' ? 'TUTORED' : 'AUTONOMOUS';
-  }
-
-  private mapAccountStatus(value: string | undefined): AccountStatus {
-    switch (value) {
-      case 'ACTIVE':
-        return 'ACTIVE';
-      case 'INACTIVE':
-        return 'INACTIVE';
-      case 'PENDING_VALIDATION':
-        return 'PENDING_VALIDATION';
-      case 'SUSPENDED':
-        return 'SUSPENDED';
-      case 'REJECTED':
-        return 'REJECTED';
-      default:
-        return 'ACTIVE';
-    }
   }
 }

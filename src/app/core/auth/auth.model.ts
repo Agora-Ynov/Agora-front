@@ -16,38 +16,8 @@ export interface TokenPayload {
   exp: number;
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
 export interface LoginUserSummary {
   id: string;
-  firstName: string;
-  lastName: string;
-  accountType: AccountType;
-  status: AccountStatus;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
-  expiresIn: number;
-  user?: LoginUserSummary;
-}
-
-export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-}
-
-export interface RegisterResponse {
-  id: string;
-  email: string;
   firstName: string;
   lastName: string;
   accountType: AccountType;
