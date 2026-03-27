@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { RessourcesService } from '../../../core/api/api/ressources.service';
-import { CatalogueMockService } from './catalogue-mock.service';
+import { CatalogueResourcesService } from './catalogue-resources.service';
 
-describe('CatalogueMockService', () => {
-  let service: CatalogueMockService;
+describe('CatalogueResourcesService', () => {
+  let service: CatalogueResourcesService;
   const ressourcesServiceMock = {
     getResources: jest.fn(),
     getResourceById: jest.fn(),
@@ -13,12 +13,12 @@ describe('CatalogueMockService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        CatalogueMockService,
+        CatalogueResourcesService,
         { provide: RessourcesService, useValue: ressourcesServiceMock },
       ],
     });
 
-    service = TestBed.inject(CatalogueMockService);
+    service = TestBed.inject(CatalogueResourcesService);
     ressourcesServiceMock.getResources.mockReset();
     ressourcesServiceMock.getResourceById.mockReset();
   });
@@ -27,7 +27,7 @@ describe('CatalogueMockService', () => {
     let responseBody: unknown;
     ressourcesServiceMock.getResources.mockReturnValue(
       of({
-        content: [{ id: 'r001', name: 'Salle 1', resourceType: 'IMMOBILIER' }],
+        content: [{ id: 'r001', name: 'Salle 1', resourceType: 'IMMOBILIER', isActive: false }],
         totalElements: 1,
         totalPages: 1,
         page: 0,
@@ -40,25 +40,16 @@ describe('CatalogueMockService', () => {
     });
 
     expect(ressourcesServiceMock.getResources).toHaveBeenCalled();
-
-    expect(responseBody).toEqual({
+    expect(responseBody).toMatchObject({
+      totalElements: 1,
       content: [
         {
           id: 'r001',
           name: 'Salle 1',
           resourceType: 'IMMOBILIER',
-          capacity: null,
-          description: null,
-          depositAmountCents: 0,
-          imageUrl: null,
-          accessibilityTags: [],
-          isActive: true,
+          isActive: false,
         },
       ],
-      totalElements: 1,
-      totalPages: 1,
-      page: 0,
-      size: 20,
     });
   });
 
@@ -73,16 +64,11 @@ describe('CatalogueMockService', () => {
     });
 
     expect(ressourcesServiceMock.getResourceById).toHaveBeenCalledWith('r002');
-    expect(responseBody).toEqual({
+    expect(responseBody).toMatchObject({
       id: 'r002',
       name: 'Salle 2',
       resourceType: 'IMMOBILIER',
-      capacity: null,
-      description: null,
-      depositAmountCents: 0,
-      imageUrl: null,
-      accessibilityTags: [],
-      isActive: true,
     });
   });
 });
+

@@ -7,7 +7,7 @@ import { RouterLink } from '@angular/router';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CatalogueMockService } from './catalogue-mock.service';
+import { CatalogueResourcesService } from './catalogue-resources.service';
 import { ReservationPricingGroup, resolveResourcePricing } from './resource-pricing.utils';
 import {
   getFeatureLabel,
@@ -56,7 +56,7 @@ interface CatalogueResource {
 })
 export class CatalogueComponent {
   private readonly http = inject(HttpClient);
-  private readonly catalogueMockService = inject(CatalogueMockService);
+  private readonly catalogueResourcesService = inject(CatalogueResourcesService);
   private readonly authService = inject(AuthService);
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
@@ -102,20 +102,19 @@ export class CatalogueComponent {
       { allowSignalWrites: true }
     );
 
-    this.catalogueMockService
+    this.catalogueResourcesService
       .getResources()
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: response => {
           this.resources.set(
             response.content
-              .filter(resource => resource.isActive)
               .map(resource => this.mapResource(resource))
           );
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(error.message || 'Impossible de charger le catalogue mock local.');
+          this.errorMessage.set(error.message || 'Impossible de charger le catalogue.');
           this.loading.set(false);
         },
       });
@@ -129,6 +128,11 @@ export class CatalogueComponent {
     this.selectedFeatures.update(current =>
       current.includes(feature) ? current.filter(item => item !== feature) : [...current, feature]
     );
+  }
+
+  resetFilters(): void {
+    this.familyFilter.set('ALL');
+    this.selectedFeatures.set([]);
   }
 
   isFeatureSelected(feature: FeatureFilter): boolean {

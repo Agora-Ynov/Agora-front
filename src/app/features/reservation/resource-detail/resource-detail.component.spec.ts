@@ -5,7 +5,7 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 import { convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CatalogueMockService } from '../catalogue/catalogue-mock.service';
+import { CatalogueResourcesService } from '../catalogue/catalogue-resources.service';
 import { ResourceDetailComponent } from './resource-detail.component';
 
 describe('ResourceDetailComponent', () => {
@@ -22,7 +22,7 @@ describe('ResourceDetailComponent', () => {
           },
         },
         {
-          provide: CatalogueMockService,
+          provide: CatalogueResourcesService,
           useValue: {
             getResourceById: () =>
               of({

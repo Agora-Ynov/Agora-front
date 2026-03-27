@@ -62,11 +62,11 @@
 
     @if (loading()) {
       <section class="catalogue-feedback" aria-live="polite">
-        <p>Chargement du catalogue mock...</p>
+        <p>Chargement du catalogue...</p>
       </section>
     } @else if (errorMessage()) {
       <section class="catalogue-feedback catalogue-feedback--error" aria-live="assertive">
-        <h2>Le catalogue mock n'a pas pu etre charge</h2>
+        <h2>Le catalogue n'a pas pu etre charge</h2>
         <p>{{ errorMessage() }}</p>
       </section>
     } @else {
@@ -135,6 +135,9 @@
           <article class="catalogue-empty">
             <h2>Aucune ressource ne correspond a ce filtre</h2>
             <p>Retire un equipement ou repasse sur "Tout" pour elargir la recherche.</p>
+            <button type="button" class="catalogue-card__button catalogue-card__button--ghost" (click)="resetFilters()">
+              Reinitialiser les filtres
+            </button>
           </article>
         }
       </section>

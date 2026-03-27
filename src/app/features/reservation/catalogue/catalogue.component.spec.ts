@@ -8,7 +8,7 @@ import { PagedResponse } from '../../../core/api/models/paged-response.model';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueComponent } from './catalogue.component';
-import { CatalogueMockService } from './catalogue-mock.service';
+import { CatalogueResourcesService } from './catalogue-resources.service';
 
 const mockResources: PagedResponse<ResourceDto> = {
   content: [
@@ -66,7 +66,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueMockService,
+          provide: CatalogueResourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -85,7 +85,7 @@ describe('CatalogueComponent', () => {
 
     expect(component.loading()).toBe(false);
     expect(component.errorMessage()).toBeNull();
-    expect(component.resources().length).toBe(2);
+    expect(component.resources().length).toBe(3);
     expect(component.resources()[0]).toMatchObject({
       id: 'r001',
       family: 'ROOM',
@@ -100,6 +100,10 @@ describe('CatalogueComponent', () => {
       depositAmount: 200,
       pricePerBooking: 90,
     });
+    expect(component.resources()[2]).toMatchObject({
+      id: 'r999',
+      family: 'EQUIPMENT',
+    });
   });
 
   it('should filter resources by family and features', async () => {
@@ -109,7 +113,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueMockService,
+          provide: CatalogueResourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -140,7 +144,7 @@ describe('CatalogueComponent', () => {
     component.toggleFeature('PARKING');
     component.toggleFeature('SOUND_SYSTEM');
     expect(component.isFeatureSelected('SOUND_SYSTEM')).toBe(false);
-    expect(component.totalResources()).toBe(2);
+    expect(component.totalResources()).toBe(3);
   });
 
   it('should expose labels, prices and fallback mappings', async () => {
@@ -150,7 +154,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueMockService,
+          provide: CatalogueResourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -194,7 +198,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueMockService,
+          provide: CatalogueResourcesService,
           useValue: {
             getResources: () =>
               throwError(

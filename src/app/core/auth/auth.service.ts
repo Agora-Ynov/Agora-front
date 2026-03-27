@@ -147,6 +147,20 @@ export class AuthService {
       );
     }
 
+    const token = this.jwtService.getAccessToken();
+    if (!token) {
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            error: {
+              code: 'MISSING_TOKEN',
+              message: "Aucun token d'authentification n'est disponible.",
+            },
+          })
+      );
+    }
+
     return this.authController.me().pipe(
       map(response => this.mapUserProfile(response)),
       tap(user => this._currentUser.set(user))
@@ -227,6 +241,10 @@ export class AuthService {
 
   saveSession(response: LoginResponseDto): void {
     const accessToken = response.accessToken ?? '';
+    if (!accessToken) {
+      this._currentUser.set(null);
+      return;
+    }
     const refreshToken = this.jwtService.getRefreshToken() ?? 'mock-refresh-token';
     this.jwtService.setTokens(accessToken, refreshToken);
     this.loadCurrentUser().subscribe({

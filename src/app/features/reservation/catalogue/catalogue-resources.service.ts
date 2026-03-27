@@ -6,7 +6,7 @@ import { RessourcesService } from '../../../core/api/api/ressources.service';
 import { ResourceDto as OpenApiResourceDto } from '../../../core/api/model/resourceDto';
 
 @Injectable({ providedIn: 'root' })
-export class CatalogueMockService {
+export class CatalogueResourcesService {
   private readonly ressourcesService = inject(RessourcesService);
 
   getResources(): Observable<PagedResponse<ResourceDto>> {
@@ -41,3 +41,4 @@ export class CatalogueMockService {
     };
   }
 }
+

@@ -9,7 +9,7 @@ import { ResourceDto } from '../../../core/api/models/resource.model';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
-import { CatalogueMockService } from '../catalogue/catalogue-mock.service';
+import { CatalogueResourcesService } from '../catalogue/catalogue-resources.service';
 import {
   buildReservationActorOptions,
   ReservationActorOption,
@@ -33,7 +33,7 @@ import {
 export class BookingFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
-  private readonly catalogueMockService = inject(CatalogueMockService);
+  private readonly catalogueResourcesService = inject(CatalogueResourcesService);
   private readonly authService = inject(AuthService);
 
   readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
@@ -142,13 +142,13 @@ export class BookingFormComponent {
             return of(null);
           }
 
-          return this.catalogueMockService.getResourceById(resourceId);
+          return this.catalogueResourcesService.getResourceById(resourceId);
         })
       )
       .subscribe({
         next: resource => {
           if (!resource) {
-            this.errorMessage.set("Cette ressource n'existe pas dans le mock local.");
+            this.errorMessage.set("Cette ressource n'existe pas.");
             this.loading.set(false);
             return;
           }
