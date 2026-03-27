@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { convertToParamMap } from '@angular/router';
@@ -12,6 +13,7 @@ describe('ResourceDetailComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ResourceDetailComponent],
       providers: [
+        provideHttpClient(),
         provideRouter([]),
         {
           provide: ActivatedRoute,

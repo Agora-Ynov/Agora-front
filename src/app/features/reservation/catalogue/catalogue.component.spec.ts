@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -62,6 +63,7 @@ describe('CatalogueComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
       providers: [
+        provideHttpClient(),
         provideRouter([]),
         {
           provide: CatalogueMockService,
@@ -104,6 +106,7 @@ describe('CatalogueComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
       providers: [
+        provideHttpClient(),
         provideRouter([]),
         {
           provide: CatalogueMockService,
@@ -144,6 +147,7 @@ describe('CatalogueComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
       providers: [
+        provideHttpClient(),
         provideRouter([]),
         {
           provide: CatalogueMockService,
@@ -164,7 +168,7 @@ describe('CatalogueComponent', () => {
     fixture.detectChanges();
 
     expect(component.featureLabel('PMR_ACCESS')).toBe('Acces PMR');
-    expect(component.formatPrice(120)).toBe('120 EUR');
+    expect(component.getDepositLabel(component.resources()[0])).toBe('150 EUR');
 
     const mappedFallback = (component as any).mapResource({
       id: 'r777',
@@ -187,6 +191,7 @@ describe('CatalogueComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
       providers: [
+        provideHttpClient(),
         provideRouter([]),
         {
           provide: CatalogueMockService,

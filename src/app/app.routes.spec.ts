@@ -1,12 +1,14 @@
 import { routes } from './app.routes';
 
 describe('routes', () => {
-  it('should redirect root path to login', () => {
+  it('should expose the home route on root path', async () => {
     expect(routes[0]).toMatchObject({
       path: '',
-      pathMatch: 'full',
-      redirectTo: 'login',
     });
+
+    expect(routes[0]?.loadComponent).toBeDefined();
+    const loadedComponent = await routes[0]?.loadComponent?.();
+    expect(loadedComponent).toBeDefined();
   });
 
   it('should expose the login route', async () => {
@@ -53,12 +55,12 @@ describe('routes', () => {
     expect(loadedComponent).toBeDefined();
   });
 
-  it('should redirect unknown routes to login', () => {
+  it('should redirect unknown routes to root', () => {
     const fallbackRoute = routes[routes.length - 1];
 
     expect(fallbackRoute).toMatchObject({
       path: '**',
-      redirectTo: 'login',
+      redirectTo: '',
     });
   });
 });
