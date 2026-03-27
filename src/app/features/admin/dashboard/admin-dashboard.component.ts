@@ -79,13 +79,13 @@ export class AdminDashboardComponent {
   readonly quickActions: AdminQuickAction[] = [
     { label: 'Utilisateurs', icon: 'users', route: '/admin/users' },
     { label: 'Reservations', icon: 'reservations', route: '/admin/reservations' },
-    { label: "Journal d'audit", icon: 'audit' },
-    { label: 'Fermetures', icon: 'closures' },
-    { label: 'Quotas', icon: 'quotas' },
+    { label: "Journal d'audit", icon: 'audit', route: '/admin/audit' },
+    { label: 'Fermetures', icon: 'closures', route: '/admin/blackouts' },
+    { label: 'Quotas', icon: 'quotas', route: '/admin/quotas' },
     { label: 'Export CSV/PDF', icon: 'export' },
     { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
-    { label: 'Groupes', icon: 'groups' },
-    { label: 'Affiliations', icon: 'affiliations', badgeCount: 2 },
+    { label: 'Groupes', icon: 'groups', route: '/admin/groups' },
+    { label: 'Affiliations', icon: 'affiliations', badgeCount: 2, route: '/admin/affiliations' },
   ];
 
   readonly recentReservations: RecentReservation[] = [

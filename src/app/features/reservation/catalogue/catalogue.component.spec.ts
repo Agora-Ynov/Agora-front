@@ -10,6 +10,14 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueComponent } from './catalogue.component';
 import { CatalogueResourcesService } from './catalogue-resources.service';
 
+type CatalogueComponentTestAccess = CatalogueComponent & {
+  mapResource(resource: ResourceDto): {
+    coverTheme: string;
+    tags: string[];
+    pricePerBooking: number;
+  };
+};
+
 const mockResources: PagedResponse<ResourceDto> = {
   content: [
     {
@@ -174,7 +182,7 @@ describe('CatalogueComponent', () => {
     expect(component.featureLabel('PMR_ACCESS')).toBe('Acces PMR');
     expect(component.getDepositLabel(component.resources()[0])).toBe('150 EUR');
 
-    const mappedFallback = (component as any).mapResource({
+    const mappedFallback = (component as unknown as CatalogueComponentTestAccess).mapResource({
       id: 'r777',
       name: 'Nouvelle ressource',
       resourceType: 'MOBILIER',

@@ -1,0 +1,129 @@
+<section class="quota-page">
+  <main class="quota-main">
+    <section class="quota-hero">
+      <div>
+        <div class="quota-hero__title">
+          <span class="quota-hero__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9.5 11.9L11.2 13.6L14.9 9.9"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <h1>Gestion des quotas - SF-07.5</h1>
+        </div>
+        <p>Configurez les limites de reservation par utilisateur, groupe et ressource</p>
+      </div>
+
+      <button type="button" class="quota-create">
+        <span class="quota-create__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Nouveau quota</span>
+      </button>
+    </section>
+
+    <section class="quota-info">
+      <div class="quota-info__heading">
+        <span class="quota-info__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9" />
+            <path d="M12 10V16" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            <path d="M12 7H12.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" />
+          </svg>
+        </span>
+        <h2>Fonctionnement des quotas</h2>
+      </div>
+
+      <div class="quota-info__grid">
+        @for (item of infoItems(); track item.label) {
+          <p><strong>{{ item.label }}</strong> : {{ item.description }}</p>
+        }
+      </div>
+    </section>
+
+    @if (loading()) {
+      <p class="quota-empty">Chargement des quotas...</p>
+    } @else if (!enrichedQuotas().length) {
+      <p class="quota-empty">Aucun quota configure pour le moment.</p>
+    } @else {
+      <section class="quota-list">
+        @for (quota of enrichedQuotas(); track quota.id) {
+          <article class="quota-card">
+            <div class="quota-card__content">
+              <div class="quota-card__headline">
+                <span class="quota-chip">{{ quota.title }}</span>
+                <strong>{{ quota.displayValue }}</strong>
+              </div>
+
+              <p class="quota-card__description">
+                @if (quota.scopeType === 'group') {
+                  Maximum {{ quota.value }} reservations par mois pour {{ quota.scopeLabel }}
+                } @else if (quota.scopeType === 'resource') {
+                  Duree maximum de {{ quota.value }} {{ quota.unit }} pour {{ quota.scopeLabel }}
+                } @else {
+                  {{ quota.description }}
+                }
+              </p>
+
+              <span class="quota-tag" [class]="scopeClass(quota.scopeType)">
+                {{ quota.scopeLabel }}
+              </span>
+            </div>
+
+            <div class="quota-card__actions" aria-label="Actions quota">
+              <button type="button" class="quota-action" title="Modifier">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 19.5H8.2L18.3 9.4L14.1 5.2L4 15.3V19.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M12.9 6.4L17.1 10.6"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+              <button type="button" class="quota-action quota-action--danger" title="Supprimer">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M6 7.5H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M9.5 7.5V6.25C9.5 5.56 10.06 5 10.75 5H13.25C13.94 5 14.5 5.56 14.5 6.25V7.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M8 9.5V17.25C8 18.22 8.78 19 9.75 19H14.25C15.22 19 16 18.22 16 17.25V9.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path d="M10.5 11.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M13.5 11.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+          </article>
+        }
+      </section>
+    }
+  </main>
+</section>

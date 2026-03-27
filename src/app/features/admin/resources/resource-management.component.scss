@@ -341,6 +341,12 @@
   }
 }
 
+.form-group-title {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

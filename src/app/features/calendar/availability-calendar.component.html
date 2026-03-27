@@ -1,0 +1,205 @@
+<section class="calendar-page">
+  <main class="calendar-main">
+    <section class="calendar-hero">
+      <div class="calendar-hero__title">
+        <span class="calendar-hero__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect
+              x="4.75"
+              y="5.75"
+              width="14.5"
+              height="13.5"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.9"
+            />
+            <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.9" />
+          </svg>
+        </span>
+        <div>
+          <h1>Calendrier des disponibilites</h1>
+          <p>Consultez les creneaux disponibles avant de reserver</p>
+        </div>
+      </div>
+    </section>
+
+    @if (errorMessage()) {
+      <p class="calendar-feedback calendar-feedback--error">{{ errorMessage() }}</p>
+    }
+
+    <section class="calendar-filters">
+      <button
+        type="button"
+        class="resource-filter"
+        [class.resource-filter--active]="selectedResourceId() === 'ALL'"
+        (click)="selectResource('ALL')"
+      >
+        <span class="resource-filter__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect
+              x="4.75"
+              y="5.75"
+              width="14.5"
+              height="13.5"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Toutes les ressources</span>
+      </button>
+
+      @for (resource of activeResources(); track resource.id) {
+        <button
+          type="button"
+          class="resource-filter"
+          [class.resource-filter--active]="selectedResourceId() === resource.id"
+          (click)="selectResource(resource.id)"
+        >
+          <span class="resource-filter__icon" aria-hidden="true">
+            @if (resource.resourceType === 'IMMOBILIER') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="7"
+                  y="4"
+                  width="10"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path d="M10 8H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M10 12H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7 8.5L12 5.5L17 8.5V15.5L12 18.5L7 15.5V8.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <path d="M7.5 8.8L12 11.5L16.5 8.8" stroke="currentColor" stroke-width="1.8" />
+              </svg>
+            }
+          </span>
+          <span>{{ getResourceLabel(resource) }}</span>
+        </button>
+      }
+    </section>
+
+    <section class="calendar-legend" aria-label="Legende calendrier">
+      <span class="calendar-legend__item">
+        <span class="calendar-legend__dot calendar-legend__dot--reserved"></span>
+        <span>Reserve (confirme)</span>
+      </span>
+      <span class="calendar-legend__item">
+        <span class="calendar-legend__dot calendar-legend__dot--blackout"></span>
+        <span>Fermeture / Blackout</span>
+      </span>
+      <span class="calendar-legend__item">
+        <span class="calendar-legend__dot calendar-legend__dot--today"></span>
+        <span>Aujourd'hui</span>
+      </span>
+    </section>
+
+    <section class="calendar-panel">
+      <header class="calendar-panel__header">
+        <button type="button" class="calendar-nav" (click)="previousMonth()" aria-label="Mois precedent">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M14.5 6.5L9 12L14.5 17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <h2>{{ monthLabel() }}</h2>
+
+        <button type="button" class="calendar-nav" (click)="nextMonth()" aria-label="Mois suivant">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9.5 6.5L15 12L9.5 17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </header>
+
+      @if (loading()) {
+        <p class="calendar-loading">Chargement du calendrier...</p>
+      } @else {
+        <div class="calendar-weekdays">
+          @for (weekday of weekdays; track weekday) {
+            <span>{{ weekday }}</span>
+          }
+        </div>
+
+        <div class="calendar-grid">
+          @for (cell of visibleCells(); track trackByCellDate($index, cell)) {
+            <article
+              class="calendar-cell"
+              [class.calendar-cell--muted]="!cell.inCurrentMonth"
+              [class.calendar-cell--today]="cell.isToday"
+              [class.calendar-cell--blackout]="cell.isBlackout"
+            >
+              <span class="calendar-cell__day">{{ cell.dayNumber }}</span>
+
+              @if (cell.isBlackout) {
+                <div class="calendar-cell__status calendar-cell__status--blackout">
+                  <span class="calendar-cell__marker"></span>
+                  <span>{{ cell.blackoutReason || 'Blackout' }}</span>
+                </div>
+              } @else if (cell.isReserved) {
+                <div class="calendar-cell__status calendar-cell__status--reserved">
+                  <span class="calendar-cell__marker"></span>
+                  <span>Reserve</span>
+                </div>
+              } @else if (cell.availableCount > 0) {
+                <div class="calendar-cell__status calendar-cell__status--available">
+                  {{ cell.availableCount }} creneau(x)
+                </div>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="upcoming-panel">
+      <h2>Prochaines reservations confirmees</h2>
+
+      <div class="upcoming-list">
+        @for (reservation of upcomingReservations; track reservation.id) {
+          <article class="upcoming-item">
+            <div>
+              <strong>{{ reservation.resourceName }}</strong>
+              <p>{{ reservation.dateLabel }}</p>
+            </div>
+
+            <span class="upcoming-item__status">{{ reservation.statusLabel }}</span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="calendar-cta">
+      <div>
+        <h2>Vous souhaitez reserver ?</h2>
+        <p>Consultez le catalogue et soumettez votre demande</p>
+      </div>
+
+      <a routerLink="/catalogue" class="calendar-cta__button">Voir le catalogue</a>
+    </section>
+
+    <footer class="calendar-footer">
+      <div>
+        <strong>Agora - Service des Reservations</strong>
+        <p>&copy; 2026 Tous droits reserves</p>
+      </div>
+      <div>
+        <strong>Horaires d'ouverture : Lun-Ven 9h-17h</strong>
+        <p>Contact : 01 23 45 67 89</p>
+      </div>
+    </footer>
+  </main>
+</section>

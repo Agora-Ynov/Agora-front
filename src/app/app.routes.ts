@@ -56,6 +56,46 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/affiliations',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/affiliations/admin-affiliations.component').then(
+        m => m.AdminAffiliationsComponent
+      ),
+  },
+  {
+    path: 'admin/audit',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/audit/admin-audit-page.component').then(
+        m => m.AdminAuditPageComponent
+      ),
+  },
+  {
+    path: 'admin/quotas',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/quotas/admin-quotas.component').then(
+        m => m.AdminQuotasComponent
+      ),
+  },
+  {
+    path: 'admin/blackouts',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/blackouts/admin-blackouts.component').then(
+        m => m.AdminBlackoutsComponent
+      ),
+  },
+  {
+    path: 'admin/groups',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/groups/admin-groups.component').then(
+        m => m.AdminGroupsComponent
+      ),
+  },
+  {
     path: 'admin/users',
     canActivate: [adminGuard],
     loadComponent: () =>
@@ -94,7 +134,10 @@ export const routes: Routes = [
   },
   {
     path: 'calendar',
-    redirectTo: '',
+    loadComponent: () =>
+      import('./features/calendar/availability-calendar.component').then(
+        m => m.AvailabilityCalendarComponent
+      ),
   },
   {
     path: '**',

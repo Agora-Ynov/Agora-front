@@ -1,0 +1,131 @@
+{
+  "year": 2026,
+  "month": 3,
+  "days": [
+    {
+      "date": "2026-03-03",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r001",
+          "resourceName": "Salle des fetes - Grande salle",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "14:00",
+          "slotEnd": "18:00",
+          "isAvailable": false
+        }
+      ]
+    },
+    {
+      "date": "2026-03-06",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r002",
+          "resourceName": "Salle de reunion - Espace civic",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "09:00",
+          "slotEnd": "12:00",
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "date": "2026-03-10",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r003",
+          "resourceName": "Salle associative",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "18:00",
+          "slotEnd": "20:00",
+          "isAvailable": false
+        }
+      ]
+    },
+    {
+      "date": "2026-03-14",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r004",
+          "resourceName": "Barnums (x5)",
+          "resourceType": "MOBILIER",
+          "slotStart": "08:00",
+          "slotEnd": "20:00",
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "date": "2026-03-18",
+      "isBlackout": true,
+      "blackoutReason": "Fermeture technique",
+      "slots": []
+    },
+    {
+      "date": "2026-03-21",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r005",
+          "resourceName": "Sono portable",
+          "resourceType": "MOBILIER",
+          "slotStart": "13:00",
+          "slotEnd": "19:00",
+          "isAvailable": false
+        }
+      ]
+    },
+    {
+      "date": "2026-03-24",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r006",
+          "resourceName": "Tables et chaises (50 pers.)",
+          "resourceType": "MOBILIER",
+          "slotStart": "08:00",
+          "slotEnd": "18:00",
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "date": "2026-03-27",
+      "isBlackout": false,
+      "blackoutReason": null,
+      "slots": [
+        {
+          "resourceId": "r001",
+          "resourceName": "Salle des fetes - Grande salle",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "10:00",
+          "slotEnd": "12:00",
+          "isAvailable": true
+        },
+        {
+          "resourceId": "r002",
+          "resourceName": "Salle de reunion - Espace civic",
+          "resourceType": "IMMOBILIER",
+          "slotStart": "14:00",
+          "slotEnd": "16:00",
+          "isAvailable": true
+        }
+      ]
+    },
+    {
+      "date": "2026-03-29",
+      "isBlackout": true,
+      "blackoutReason": "Jour ferie local",
+      "slots": []
+    }
+  ]
+}
