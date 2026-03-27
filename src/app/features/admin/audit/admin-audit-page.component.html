@@ -1,0 +1,240 @@
+<section class="audit-page">
+  <main class="audit-main">
+    <section class="audit-hero">
+      <div class="audit-hero__title-row">
+        <span class="audit-hero__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+        </span>
+
+        <div class="audit-hero__copy">
+          <h1>Journal d'audit complet</h1>
+          <p>Traçabilité de toutes les actions — réservations, comptes, paiements, affiliations, impersonation</p>
+        </div>
+      </div>
+
+      <button type="button" class="audit-export" (click)="exportCsv()">
+        <span class="audit-export__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.5V14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M8.5 11L12 14.5L15.5 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M5 18.5H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Exporter en CSV</span>
+      </button>
+    </section>
+
+    <section class="audit-stats">
+      @for (stat of stats(); track stat.label) {
+        <article class="audit-stat-card">
+          <strong [class]="'audit-stat-card__value audit-stat-card__value--' + stat.tone">{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </article>
+      }
+    </section>
+
+    <section class="audit-booking-banner">
+      <div class="audit-booking-banner__label">
+        <span class="audit-booking-banner__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
+            <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
+          </svg>
+        </span>
+        <span>Voir la timeline complète d'une réservation :</span>
+      </div>
+
+      <div class="audit-booking-banner__chips">
+        @for (bookingRef of bookingRefs(); track bookingRef) {
+          <button type="button" class="audit-booking-chip" (click)="focusBooking(bookingRef)">
+            <span>{{ formatBookingRef(bookingRef) }}</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="audit-search-card">
+      <label class="audit-search">
+        <span class="audit-search__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
+            <path d="M16 16L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          (input)="setSearchTerm(($any($event.target).value))"
+          placeholder="Rechercher : action, utilisateur, réservation, ressource, motif..."
+        />
+      </label>
+
+      <label class="audit-select">
+        <select [value]="actorFilter()" (change)="setActorFilter(($any($event.target).value))">
+          @for (option of actorOptions(); track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+    </section>
+
+    <section class="audit-tabs" aria-label="Filtres journal d'audit">
+      @for (tab of tabs(); track tab.id) {
+        <button
+          type="button"
+          class="audit-tab"
+          [class.audit-tab--active]="categoryFilter() === tab.id"
+          (click)="setCategoryFilter(tab.id)"
+        >
+          <span class="audit-tab__icon" aria-hidden="true">
+            @switch (categoryIcon(tab.id)) {
+              @case ('calendar') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+              }
+              @case ('user') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              }
+              @case ('card') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M4 10H20" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+              }
+              @case ('group') {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                </svg>
+              }
+            }
+          </span>
+          <span>{{ tab.label }}</span>
+          <span class="audit-tab__count">{{ tab.count }}</span>
+        </button>
+      }
+    </section>
+
+    @if (loading()) {
+      <p class="audit-empty">Chargement du journal d'audit...</p>
+    } @else if (!filteredEntries().length) {
+      <p class="audit-empty">Aucun événement ne correspond à ces filtres.</p>
+    } @else {
+      <section class="audit-list">
+        @for (entry of filteredEntries(); track entry.id) {
+          <article class="audit-entry">
+            <div class="audit-node" [class]="iconClass(entry.severity)">
+              <span class="audit-node__icon" aria-hidden="true">
+                @switch (categoryIcon(entry.category)) {
+                  @case ('calendar') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  }
+                  @case ('user') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  }
+                  @case ('card') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M4 10H20" stroke="currentColor" stroke-width="1.8" />
+                    </svg>
+                  }
+                  @case ('group') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                      <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
+                      <path d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  }
+                  @default {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    </svg>
+                  }
+                }
+              </span>
+            </div>
+
+            <div class="audit-card" [class]="cardClass(entry.severity)">
+              <div class="audit-card__top">
+                <div class="audit-card__chips">
+                  <span class="audit-card__chip audit-card__chip--primary">{{ entry.label }}</span>
+                  <span class="audit-card__chip audit-card__chip--role">{{ entry.actorRole }}</span>
+                </div>
+                <span class="audit-card__arrow" aria-hidden="true">›</span>
+              </div>
+
+              <h2>{{ entry.title }}</h2>
+
+              <div class="audit-card__meta">
+                <span>{{ formatDate(entry.performedAt) }}</span>
+                <span>{{ entry.actorName }}</span>
+                @if (entry.targetName) {
+                  <span>→ {{ entry.targetName }}</span>
+                }
+                @if (entry.bookingRef) {
+                  <span class="audit-card__booking">#{{ entry.bookingRef }}</span>
+                }
+                @if (entry.resourceName) {
+                  <span>{{ entry.resourceName }}</span>
+                }
+                <span>IP: {{ entry.ipAddress }}</span>
+              </div>
+            </div>
+          </article>
+        }
+      </section>
+    }
+
+    <section class="audit-footnote">
+      <div class="audit-footnote__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8" />
+          <path d="M12 8.5V12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <circle cx="12" cy="15.8" r="0.9" fill="currentColor" />
+        </svg>
+      </div>
+
+      <div class="audit-footnote__content">
+        <h2>A propos du journal d'audit (J7)</h2>
+        <p>
+          Chaque action sur une <strong>réservation</strong> (création, validation, refus avec motif, annulation,
+          justificatifs, paiement), sur un <strong>compte</strong> (création, suspension, activation) ou lors d'une
+          <strong>impersonation</strong> est tracée en temps réel avec l'identité de l'acteur, l'IP source et un
+          horodatage précis.
+        </p>
+        <p>
+          Les logs sont <strong>immuables</strong> et conservés conformément au RGPD. Ils peuvent être exportés en
+          CSV pour archivage ou audit externe.
+        </p>
+      </div>
+    </section>
+  </main>
+</section>

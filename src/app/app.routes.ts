@@ -56,6 +56,22 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/audit',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/audit/admin-audit-page.component').then(
+        m => m.AdminAuditPageComponent
+      ),
+  },
+  {
+    path: 'admin/quotas',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/quotas/admin-quotas.component').then(
+        m => m.AdminQuotasComponent
+      ),
+  },
+  {
     path: 'admin/users',
     canActivate: [adminGuard],
     loadComponent: () =>
