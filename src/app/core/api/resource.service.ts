@@ -2,8 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, delay, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiService } from './api.service';
+import { RessourcesService } from './api/ressources.service';
 import { PagedResponse } from './models/paged-response.model';
+import { ResourceDto as OpenApiResourceDto } from './model/resourceDto';
+import { ResourceRequest } from './model/resourceRequest';
 import {
   AccessibilityTag,
   CreateResourceDto,
@@ -27,8 +29,7 @@ const ACCESSIBILITY_LABELS: Record<AccessibilityTag, string> = {
 })
 export class ResourceService {
   private readonly http = inject(HttpClient);
-  private readonly api = inject(ApiService);
-  private readonly basePath = '/api/resources';
+  private readonly ressourcesService = inject(RessourcesService);
   private readonly mockStorageKey = 'agora.mock.resources';
   private readonly useMockResources = environment.useMockAuth;
 
@@ -37,8 +38,8 @@ export class ResourceService {
       return this.getMockResources();
     }
 
-    return this.api.get<PagedResponse<ResourceDto> | ResourceDto[]>(this.basePath).pipe(
-      map(response => (Array.isArray(response) ? response : response.content)),
+    return this.ressourcesService.getResources(undefined, undefined, undefined, undefined, 0, 100).pipe(
+      map(response => (response.content ?? []).map(resource => this.fromOpenApiResource(resource))),
       catchError(() => this.getMockResources())
     );
   }
@@ -53,7 +54,8 @@ export class ResourceService {
       );
     }
 
-    return this.api.get<ResourceDto>(`${this.basePath}/${resourceId}`).pipe(
+    return this.ressourcesService.getResourceById(resourceId).pipe(
+      map(resource => this.fromOpenApiResource(resource)),
       catchError(() =>
         this.getMockResources().pipe(
           map(resources => resources.find(resource => resource.id === resourceId) ?? null),
@@ -70,8 +72,9 @@ export class ResourceService {
       return this.createMock(payload);
     }
 
-    return this.api
-      .post<ResourceDto>(this.basePath, payload)
+    return this.ressourcesService
+      .createResource(this.toOpenApiResourceRequest(payload))
+      .pipe(map(resource => this.fromOpenApiResource(resource)))
       .pipe(catchError(() => this.createMock(payload)));
   }
 
@@ -80,8 +83,9 @@ export class ResourceService {
       return this.updateMock(resourceId, payload);
     }
 
-    return this.api
-      .put<ResourceDto>(`${this.basePath}/${resourceId}`, payload)
+    return this.ressourcesService
+      .updateResource(resourceId, this.toOpenApiResourceRequest(payload))
+      .pipe(map(resource => this.fromOpenApiResource(resource)))
       .pipe(catchError(() => this.updateMock(resourceId, payload)));
   }
 
@@ -90,8 +94,9 @@ export class ResourceService {
       return this.deleteMock(resourceId);
     }
 
-    return this.api
-      .delete<void>(`${this.basePath}/${resourceId}`)
+    return this.ressourcesService
+      .deleteResource(resourceId)
+      .pipe(map(() => void 0))
       .pipe(catchError(() => this.deleteMock(resourceId)));
   }
 
@@ -161,6 +166,32 @@ export class ResourceService {
       .split(',')
       .map(item => item.trim().toUpperCase())
       .filter((item): item is AccessibilityTag => allowed.includes(item as AccessibilityTag));
+  }
+
+  private toOpenApiResourceRequest(payload: CreateResourceDto | UpdateResourceDto): ResourceRequest {
+    return {
+      name: payload.name,
+      resourceType: payload.resourceType,
+      capacity: payload.capacity ?? undefined,
+      description: payload.description,
+      depositAmountCents: payload.depositAmountCents,
+      imageUrl: payload.imageUrl ?? undefined,
+      accessibilityTags: payload.accessibilityTags,
+    };
+  }
+
+  private fromOpenApiResource(resource: OpenApiResourceDto): ResourceDto {
+    return this.normalizeMockResource({
+      id: resource.id,
+      name: resource.name,
+      resourceType: resource.resourceType,
+      capacity: resource.capacity,
+      description: resource.description,
+      depositAmountCents: resource.depositAmountCents,
+      imageUrl: resource.imageUrl,
+      accessibilityTags: (resource.accessibilityTags ?? []) as AccessibilityTag[],
+      isActive: resource.isActive,
+    });
   }
 
   private getMockResources(): Observable<ResourceDto[]> {

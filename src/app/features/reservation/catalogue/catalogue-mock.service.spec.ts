@@ -1,73 +1,88 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { of } from 'rxjs';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
 import { CatalogueMockService } from './catalogue-mock.service';
 
 describe('CatalogueMockService', () => {
   let service: CatalogueMockService;
-  let httpMock: HttpTestingController;
+  const ressourcesServiceMock = {
+    getResources: jest.fn(),
+    getResourceById: jest.fn(),
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [CatalogueMockService, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        CatalogueMockService,
+        { provide: RessourcesService, useValue: ressourcesServiceMock },
+      ],
     });
 
     service = TestBed.inject(CatalogueMockService);
-    httpMock = TestBed.inject(HttpTestingController);
+    ressourcesServiceMock.getResources.mockReset();
+    ressourcesServiceMock.getResourceById.mockReset();
   });
 
-  afterEach(() => {
-    httpMock.verify();
-  });
-
-  it('should request the local resources mock', () => {
+  it('should map paged resources from OpenAPI service', () => {
     let responseBody: unknown;
+    ressourcesServiceMock.getResources.mockReturnValue(
+      of({
+        content: [{ id: 'r001', name: 'Salle 1', resourceType: 'IMMOBILIER' }],
+        totalElements: 1,
+        totalPages: 1,
+        page: 0,
+        size: 20,
+      })
+    );
 
     service.getResources().subscribe(response => {
       responseBody = response;
     });
 
-    const request = httpMock.expectOne('/assets/mocks/api/resources.get.json');
-    expect(request.request.method).toBe('GET');
-
-    request.flush({
-      content: [],
-      totalElements: 0,
-      totalPages: 0,
-      page: 0,
-      size: 20,
-    });
+    expect(ressourcesServiceMock.getResources).toHaveBeenCalled();
 
     expect(responseBody).toEqual({
-      content: [],
-      totalElements: 0,
-      totalPages: 0,
+      content: [
+        {
+          id: 'r001',
+          name: 'Salle 1',
+          resourceType: 'IMMOBILIER',
+          capacity: null,
+          description: null,
+          depositAmountCents: 0,
+          imageUrl: null,
+          accessibilityTags: [],
+          isActive: true,
+        },
+      ],
+      totalElements: 1,
+      totalPages: 1,
       page: 0,
       size: 20,
     });
   });
 
-  it('should return a resource by its id from the local mock', () => {
+  it('should return a mapped resource by id', () => {
     let responseBody: unknown;
+    ressourcesServiceMock.getResourceById.mockReturnValue(
+      of({ id: 'r002', name: 'Salle 2', resourceType: 'IMMOBILIER' })
+    );
 
     service.getResourceById('r002').subscribe(response => {
       responseBody = response;
     });
 
-    const request = httpMock.expectOne('/assets/mocks/api/resources.get.json');
-    expect(request.request.method).toBe('GET');
-
-    request.flush({
-      content: [
-        { id: 'r001', name: 'Salle 1' },
-        { id: 'r002', name: 'Salle 2' },
-      ],
-      totalElements: 2,
-      totalPages: 1,
-      page: 0,
-      size: 20,
+    expect(ressourcesServiceMock.getResourceById).toHaveBeenCalledWith('r002');
+    expect(responseBody).toEqual({
+      id: 'r002',
+      name: 'Salle 2',
+      resourceType: 'IMMOBILIER',
+      capacity: null,
+      description: null,
+      depositAmountCents: 0,
+      imageUrl: null,
+      accessibilityTags: [],
+      isActive: true,
     });
-
-    expect(responseBody).toEqual({ id: 'r002', name: 'Salle 2' });
   });
 });

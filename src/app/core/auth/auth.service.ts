@@ -1,10 +1,17 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, delay, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, delay, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthControllerService } from '../api/api/authController.service';
+import { AuthMeResponseDto } from '../api/model/authMeResponseDto';
+import { LoginRequestDto } from '../api/model/loginRequestDto';
+import { LoginResponseDto } from '../api/model/loginResponseDto';
+import { RegisterResponseDto } from '../api/model/registerResponseDto';
 import { JwtService } from './jwt.service';
 import {
+  AccountStatus,
+  AccountType,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -22,59 +29,59 @@ interface MockAccount {
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
   private readonly useMockAuth = environment.useMockAuth;
-  // private readonly mockAccounts: Record<string, MockAccount> = {
-  //   'jean.dupont@gmail.com': {
-  //     password: 'MonMotDePasse123!',
-  //     profile: {
-  //       id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  //       firstName: 'Jean',
-  //       lastName: 'Dupont',
-  //       email: 'jean.dupont@gmail.com',
-  //       phone: '0612345678',
-  //       role: 'CITIZEN',
-  //       accountType: 'AUTONOMOUS',
-  //       accountStatus: 'ACTIVE',
-  //       internalId: undefined,
-  //       exemptions: {
-  //         association: false,
-  //         social: false,
-  //         mandate: false,
-  //       },
-  //       groupIds: ['g001'],
-  //       createdAt: '2026-01-15T09:30:00Z',
-  //     },
-  //   },
-  //   'admin@agora.local': {
-  //     password: 'AdminAgora123!',
-  //     profile: {
-  //       id: 'b2c3d4e5-f678-9012-abcd-ef1234567801',
-  //       firstName: 'Marie',
-  //       lastName: 'Dupont',
-  //       email: 'admin@agora.local',
-  //       phone: '0102030405',
-  //       role: 'SECRETARY_ADMIN',
-  //       accountType: 'AUTONOMOUS',
-  //       accountStatus: 'ACTIVE',
-  //       internalId: 'ADM-001',
-  //       exemptions: {
-  //         association: false,
-  //         social: false,
-  //         mandate: true,
-  //       },
-  //       groupIds: [],
-  //       createdAt: '2025-11-04T08:15:00Z',
-  //     },
-  //   },
-  // };
+  private readonly http = inject(HttpClient);
+  private readonly jwtService = inject(JwtService);
+  private readonly router = inject(Router);
+  private readonly authController = inject(AuthControllerService);
+  private readonly mockAccounts: Record<string, MockAccount> = {
+    'jean.dupont@gmail.com': {
+      password: 'MonMotDePasse123!',
+      profile: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        email: 'jean.dupont@gmail.com',
+        phone: '0612345678',
+        role: 'CITIZEN',
+        accountType: 'AUTONOMOUS',
+        accountStatus: 'ACTIVE',
+        internalId: undefined,
+        exemptions: {
+          association: false,
+          social: false,
+          mandate: false,
+        },
+        groupIds: ['g001'],
+        createdAt: '2026-01-15T09:30:00Z',
+      },
+    },
+    'admin@agora.local': {
+      password: 'AdminAgora123!',
+      profile: {
+        id: 'b2c3d4e5-f678-9012-abcd-ef1234567801',
+        firstName: 'Marie',
+        lastName: 'Dupont',
+        email: 'admin@agora.local',
+        phone: '0102030405',
+        role: 'SECRETARY_ADMIN',
+        accountType: 'AUTONOMOUS',
+        accountStatus: 'ACTIVE',
+        internalId: 'ADM-001',
+        exemptions: {
+          association: false,
+          social: false,
+          mandate: true,
+        },
+        groupIds: [],
+        createdAt: '2025-11-04T08:15:00Z',
+      },
+    },
+  };
 
   private _currentUser = signal<UserProfile | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
 
-  constructor(
-    private http: HttpClient,
-    private jwtService: JwtService,
-    private router: Router
-  ) {
+  constructor() {
     this.restoreSession();
   }
 
@@ -83,10 +90,11 @@ export class AuthService {
       return this.loginMock({ email, password }).pipe(tap(response => this.saveSession(response)));
     }
 
-    const body: LoginRequest = { email, password };
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/api/auth/login`, body)
-      .pipe(tap(response => this.saveSession(response)));
+    const body: LoginRequestDto = { email, password };
+    return this.authController.login(body).pipe(
+      map(response => this.mapLoginResponse(response)),
+      tap(response => this.saveSession(response))
+    );
   }
 
   logout(): void {
@@ -109,7 +117,7 @@ export class AuthService {
       return this.registerMock(data);
     }
 
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/api/auth/register`, data);
+    return this.authController.register(data).pipe(map(response => this.mapRegisterResponse(response)));
   }
 
   refreshToken(): Observable<LoginResponse> {
@@ -142,9 +150,10 @@ export class AuthService {
       );
     }
 
-    return this.http
-      .get<UserProfile>(`${this.apiUrl}/api/auth/me`)
-      .pipe(tap(user => this._currentUser.set(user)));
+    return this.authController.me().pipe(
+      map(response => this.mapUserProfile(response)),
+      tap(user => this._currentUser.set(user))
+    );
   }
 
   isAuthenticated(): boolean {
@@ -317,5 +326,76 @@ export class AuthService {
       exemptions: { ...profile.exemptions },
       groupIds: [...profile.groupIds],
     };
+  }
+
+  private mapLoginResponse(response: LoginResponseDto): LoginResponse {
+    return {
+      accessToken: response.accessToken ?? '',
+      refreshToken: this.jwtService.getRefreshToken() ?? 'server-refresh-token',
+      tokenType: response.tokenType ?? 'Bearer',
+      expiresIn: response.expiresIn ?? 0,
+      user: response.user
+        ? {
+            id: response.user.id ?? '',
+            firstName: response.user.firstName ?? '',
+            lastName: response.user.lastName ?? '',
+            accountType: this.mapAccountType(response.user.accountType),
+            status: this.mapAccountStatus(response.user.accountStatus),
+          }
+        : undefined,
+    };
+  }
+
+  private mapRegisterResponse(response: RegisterResponseDto): RegisterResponse {
+    return {
+      id: response.id ?? '',
+      email: response.email ?? '',
+      firstName: response.firstName ?? '',
+      lastName: response.lastName ?? '',
+      accountType: this.mapAccountType(response.accountType),
+      status: this.mapAccountStatus(response.accountStatus),
+    };
+  }
+
+  private mapUserProfile(response: AuthMeResponseDto): UserProfile {
+    const tokenRole = this.jwtService.getPayload()?.role ?? 'CITIZEN';
+    return {
+      id: response.id ?? '',
+      firstName: response.firstName ?? '',
+      lastName: response.lastName ?? '',
+      email: response.email ?? '',
+      phone: response.phone,
+      role: tokenRole,
+      accountType: this.mapAccountType(response.accountType),
+      accountStatus: this.mapAccountStatus(response.status),
+      exemptions: {
+        association: false,
+        social: false,
+        mandate: false,
+      },
+      groupIds: (response.groups ?? []).map(group => group.id ?? '').filter(Boolean),
+      createdAt: response.createdAt ?? new Date(0).toISOString(),
+    };
+  }
+
+  private mapAccountType(value: string | undefined): AccountType {
+    return value === 'TUTORED' ? 'TUTORED' : 'AUTONOMOUS';
+  }
+
+  private mapAccountStatus(value: string | undefined): AccountStatus {
+    switch (value) {
+      case 'ACTIVE':
+        return 'ACTIVE';
+      case 'INACTIVE':
+        return 'INACTIVE';
+      case 'PENDING_VALIDATION':
+        return 'PENDING_VALIDATION';
+      case 'SUSPENDED':
+        return 'SUSPENDED';
+      case 'REJECTED':
+        return 'REJECTED';
+      default:
+        return 'ACTIVE';
+    }
   }
 }
