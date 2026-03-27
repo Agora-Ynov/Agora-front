@@ -1,0 +1,26 @@
+[
+  {
+    "id": "g003",
+    "name": "Conseil Municipal",
+    "isPreset": true,
+    "canBookImmobilier": true,
+    "canBookMobilier": true,
+    "discountType": "FULL_EXEMPT",
+    "discountValue": 0,
+    "discountAppliesTo": "ALL",
+    "discountLabel": "Exoneration totale",
+    "memberCount": 1
+  },
+  {
+    "id": "g004",
+    "name": "Service Administratif",
+    "isPreset": false,
+    "canBookImmobilier": true,
+    "canBookMobilier": true,
+    "discountType": "NONE",
+    "discountValue": 0,
+    "discountAppliesTo": "ALL",
+    "discountLabel": "Plein tarif",
+    "memberCount": 1
+  }
+]

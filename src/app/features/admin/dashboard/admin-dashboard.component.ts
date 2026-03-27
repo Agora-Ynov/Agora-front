@@ -84,7 +84,7 @@ export class AdminDashboardComponent {
     { label: 'Quotas', icon: 'quotas', route: '/admin/quotas' },
     { label: 'Export CSV/PDF', icon: 'export' },
     { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
-    { label: 'Groupes', icon: 'groups' },
+    { label: 'Groupes', icon: 'groups', route: '/admin/groups' },
     { label: 'Affiliations', icon: 'affiliations', badgeCount: 2 },
   ];
 
