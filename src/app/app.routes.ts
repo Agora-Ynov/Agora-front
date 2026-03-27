@@ -80,6 +80,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/groups',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/groups/admin-groups.component').then(
+        m => m.AdminGroupsComponent
+      ),
+  },
+  {
     path: 'admin/users',
     canActivate: [adminGuard],
     loadComponent: () =>
@@ -118,7 +126,10 @@ export const routes: Routes = [
   },
   {
     path: 'calendar',
-    redirectTo: '',
+    loadComponent: () =>
+      import('./features/calendar/availability-calendar.component').then(
+        m => m.AvailabilityCalendarComponent
+      ),
   },
   {
     path: '**',
