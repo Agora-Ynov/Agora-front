@@ -5,8 +5,7 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./features/home/home.component').then(m => m.HomeComponent),
+    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
   },
   {
     path: 'login',
@@ -41,21 +40,21 @@ export const routes: Routes = [
       ),
   },
   {
-  path: 'admin/reservations',
-  canActivate: [adminGuard],
-  loadComponent: () =>
-    import('./features/admin/reservations/admin-reservations.component').then(
-      m => m.AdminReservationsComponent
-    ),
- },
+    path: 'admin/reservations',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/reservations/admin-reservations.component').then(
+        m => m.AdminReservationsComponent
+      ),
+  },
   {
-  path: 'admin/resources',
-  canActivate: [adminGuard],
-  loadComponent: () =>
-    import('./features/admin/resources/resource-management.component').then(
-      m => m.ResourceManagementComponent
-    ),
- },
+    path: 'admin/resources',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/resources/resource-management.component').then(
+        m => m.ResourceManagementComponent
+      ),
+  },
   {
     path: 'admin/users',
     canActivate: [adminGuard],

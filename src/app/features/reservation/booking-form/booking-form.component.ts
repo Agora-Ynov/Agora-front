@@ -90,9 +90,7 @@ export class BookingFormComponent {
   readonly summaryTotalCents = computed(
     () => this.pricingSummary()?.finalPriceCents ?? this.basePriceCents()
   );
-  readonly summaryDiscountCents = computed(
-    () => this.pricingSummary()?.discountCents ?? 0
-  );
+  readonly summaryDiscountCents = computed(() => this.pricingSummary()?.discountCents ?? 0);
   readonly summaryEquipment = computed(() =>
     (this.resource()?.accessibilityTags ?? []).map(tag => getFeatureCompactLabel(tag))
   );

@@ -2,12 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 
 type AdminReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
-type AdminPaymentStatus =
-  | 'PAID'
-  | 'TO_SETTLE'
-  | 'EXEMPT_GROUP'
-  | 'EXEMPT_SECRETARY'
-  | 'REFUNDED';
+type AdminPaymentStatus = 'PAID' | 'TO_SETTLE' | 'EXEMPT_GROUP' | 'EXEMPT_SECRETARY' | 'REFUNDED';
 type ReservationFilter = 'ALL' | AdminReservationStatus;
 
 interface AdminReservation {

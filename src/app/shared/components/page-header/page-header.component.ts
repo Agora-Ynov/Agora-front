@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './page-header.component.html',
-  styleUrls: ['./page-header.component.scss']
+  styleUrls: ['./page-header.component.scss'],
 })
 export class HeaderComponent {
   private readonly authService = inject(AuthService);

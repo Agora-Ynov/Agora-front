@@ -1,10 +1,4 @@
-import {
-  Directive,
-  Input,
-  OnInit,
-  TemplateRef,
-  ViewContainerRef,
-} from '@angular/core';
+import { Directive, Input, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { UserRole } from '../../core/auth/auth.model';
 

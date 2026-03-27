@@ -2,7 +2,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'dateFr', standalone: true })
 export class DateFrPipe implements PipeTransform {
-  transform(value: string | Date | null | undefined, format: 'short' | 'long' | 'time' | 'datetime' = 'short'): string {
+  transform(
+    value: string | Date | null | undefined,
+    format: 'short' | 'long' | 'time' | 'datetime' = 'short'
+  ): string {
     if (!value) return '';
 
     const date = typeof value === 'string' ? new Date(value) : value;

@@ -1,15 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import {
-  catchError,
-  delay,
-  map,
-  Observable,
-  of,
-  switchMap,
-  tap,
-  throwError,
-} from 'rxjs';
+import { catchError, delay, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiService } from './api.service';
 import { PagedResponse } from './models/paged-response.model';
@@ -46,12 +37,10 @@ export class ResourceService {
       return this.getMockResources();
     }
 
-    return this.api
-      .get<PagedResponse<ResourceDto> | ResourceDto[]>(this.basePath)
-      .pipe(
-        map(response => (Array.isArray(response) ? response : response.content)),
-        catchError(() => this.getMockResources())
-      );
+    return this.api.get<PagedResponse<ResourceDto> | ResourceDto[]>(this.basePath).pipe(
+      map(response => (Array.isArray(response) ? response : response.content)),
+      catchError(() => this.getMockResources())
+    );
   }
 
   getById(resourceId: string): Observable<ResourceDto> {
@@ -64,18 +53,16 @@ export class ResourceService {
       );
     }
 
-    return this.api
-      .get<ResourceDto>(`${this.basePath}/${resourceId}`)
-      .pipe(
-        catchError(() =>
-          this.getMockResources().pipe(
-            map(resources => resources.find(resource => resource.id === resourceId) ?? null),
-            switchMap(resource =>
-              resource ? of(resource) : throwError(() => new Error('Resource not found'))
-            )
+    return this.api.get<ResourceDto>(`${this.basePath}/${resourceId}`).pipe(
+      catchError(() =>
+        this.getMockResources().pipe(
+          map(resources => resources.find(resource => resource.id === resourceId) ?? null),
+          switchMap(resource =>
+            resource ? of(resource) : throwError(() => new Error('Resource not found'))
           )
         )
-      );
+      )
+    );
   }
 
   create(payload: CreateResourceDto): Observable<ResourceDto> {
@@ -83,9 +70,9 @@ export class ResourceService {
       return this.createMock(payload);
     }
 
-    return this.api.post<ResourceDto>(this.basePath, payload).pipe(
-      catchError(() => this.createMock(payload))
-    );
+    return this.api
+      .post<ResourceDto>(this.basePath, payload)
+      .pipe(catchError(() => this.createMock(payload)));
   }
 
   update(resourceId: string, payload: UpdateResourceDto): Observable<ResourceDto> {
@@ -113,7 +100,8 @@ export class ResourceService {
 
     return {
       roomsCount: activeResources.filter(resource => resource.resourceType === 'IMMOBILIER').length,
-      materialsCount: activeResources.filter(resource => resource.resourceType === 'MOBILIER').length,
+      materialsCount: activeResources.filter(resource => resource.resourceType === 'MOBILIER')
+        .length,
       totalCount: activeResources.length,
     };
   }
@@ -249,10 +237,8 @@ export class ResourceService {
       isActive: resource.isActive ?? true,
       basePriceCents: resource.basePriceCents ?? this.estimateBasePrice(resource),
       quantity: resource.resourceType === 'MOBILIER' ? (resource.quantity ?? 1) : null,
-      depositExemptible:
-        resource.depositExemptible ?? resource.requiresDeposit !== false,
-      requiresDeposit:
-        resource.requiresDeposit ?? (resource.depositAmountCents ?? 0) > 0,
+      depositExemptible: resource.depositExemptible ?? resource.requiresDeposit !== false,
+      requiresDeposit: resource.requiresDeposit ?? (resource.depositAmountCents ?? 0) > 0,
     };
   }
 

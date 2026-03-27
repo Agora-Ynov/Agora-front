@@ -133,30 +133,26 @@ export class ResourceManagementComponent implements OnInit {
       ? this.resourceService.update(editingId, payload)
       : this.resourceService.create(payload);
 
-    request$
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: resource => {
-          if (editingId) {
-            this.resources.set(
-              this.resources().map(item => (item.id === editingId ? resource : item))
-            );
-            this.successMessage.set('Ressource modifiee avec succes.');
-          } else {
-            this.resources.set([resource, ...this.resources()]);
-            this.successMessage.set('Ressource creee avec succes.');
-          }
-
-          this.closeModal();
-        },
-        error: () => {
-          this.errorMessage.set(
-            editingId
-              ? 'Impossible de modifier la ressource.'
-              : 'Impossible de creer la ressource.'
+    request$.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: resource => {
+        if (editingId) {
+          this.resources.set(
+            this.resources().map(item => (item.id === editingId ? resource : item))
           );
-        },
-      });
+          this.successMessage.set('Ressource modifiee avec succes.');
+        } else {
+          this.resources.set([resource, ...this.resources()]);
+          this.successMessage.set('Ressource creee avec succes.');
+        }
+
+        this.closeModal();
+      },
+      error: () => {
+        this.errorMessage.set(
+          editingId ? 'Impossible de modifier la ressource.' : 'Impossible de creer la ressource.'
+        );
+      },
+    });
   }
 
   deleteResource(resourceId: string): void {

@@ -35,9 +35,7 @@
     {{ successMessage() }}
   </div>
 
-  <div class="loading-box" *ngIf="isLoading()">
-    Chargement des ressources...
-  </div>
+  <div class="loading-box" *ngIf="isLoading()">Chargement des ressources...</div>
 
   <div class="resource-grid" *ngIf="!isLoading()">
     <article class="resource-card" *ngFor="let resource of resources(); trackBy: trackByResourceId">
@@ -52,7 +50,12 @@
         </div>
 
         <div class="card-actions">
-          <button type="button" class="icon-btn" (click)="openEditModal(resource)" aria-label="Modifier">
+          <button
+            type="button"
+            class="icon-btn"
+            (click)="openEditModal(resource)"
+            aria-label="Modifier"
+          >
             Editer
           </button>
           <button
@@ -95,7 +98,9 @@
       <div class="features-block" *ngIf="getFeatureLabels(resource).length">
         <span class="label">Caracteristiques</span>
         <div class="feature-tags">
-          <span class="feature-tag" *ngFor="let feature of getFeatureLabels(resource)">{{ feature }}</span>
+          <span class="feature-tag" *ngFor="let feature of getFeatureLabels(resource)">{{
+            feature
+          }}</span>
         </div>
       </div>
 
@@ -105,9 +110,7 @@
         <a class="secondary-btn secondary-btn--link" [routerLink]="['/catalogue', resource.id]">
           Voir la page
         </a>
-        <button type="button" class="secondary-btn" disabled>
-          Disponibilites
-        </button>
+        <button type="button" class="secondary-btn" disabled>Disponibilites</button>
       </div>
     </article>
   </div>
@@ -120,7 +123,9 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3>{{ isEditing ? 'Modifier la ressource' : 'Ajouter une nouvelle ressource' }}</h3>
-        <button type="button" class="close-btn" (click)="closeModal()" aria-label="Fermer">X</button>
+        <button type="button" class="close-btn" (click)="closeModal()" aria-label="Fermer">
+          X
+        </button>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submitForm()">
@@ -134,7 +139,12 @@
 
         <div class="form-group">
           <label for="resourceName">Nom de la ressource *</label>
-          <input id="resourceName" type="text" formControlName="name" placeholder="Ex: Salle des Fetes" />
+          <input
+            id="resourceName"
+            type="text"
+            formControlName="name"
+            placeholder="Ex: Salle des Fetes"
+          />
         </div>
 
         <div class="form-group">
@@ -150,19 +160,34 @@
         <div class="form-row">
           <div class="form-group" *ngIf="resourceType() === 'IMMOBILIER'; else quantityField">
             <label for="resourceCapacity">Capacite (personnes)</label>
-            <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
+            <input
+              id="resourceCapacity"
+              type="number"
+              formControlName="capacity"
+              placeholder="100"
+            />
           </div>
 
           <ng-template #quantityField>
             <div class="form-group">
               <label for="resourceQuantity">Quantite (unites)</label>
-              <input id="resourceQuantity" type="number" formControlName="quantity" placeholder="5" />
+              <input
+                id="resourceQuantity"
+                type="number"
+                formControlName="quantity"
+                placeholder="5"
+              />
             </div>
           </ng-template>
 
           <div class="form-group">
             <label for="resourceBasePrice">Tarif de base (EUR) *</label>
-            <input id="resourceBasePrice" type="number" formControlName="basePriceEuros" placeholder="150" />
+            <input
+              id="resourceBasePrice"
+              type="number"
+              formControlName="basePriceEuros"
+              placeholder="150"
+            />
           </div>
         </div>
 
@@ -171,7 +196,12 @@
         <div class="form-row">
           <div class="form-group">
             <label for="resourceDeposit">Montant de la caution (EUR)</label>
-            <input id="resourceDeposit" type="number" formControlName="depositAmountEuros" placeholder="0" />
+            <input
+              id="resourceDeposit"
+              type="number"
+              formControlName="depositAmountEuros"
+              placeholder="0"
+            />
             <small>Laisser a 0 si aucune caution</small>
           </div>
 
@@ -199,12 +229,23 @@
 
         <div class="form-group">
           <label for="resourceImageUrl">Image URL</label>
-          <input id="resourceImageUrl" type="url" formControlName="imageUrl" placeholder="https://..." />
+          <input
+            id="resourceImageUrl"
+            type="url"
+            formControlName="imageUrl"
+            placeholder="https://..."
+          />
         </div>
 
         <div class="form-actions">
           <button type="submit" class="submit-btn" [disabled]="isSaving()">
-            {{ isSaving() ? 'Enregistrement...' : (isEditing ? 'Modifier la ressource' : 'Creer la ressource') }}
+            {{
+              isSaving()
+                ? 'Enregistrement...'
+                : isEditing
+                  ? 'Modifier la ressource'
+                  : 'Creer la ressource'
+            }}
           </button>
         </div>
       </form>
