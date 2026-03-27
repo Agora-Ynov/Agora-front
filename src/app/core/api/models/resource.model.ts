@@ -1,3 +1,7 @@
+import { ResourceDto as OpenApiResourceDto } from '../model/resourceDto';
+import { ResourceRequest as OpenApiResourceRequest } from '../model/resourceRequest';
+import { TimeSlotDto as OpenApiTimeSlotDto } from '../model/timeSlotDto';
+
 export type ResourceType = 'IMMOBILIER' | 'MOBILIER';
 
 export type AccessibilityTag =
@@ -10,7 +14,11 @@ export type AccessibilityTag =
 
 export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
 
-export interface ResourceDto {
+export interface ResourceDto
+  extends Omit<
+    OpenApiResourceDto,
+    'id' | 'name' | 'resourceType' | 'description' | 'capacity' | 'imageUrl' | 'accessibilityTags'
+  > {
   id: string;
   name: string;
   resourceType: ResourceType;
@@ -35,7 +43,11 @@ export interface ResourceDto {
   blackoutDates?: string[];
 }
 
-export interface CreateResourceDto {
+export interface CreateResourceDto
+  extends Omit<
+    OpenApiResourceRequest,
+    'resourceType' | 'description' | 'capacity' | 'imageUrl' | 'accessibilityTags'
+  > {
   name: string;
   resourceType: ResourceType;
   description: string;
@@ -71,11 +83,7 @@ export interface ResourceStats {
   totalCount: number;
 }
 
-export interface ResourceSlotDto {
-  slotStart: string;
-  slotEnd: string;
-  isAvailable: boolean;
-}
+export type ResourceSlotDto = Required<OpenApiTimeSlotDto>;
 
 export interface CalendarSlotDto {
   resourceId: string;
