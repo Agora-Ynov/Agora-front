@@ -1,23 +1,96 @@
-<section class="reservations-page">
-  <div class="reservations-shell">
-    <header class="reservations-topbar">
-      <a class="reservations-link" routerLink="/account">Retour au tableau de bord</a>
-      <span class="reservations-user">{{ displayName() }}</span>
+<section class="my-reservations-page">
+  <div class="my-reservations-shell">
+    <header class="page-header">
+      <div>
+        <h1>Mes reservations</h1>
+        <p>Gerez toutes vos reservations de salles et materiel</p>
+      </div>
+
+      <a class="primary-link" routerLink="/catalogue">Nouvelle reservation</a>
     </header>
 
-    <article class="reservations-card">
-      <h1>Mes reservations</h1>
-      <p>
-        Cet ecran est pret a accueillir l'historique et le suivi des reservations du compte
-        connecte. Pour l'instant, aucune reservation mock n'est encore rattachee au profil.
-      </p>
+    @if (loading()) {
+      <section class="panel-card empty-state">
+        <h2>Chargement...</h2>
+        <p>Recuperation de vos reservations en cours.</p>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="panel-card error-state">
+        <h2>Impossible de charger vos reservations</h2>
+        <p>{{ errorMessage() }}</p>
+      </section>
+    } @else if (!reservations().length) {
+      <section class="panel-card empty-state">
+        <div class="empty-state__icon"></div>
+        <h2>Aucune reservation</h2>
+        <p>Vous n'avez pas encore effectue de reservation</p>
+        <a class="primary-link" routerLink="/catalogue">Parcourir le catalogue</a>
+      </section>
+    } @else {
+      <section class="stats-grid">
+        <article class="stat-card">
+          <strong>{{ stats().total }}</strong>
+          <span>Total</span>
+        </article>
+        <article class="stat-card stat-card--pending">
+          <strong>{{ stats().pending }}</strong>
+          <span>En attente</span>
+        </article>
+        <article class="stat-card stat-card--confirmed">
+          <strong>{{ stats().confirmed }}</strong>
+          <span>Confirmees</span>
+        </article>
+        <article class="stat-card stat-card--deposit">
+          <strong>{{ stats().depositPending }}</strong>
+          <span>Cautions a regler</span>
+        </article>
+      </section>
 
-      <div class="reservations-actions">
-        <a class="reservations-link reservations-link--primary" routerLink="/catalogue">
-          Nouvelle reservation
-        </a>
-        <a class="reservations-link" routerLink="/account">Revenir au profil</a>
-      </div>
-    </article>
+      <section class="reservation-list">
+        @for (reservation of reservations(); track reservation.id) {
+          <article class="panel-card reservation-card">
+            <div class="reservation-card__header">
+              <div>
+                <div class="reservation-card__title-row">
+                  <h2>{{ reservation.resourceName }}</h2>
+                  <span class="type-pill">{{ reservation.resourceType === 'IMMOBILIER' ? 'Salle' : 'Materiel' }}</span>
+                  <span class="status-pill status-pill--{{ reservation.status.toLowerCase() }}">
+                    {{ statusLabel(reservation.status) }}
+                  </span>
+                </div>
+                <p class="reservation-card__subtitle">Reservation {{ reservation.id }}</p>
+              </div>
+
+              <div class="reservation-card__date">
+                <strong>{{ reservation.date }}</strong>
+                <span>{{ reservation.slotStart }} - {{ reservation.slotEnd }}</span>
+              </div>
+            </div>
+
+            <div class="reservation-card__body">
+              <div class="reservation-meta">
+                <span class="reservation-meta__label">Reduction</span>
+                <strong>{{ reservation.discountLabel || 'Plein tarif' }}</strong>
+              </div>
+              <div class="reservation-meta">
+                <span class="reservation-meta__label">Caution</span>
+                <strong>{{ formatEuros(reservation.depositAmountCents) }}</strong>
+                <span class="reservation-meta__hint">
+                  {{ depositLabel(reservation.depositStatus) }}
+                </span>
+              </div>
+              <div class="reservation-meta">
+                <span class="reservation-meta__label">Caution standard</span>
+                <strong>{{ formatEuros(reservation.depositAmountFullCents) }}</strong>
+              </div>
+              <div class="reservation-meta">
+                <span class="reservation-meta__label">Creee le</span>
+                <strong>{{ reservation.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+              </div>
+            </div>
+          </article>
+        }
+      </section>
+    }
   </div>
 </section>

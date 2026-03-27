@@ -1,95 +1,118 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
+import { PagedResponse } from '../../../core/api/models/paged-response.model';
 import { AuthService } from '../../../core/auth/auth.service';
+
+type ReservationStatusView = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'REJECTED';
+type DepositStatusView =
+  | 'DEPOSIT_PENDING'
+  | 'DEPOSIT_PAID'
+  | 'EXEMPT'
+  | 'WAIVED'
+  | 'REFUNDED';
+
+interface ReservationSummaryMock {
+  id: string;
+  resourceName: string;
+  resourceType: 'IMMOBILIER' | 'MOBILIER';
+  date: string;
+  slotStart: string;
+  slotEnd: string;
+  status: ReservationStatusView;
+  depositStatus: DepositStatusView;
+  depositAmountCents: number;
+  depositAmountFullCents: number;
+  discountLabel: string | null;
+  createdAt: string;
+}
 
 @Component({
   selector: 'app-my-reservations',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './my-reservations.component.html',
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-
-      .reservations-page {
-        min-height: 100vh;
-        padding: 3rem 1.5rem;
-        background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%);
-      }
-
-      .reservations-shell {
-        max-width: 960px;
-        margin: 0 auto;
-      }
-
-      .reservations-topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-
-      .reservations-user {
-        color: #405170;
-        font-weight: 600;
-      }
-
-      .reservations-card {
-        padding: 2rem;
-        border: 1px solid rgba(17, 24, 39, 0.1);
-        border-radius: 1.5rem;
-        background: #fff;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
-      }
-
-      .reservations-card h1,
-      .reservations-card p {
-        margin: 0;
-      }
-
-      .reservations-card p {
-        margin-top: 0.8rem;
-        color: #536277;
-        line-height: 1.6;
-      }
-
-      .reservations-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        margin-top: 1.5rem;
-      }
-
-      .reservations-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 3rem;
-        padding: 0.85rem 1.2rem;
-        border: 1px solid rgba(17, 24, 39, 0.12);
-        border-radius: 0.95rem;
-        color: #111827;
-        text-decoration: none;
-      }
-
-      .reservations-link--primary {
-        background: #09081a;
-        color: #fff;
-      }
-    `,
-  ],
+  styleUrl: './my-reservations.component.scss',
 })
 export class MyReservationsComponent {
   private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
 
   readonly currentUser = this.authService.currentUser;
+  readonly loading = signal(true);
+  readonly errorMessage = signal<string | null>(null);
+  readonly reservations = signal<ReservationSummaryMock[]>([]);
+
   readonly displayName = computed(() => {
     const user = this.currentUser();
     return user ? `${user.firstName} ${user.lastName}` : 'Utilisateur';
   });
+
+  readonly stats = computed(() => {
+    const reservations = this.reservations();
+
+    return {
+      total: reservations.length,
+      pending: reservations.filter(reservation => reservation.status === 'PENDING').length,
+      confirmed: reservations.filter(reservation => reservation.status === 'CONFIRMED').length,
+      depositPending: reservations.filter(
+        reservation => reservation.depositStatus === 'DEPOSIT_PENDING'
+      ).length,
+    };
+  });
+
+  constructor() {
+    this.http
+      .get<PagedResponse<ReservationSummaryMock>>('/assets/mocks/api/reservations.get.json')
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: response => {
+          this.reservations.set(response.content);
+          this.loading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.errorMessage.set(
+            error.message || 'Impossible de charger vos reservations pour le moment.'
+          );
+          this.loading.set(false);
+        },
+      });
+  }
+
+  statusLabel(status: ReservationStatusView): string {
+    switch (status) {
+      case 'CONFIRMED':
+        return 'Confirmee';
+      case 'PENDING':
+        return 'En attente';
+      case 'REJECTED':
+        return 'Refusee';
+      case 'CANCELLED':
+      default:
+        return 'Annulee';
+    }
+  }
+
+  depositLabel(status: DepositStatusView): string {
+    switch (status) {
+      case 'DEPOSIT_PENDING':
+        return 'Caution a regler';
+      case 'DEPOSIT_PAID':
+        return 'Caution reglee';
+      case 'EXEMPT':
+        return 'Caution exemptee';
+      case 'WAIVED':
+        return 'Caution abandonnee';
+      case 'REFUNDED':
+      default:
+        return 'Caution remboursee';
+    }
+  }
+
+  formatEuros(valueCents: number): string {
+    return `${Math.round(valueCents / 100)} EUR`;
+  }
 }
