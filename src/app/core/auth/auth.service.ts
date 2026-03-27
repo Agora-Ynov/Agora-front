@@ -22,50 +22,50 @@ interface MockAccount {
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
   private readonly useMockAuth = environment.useMockAuth;
-  private readonly mockAccounts: Record<string, MockAccount> = {
-    'jean.dupont@gmail.com': {
-      password: 'MonMotDePasse123!',
-      profile: {
-        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        email: 'jean.dupont@gmail.com',
-        phone: '0612345678',
-        role: 'CITIZEN',
-        accountType: 'AUTONOMOUS',
-        accountStatus: 'ACTIVE',
-        internalId: undefined,
-        exemptions: {
-          association: false,
-          social: false,
-          mandate: false,
-        },
-        groupIds: ['g001'],
-        createdAt: '2026-01-15T09:30:00Z',
-      },
-    },
-    'admin@agora.local': {
-      password: 'AdminAgora123!',
-      profile: {
-        id: 'b2c3d4e5-f678-9012-abcd-ef1234567801',
-        firstName: 'Marie',
-        lastName: 'Dupont',
-        email: 'admin@agora.local',
-        phone: '0102030405',
-        role: 'SECRETARY_ADMIN',
-        accountType: 'AUTONOMOUS',
-        accountStatus: 'ACTIVE',
-        internalId: 'ADM-001',
-        exemptions: {
-          association: false,
-          social: false,
-          mandate: true,
-        },
-        groupIds: [],
-        createdAt: '2025-11-04T08:15:00Z',
-      },
-    },
-  };
+  // private readonly mockAccounts: Record<string, MockAccount> = {
+  //   'jean.dupont@gmail.com': {
+  //     password: 'MonMotDePasse123!',
+  //     profile: {
+  //       id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  //       firstName: 'Jean',
+  //       lastName: 'Dupont',
+  //       email: 'jean.dupont@gmail.com',
+  //       phone: '0612345678',
+  //       role: 'CITIZEN',
+  //       accountType: 'AUTONOMOUS',
+  //       accountStatus: 'ACTIVE',
+  //       internalId: undefined,
+  //       exemptions: {
+  //         association: false,
+  //         social: false,
+  //         mandate: false,
+  //       },
+  //       groupIds: ['g001'],
+  //       createdAt: '2026-01-15T09:30:00Z',
+  //     },
+  //   },
+  //   'admin@agora.local': {
+  //     password: 'AdminAgora123!',
+  //     profile: {
+  //       id: 'b2c3d4e5-f678-9012-abcd-ef1234567801',
+  //       firstName: 'Marie',
+  //       lastName: 'Dupont',
+  //       email: 'admin@agora.local',
+  //       phone: '0102030405',
+  //       role: 'SECRETARY_ADMIN',
+  //       accountType: 'AUTONOMOUS',
+  //       accountStatus: 'ACTIVE',
+  //       internalId: 'ADM-001',
+  //       exemptions: {
+  //         association: false,
+  //         social: false,
+  //         mandate: true,
+  //       },
+  //       groupIds: [],
+  //       createdAt: '2025-11-04T08:15:00Z',
+  //     },
+  //   },
+  // };
 
   private _currentUser = signal<UserProfile | null>(null);
   readonly currentUser = this._currentUser.asReadonly();

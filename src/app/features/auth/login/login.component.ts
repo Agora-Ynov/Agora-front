@@ -5,7 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { ApiErrorResponse, LoginRequest, LoginResponse } from '../../../core/auth/auth.model';
+import { ApiErrorResponse, LoginResponse } from '../../../core/auth/auth.model';
+import { LoginRequestDto } from '../../../core/api';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,7 @@ export class LoginComponent {
     if (this.authService.isAuthenticated()) {
       void this.router.navigate(['/catalogue']);
     }
+
   }
 
   onSubmit(): void {
@@ -42,7 +44,7 @@ export class LoginComponent {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const payload: LoginRequest = {
+    const payload: LoginRequestDto = {
       email: this.loginForm.value.email ?? '',
       password: this.loginForm.value.password ?? '',
     };

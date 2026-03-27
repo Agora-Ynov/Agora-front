@@ -14,7 +14,8 @@
     "lint:fix": "eslint src --ext .ts,.html --fix",
     "e2e": "cypress run",
     "e2e:open": "cypress open",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.html\""
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.html\"",
+    "openapi:generate": "npx @openapitools/openapi-generator-cli generate -i http://localhost:8081/v3/api-docs -g typescript-angular -o src/app/core/api --additional-properties=providedIn=root,ngVersion=17"
   },
   "private": true,
   "dependencies": {
