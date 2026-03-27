@@ -298,13 +298,12 @@
   </main>
 
   @if (isCreateModalOpen()) {
-    <div class="create-modal-backdrop" (click)="closeCreateModal()">
+    <div class="create-modal-backdrop">
       <section
         class="create-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-user-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="create-modal__header">
           <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>

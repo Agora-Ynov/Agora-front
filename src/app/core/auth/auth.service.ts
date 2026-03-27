@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, delay, map, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, delay, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JwtService } from './jwt.service';
 import {
