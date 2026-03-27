@@ -56,6 +56,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/affiliations',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/affiliations/admin-affiliations.component').then(
+        m => m.AdminAffiliationsComponent
+      ),
+  },
+  {
     path: 'admin/audit',
     canActivate: [adminGuard],
     loadComponent: () =>
