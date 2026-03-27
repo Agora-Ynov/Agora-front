@@ -14,9 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
     provideApi({
       basePath: environment.apiUrl,
-      credentials: {
-        bearerAuth: () => localStorage.getItem('agora_access_token') ?? undefined,
-      },
+      withCredentials: true,
     }),
     provideAnimations(),
   ],

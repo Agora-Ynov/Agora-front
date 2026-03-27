@@ -85,9 +85,20 @@ export class RegisterComponent {
 
     this.authService.register(payload).subscribe({
       next: () => {
-        this.isSubmitting = false;
-        this.successMessage = 'Compte cree avec succes. Vous pouvez maintenant vous connecter.';
-        void this.router.navigate(['/login']);
+        this.authService.login(payload.email, payload.password).subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            void this.router.navigate(['/catalogue']);
+          },
+          error: (error: HttpErrorResponse) => {
+            this.isSubmitting = false;
+            const apiError = error.error as ApiErrorResponse;
+            this.errorMessage =
+              apiError?.message ??
+              "Compte cree, mais la connexion automatique a echoue. Merci de vous connecter manuellement.";
+            void this.router.navigate(['/login']);
+          },
+        });
       },
       error: (error: HttpErrorResponse) => {
         this.isSubmitting = false;

@@ -98,7 +98,7 @@ export class AuthService {
     }
 
     this.http
-      .post(`${this.apiUrl}/api/auth/logout`, {})
+      .post(`${this.apiUrl}/api/auth/logout`, {}, { withCredentials: true })
       .pipe(catchError(() => throwError(() => null)))
       .subscribe({
         complete: () => this.clearSession(),
@@ -115,11 +115,12 @@ export class AuthService {
   }
 
   refreshToken(): Observable<{ accessToken: string; refreshToken: string }> {
-    const refreshToken = this.jwtService.getRefreshToken();
     return this.http
-      .post<{ accessToken: string; refreshToken: string }>(`${this.apiUrl}/api/auth/refresh`, {
-        refreshToken,
-      })
+      .post<{ accessToken: string; refreshToken: string }>(
+        `${this.apiUrl}/api/auth/refresh`,
+        {},
+        { withCredentials: true }
+      )
       .pipe(tap(res => this.jwtService.setTokens(res.accessToken, res.refreshToken)));
   }
 
