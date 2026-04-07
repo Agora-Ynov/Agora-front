@@ -8,6 +8,7 @@ import { map, of, switchMap } from 'rxjs';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
+import { JwtService } from '../../../core/auth/jwt.service';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { CatalogueMockService } from '../catalogue/catalogue-mock.service';
 import {
@@ -35,6 +36,7 @@ export class BookingFormComponent {
   private readonly http = inject(HttpClient);
   private readonly catalogueMockService = inject(CatalogueMockService);
   private readonly authService = inject(AuthService);
+  private readonly jwtService = inject(JwtService);
 
   readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   readonly loading = signal(true);
@@ -50,10 +52,38 @@ export class BookingFormComponent {
   readonly selectedFiles = signal<File[]>([]);
 
   readonly currentUser = this.authService.currentUser;
+  readonly bookingUser = computed<UserProfile | null>(() => {
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      return currentUser;
+    }
+
+    const payload = this.jwtService.getPayload();
+    if (!payload) {
+      return null;
+    }
+
+    return {
+      id: payload.sub,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      email: payload.email,
+      role: payload.role,
+      accountType: payload.accountType,
+      accountStatus: 'ACTIVE',
+      exemptions: {
+        association: false,
+        social: false,
+        mandate: false,
+      },
+      groupIds: [],
+      createdAt: '',
+    };
+  });
 
   readonly bookingOptions = computed<ReservationActorOption[]>(() => {
     const resource = this.resource();
-    const user = this.currentUser();
+    const user = this.bookingUser();
 
     if (!resource || !user) {
       return [];
@@ -83,7 +113,7 @@ export class BookingFormComponent {
       return null;
     }
 
-    return resolveResourcePricing(resource, this.currentUser(), this.groups());
+    return resolveResourcePricing(resource, this.bookingUser(), this.groups());
   });
 
   readonly depositAmountCents = computed(() => this.resource()?.depositAmountCents ?? 0);
@@ -115,10 +145,18 @@ export class BookingFormComponent {
   );
 
   constructor() {
+    if (this.authService.isAuthenticated() && !this.currentUser()) {
+      this.authService.getCurrentUser().pipe(takeUntilDestroyed()).subscribe({
+        error: () => {
+          this.groups.set([]);
+        },
+      });
+    }
+
     effect(
       () => {
         const resource = this.resource();
-        const user = this.currentUser();
+        const user = this.bookingUser();
 
         if (!resource) {
           return;
