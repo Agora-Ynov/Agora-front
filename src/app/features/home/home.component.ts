@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 
 interface FeatureCard {
   icon: 'calendar' | 'building' | 'box' | 'users';
@@ -21,6 +22,10 @@ interface StepItem {
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
+  private readonly authService = inject(AuthService);
+
+  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
+
   featureCards: FeatureCard[] = [
     {
       icon: 'calendar',
