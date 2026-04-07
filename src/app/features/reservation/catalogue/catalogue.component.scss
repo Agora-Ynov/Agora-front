@@ -298,6 +298,21 @@
   isolation: isolate;
 }
 
+/* Photo API : masque les pseudo-éléments des thèmes CSS */
+.catalogue-card__cover--with-photo::before,
+.catalogue-card__cover--with-photo::after {
+  display: none;
+}
+
+.catalogue-card__cover-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .catalogue-card__cover::before,
 .catalogue-card__cover::after {
   content: '';

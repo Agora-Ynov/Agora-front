@@ -5,20 +5,25 @@ import { ResourceDto } from '../../../core/api/models/resource.model';
 import { RessourcesService } from '../../../core/api/api/ressources.service';
 import { ResourceDto as OpenApiResourceDto } from '../../../core/api/model/resourceDto';
 
+/**
+ * Catalogue public : on utilise le client OpenAPI (contrat) avec transferCache désactivé sur GET.
+ */
 @Injectable({ providedIn: 'root' })
 export class CatalogueResourcesService {
   private readonly ressourcesService = inject(RessourcesService);
 
   getResources(): Observable<PagedResponse<ResourceDto>> {
-    return this.ressourcesService.getResources().pipe(
-      map(response => ({
-        content: (response.content ?? []).map(resource => this.toResourceModel(resource)),
-        totalElements: response.totalElements ?? 0,
-        totalPages: response.totalPages ?? 0,
-        page: response.page ?? 0,
-        size: response.size ?? 20,
-      }))
-    );
+    return this.ressourcesService
+      .getResources(undefined, undefined, undefined, undefined, undefined, undefined, 'body', false, { transferCache: false })
+      .pipe(
+        map(response => ({
+          content: (response.content ?? []).map(resource => this.toResourceModel(resource)),
+          totalElements: response.totalElements ?? 0,
+          totalPages: response.totalPages ?? 0,
+          page: response.page ?? 0,
+          size: response.size ?? 20,
+        }))
+      );
   }
 
   getResourceById(resourceId: string): Observable<ResourceDto | null> {
@@ -28,8 +33,9 @@ export class CatalogueResourcesService {
   }
 
   private toResourceModel(resource: OpenApiResourceDto): ResourceDto {
+    const id = resource.id != null ? String(resource.id) : '';
     return {
-      id: resource.id ?? '',
+      id,
       name: resource.name ?? 'Ressource',
       resourceType: resource.resourceType ?? 'IMMOBILIER',
       capacity: resource.capacity ?? null,

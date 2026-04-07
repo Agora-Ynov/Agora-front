@@ -23,8 +23,9 @@ describe('CatalogueResourcesService', () => {
     ressourcesServiceMock.getResourceById.mockReset();
   });
 
-  it('should map paged resources from OpenAPI service', () => {
+  it('should map paged resources from OpenAPI service (transferCache disabled)', () => {
     let responseBody: unknown;
+
     ressourcesServiceMock.getResources.mockReturnValue(
       of({
         content: [{ id: 'r001', name: 'Salle 1', resourceType: 'IMMOBILIER', isActive: false }],
@@ -39,7 +40,18 @@ describe('CatalogueResourcesService', () => {
       responseBody = response;
     });
 
-    expect(ressourcesServiceMock.getResources).toHaveBeenCalled();
+    expect(ressourcesServiceMock.getResources).toHaveBeenCalledWith(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'body',
+      false,
+      { transferCache: false }
+    );
+
     expect(responseBody).toMatchObject({
       totalElements: 1,
       content: [
@@ -71,4 +83,3 @@ describe('CatalogueResourcesService', () => {
     });
   });
 });
-

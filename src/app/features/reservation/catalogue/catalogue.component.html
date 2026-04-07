@@ -74,8 +74,18 @@
           <article class="catalogue-card">
             <div
               class="catalogue-card__cover"
-              [ngClass]="'catalogue-card__cover--' + resource.coverTheme"
+              [class.catalogue-card__cover--with-photo]="!!resource.imageUrl"
+              [ngClass]="resource.imageUrl ? null : ('catalogue-card__cover--' + resource.coverTheme)"
             >
+              @if (resource.imageUrl) {
+                <img
+                  class="catalogue-card__cover-img"
+                  [src]="resource.imageUrl"
+                  [alt]="'Photo : ' + resource.name"
+                  loading="lazy"
+                  decoding="async"
+                />
+              }
               <span class="catalogue-card__type">{{ resource.typeLabel }}</span>
             </div>
 

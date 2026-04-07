@@ -39,7 +39,10 @@ interface CatalogueResource {
   description: string;
   family: Exclude<ResourceFamilyFilter, 'ALL'>;
   typeLabel: string;
+  /** Dégradé / illustration de secours si pas d’URL image API */
   coverTheme: ResourceCoverTheme;
+  /** Photo renvoyée par l’API (`imageUrl`) — prioritaire à l’affichage */
+  imageUrl: string | null;
   tags: string[];
   features: FeatureFilter[];
   pricePerBooking: number;
@@ -82,9 +85,11 @@ export class CatalogueComponent {
 
     return this.resources().filter(resource => {
       const matchesFamily = family === 'ALL' || resource.family === family;
+      // Comparaison en chaînes : tags API peuvent différer légèrement du typage strict.
+      const tagCodes = resource.features.map(f => String(f));
       const matchesFeatures =
         selectedFeatures.length === 0 ||
-        selectedFeatures.every(feature => resource.features.includes(feature));
+        selectedFeatures.every(feature => tagCodes.includes(String(feature)));
 
       return matchesFamily && matchesFeatures;
     });
@@ -168,6 +173,8 @@ export class CatalogueComponent {
     const accessibilityTags = resource.accessibilityTags ?? [];
     const depositAmountCents = resource.depositAmountCents ?? 0;
 
+    const imageUrl = resource.imageUrl?.trim() || null;
+
     return {
       id: resource.id,
       name: resource.name,
@@ -175,6 +182,7 @@ export class CatalogueComponent {
       family: resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT',
       typeLabel: getResourceTypeLabel(resource.resourceType),
       coverTheme: getResourceCoverTheme(resource.id),
+      imageUrl,
       tags: getResourceTags(resource),
       features: accessibilityTags,
       pricePerBooking: getResourcePrice(resource),
