@@ -7,6 +7,7 @@ type AdminStatIcon = 'clock' | 'check' | 'resource' | 'affiliation';
 type AdminActionIcon =
   | 'users'
   | 'reservations'
+  | 'my-reservations'
   | 'audit'
   | 'closures'
   | 'quotas'
@@ -77,6 +78,7 @@ export class AdminDashboardComponent {
   ];
 
   readonly quickActions: AdminQuickAction[] = [
+    { label: 'Mes reservations', icon: 'my-reservations', route: '/reservations' },
     { label: 'Utilisateurs', icon: 'users', route: '/admin/users' },
     { label: 'Reservations', icon: 'reservations', route: '/admin/reservations' },
     { label: "Journal d'audit", icon: 'audit', route: '/admin/audit' },
