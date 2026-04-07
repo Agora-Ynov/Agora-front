@@ -3,8 +3,10 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { ReservationService } from '../reservation.service';
 
 type ReservationDisplayStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED';
 type ReservationPaymentStatus = 'PAID' | 'PENDING' | 'EXEMPT';
@@ -62,12 +64,16 @@ export class MyReservationsComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly reservationService = inject(ReservationService);
 
   readonly currentUser = this.authService.currentUser;
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
+  readonly feedbackMessage = signal<string | null>(null);
   readonly reservations = signal<ReservationCard[]>([]);
   readonly expandedReservationId = signal<string | null>(null);
+  readonly reservationIdToCancel = signal<string | null>(null);
+  readonly cancellationInProgressId = signal<string | null>(null);
 
   readonly displayName = computed(() => {
     const user = this.currentUser();
@@ -92,16 +98,77 @@ export class MyReservationsComponent {
     );
   }
 
-  cancelReservation(reservationId: string): void {
-    this.reservations.update(reservations =>
-      reservations.map(reservation =>
-        reservation.id === reservationId ? { ...reservation, status: 'CANCELLED' } : reservation
+  openCancelConfirmation(reservationId: string): void {
+    if (this.cancellationInProgressId() || this.getReservationStatus(reservationId) === 'CANCELLED') {
+      return;
+    }
+
+    this.reservationIdToCancel.set(reservationId);
+  }
+
+  closeCancelConfirmation(): void {
+    if (this.cancellationInProgressId()) {
+      return;
+    }
+
+    this.reservationIdToCancel.set(null);
+  }
+
+  confirmCancellation(): void {
+    const reservationId = this.reservationIdToCancel();
+    if (!reservationId || this.cancellationInProgressId()) {
+      return;
+    }
+
+    this.cancellationInProgressId.set(reservationId);
+    this.feedbackMessage.set(null);
+
+    this.reservationService
+      .cancelReservation(reservationId)
+      .pipe(
+        finalize(() => {
+          this.cancellationInProgressId.set(null);
+        })
       )
-    );
+      .subscribe({
+        next: () => {
+          this.reservations.update(reservations =>
+            reservations.map(reservation =>
+              reservation.id === reservationId
+                ? {
+                    ...reservation,
+                    status: 'CANCELLED',
+                    paymentStatus:
+                      reservation.paymentStatus === 'PAID' ? reservation.paymentStatus : 'PENDING',
+                    timeline: this.buildCancelledTimeline(reservation.timeline),
+                  }
+                : reservation
+            )
+          );
+          this.feedbackMessage.set('La reservation a bien ete annulee.');
+          this.reservationIdToCancel.set(null);
+        },
+        error: () => {
+          this.feedbackMessage.set("Impossible d'annuler la reservation pour le moment.");
+        },
+      });
   }
 
   isExpanded(reservationId: string): boolean {
     return this.expandedReservationId() === reservationId;
+  }
+
+  isCancellationModalOpen(): boolean {
+    return this.reservationIdToCancel() !== null;
+  }
+
+  isCancellationPending(reservationId: string): boolean {
+    return this.cancellationInProgressId() === reservationId;
+  }
+
+  getReservationToCancel(): ReservationCard | null {
+    const reservationId = this.reservationIdToCancel();
+    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
   }
 
   formatReservationDate(date: string): string {
@@ -149,8 +216,10 @@ export class MyReservationsComponent {
   private loadReservations(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.feedbackMessage.set(null);
     this.reservations.set([]);
     this.expandedReservationId.set(null);
+    this.reservationIdToCancel.set(null);
 
     this.http
       .get<ReservationsResponse>('/assets/mocks/api/reservations.get.json')
@@ -257,5 +326,25 @@ export class MyReservationsComponent {
         completed: false,
       },
     ];
+  }
+
+  private getReservationStatus(reservationId: string): ReservationDisplayStatus | null {
+    return this.reservations().find(reservation => reservation.id === reservationId)?.status ?? null;
+  }
+
+  private buildCancelledTimeline(timeline: ReservationTimelineStep[]): ReservationTimelineStep[] {
+    const cancellationStep: ReservationTimelineStep = {
+      label: 'Reservation annulee',
+      date: new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date()),
+      completed: true,
+    };
+
+    return [...timeline.filter(step => step.label !== cancellationStep.label), cancellationStep];
   }
 }

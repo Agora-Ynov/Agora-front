@@ -39,6 +39,10 @@
         </div>
       </section>
     } @else {
+      @if (feedbackMessage()) {
+        <div class="feedback-banner">{{ feedbackMessage() }}</div>
+      }
+
       <div class="reservations-list">
         @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
           <article class="reservation-card">
@@ -239,13 +243,17 @@
               <button
                 type="button"
                 class="cancel-button"
-                [disabled]="reservation.status === 'CANCELLED'"
-                (click)="cancelReservation(reservation.id)"
+                [disabled]="
+                  reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
+                "
+                (click)="openCancelConfirmation(reservation.id)"
               >
                 {{
                   reservation.status === 'CANCELLED'
                     ? 'Reservation annulee'
-                    : 'Annuler la reservation'
+                    : isCancellationPending(reservation.id)
+                      ? 'Annulation en cours...'
+                      : 'Annuler la reservation'
                 }}
               </button>
 
@@ -254,6 +262,44 @@
           </article>
         }
       </div>
+
+      @if (isCancellationModalOpen()) {
+        <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
+        <section
+          class="confirm-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-modal-title"
+        >
+          <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
+          @if (getReservationToCancel(); as reservation) {
+            <p>
+              Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
+              <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
+            </p>
+          }
+          <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>
+
+          <div class="confirm-modal__actions">
+            <button
+              type="button"
+              class="modal-secondary-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="closeCancelConfirmation()"
+            >
+              Retour
+            </button>
+            <button
+              type="button"
+              class="modal-danger-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="confirmCancellation()"
+            >
+              {{ cancellationInProgressId() ? 'Annulation...' : 'Confirmer' }}
+            </button>
+          </div>
+        </section>
+      }
     }
   </div>
 </section>

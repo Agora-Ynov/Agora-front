@@ -1,0 +1,168 @@
+<section class="affiliation-page">
+  <main class="affiliation-main">
+    <nav class="affiliation-breadcrumb" aria-label="Fil d'ariane">
+      <a routerLink="/account">Tableau de bord</a>
+      <span aria-hidden="true">›</span>
+      <span>Demande d'affiliation</span>
+    </nav>
+
+    <header class="affiliation-hero">
+      <h1>Demande d'affiliation ou d'exoneration</h1>
+      <p>
+        Soumettez une demande de rattachement a un groupe ou d'exoneration de tarif. Votre dossier
+        sera examine par l'equipe administrative.
+      </p>
+    </header>
+
+    <section class="previous-requests panel-card">
+      <div class="section-heading">
+        <span class="section-heading__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M8 4.75H16L19.25 8V18.25A1.75 1.75 0 0 1 17.5 20H8A3 3 0 0 1 5 17V7.75A3 3 0 0 1 8 4.75Z"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linejoin="round"
+            />
+            <path d="M15.75 4.75V8.25H19.25" stroke="currentColor" stroke-width="1.7" />
+            <path d="M8.5 11H15.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            <path d="M8.5 14.5H13.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          </svg>
+        </span>
+        <h2>Mes demandes precedentes</h2>
+      </div>
+
+      <div class="previous-request-list">
+        @for (request of previousRequests(); track request.submittedAt) {
+          <article class="previous-request">
+            <div class="previous-request__content">
+              <p class="previous-request__title">
+                <span class="previous-request__type">{{ request.typeLabel }}</span>
+                <span aria-hidden="true">→</span>
+                <span>{{ request.groupLabel }}</span>
+              </p>
+              <p class="previous-request__meta">{{ request.submittedAt }}</p>
+            </div>
+
+            <span class="status-pill">{{ request.statusLabel }}</span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="stepper" aria-label="Etapes de la demande">
+      @for (step of steps; track step.index) {
+        <div class="step" [class.step--active]="currentStep() === step.index">
+          <div class="step__dot">{{ step.index }}</div>
+          <div class="step__label">{{ step.title }}</div>
+        </div>
+      }
+    </section>
+
+    <section class="request-type">
+      <h2>Que souhaitez-vous demander ?</h2>
+
+      <div class="request-type__grid">
+        @for (option of requestTypes; track option.id) {
+          <button
+            type="button"
+            class="type-card"
+            [class.type-card--selected]="selectedType() === option.id"
+            (click)="selectType(option.id)"
+          >
+            <span class="type-card__icon" aria-hidden="true">
+              @switch (option.icon) {
+                @case ('heart') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 19.25L4.9 12.4C3.5 11.05 3.5 8.85 4.9 7.5C6.3 6.15 8.58 6.15 9.98 7.5L12 9.45L14.02 7.5C15.42 6.15 17.7 6.15 19.1 7.5C20.5 8.85 20.5 11.05 19.1 12.4L12 19.25Z"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+                @case ('shield') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 4L18 6.2V11.3C18 15.1 15.58 18.54 12 19.8C8.42 18.54 6 15.1 6 11.3V6.2L12 4Z"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M9.4 12.2L11.15 13.95L14.7 10.4"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
+                @case ('crown') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M5 18L6.7 8.5L12 12.5L17.3 8.5L19 18H5Z"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linejoin="round"
+                    />
+                    <circle cx="6.5" cy="7.5" r="1.3" fill="currentColor" />
+                    <circle cx="12" cy="5.8" r="1.3" fill="currentColor" />
+                    <circle cx="17.5" cy="7.5" r="1.3" fill="currentColor" />
+                  </svg>
+                }
+                @case ('users') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="9" cy="9" r="2.75" stroke="currentColor" stroke-width="1.7" />
+                    <circle cx="16.75" cy="10" r="2.15" stroke="currentColor" stroke-width="1.7" />
+                    <path
+                      d="M4.5 18.2C5.55 15.6 7.35 14.35 9.55 14.35C11.75 14.35 13.55 15.6 14.6 18.2"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M15.6 17.5C16.2 16.05 17.25 15.25 18.55 15.25C19.35 15.25 20.1 15.55 20.8 16.2"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                }
+              }
+            </span>
+
+            <span class="type-card__title">{{ option.title }}</span>
+            <span class="type-card__description">{{ option.description }}</span>
+            <span class="type-card__badge">{{ option.badge }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="documents-box">
+      <div class="documents-box__title">
+        <span class="documents-box__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
+            <path d="M12 11V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            <path d="M12 8.3H12.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+        </span>
+        <strong>{{ requiredDocuments().title }}</strong>
+      </div>
+
+      <ul class="documents-box__list">
+        @for (item of requiredDocuments().items; track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </section>
+
+    <footer class="actions-bar">
+      <a class="ghost-button" routerLink="/account">Precedent</a>
+      <button type="button" class="primary-button" (click)="nextStep()">Suivant</button>
+    </footer>
+  </main>
+</section>
