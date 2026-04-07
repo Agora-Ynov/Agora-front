@@ -9,7 +9,6 @@
       <a class="hero-action" routerLink="/catalogue">Nouvelle reservation</a>
     </header>
 
-<<<<<<< HEAD
     @if (loading()) {
       <section class="state-card" aria-live="polite">
         <h2>Chargement de vos reservations</h2>
@@ -40,65 +39,14 @@
         </div>
       </section>
     } @else {
+      @if (feedbackMessage()) {
+        <div class="feedback-banner">{{ feedbackMessage() }}</div>
+      }
+
       <div class="reservations-list">
         @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
           <article class="reservation-card">
             <div class="reservation-card__header">
-=======
-    @if (feedbackMessage()) {
-      <div class="feedback-banner">{{ feedbackMessage() }}</div>
-    }
-
-    <div class="reservations-list">
-      @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
-        <article class="reservation-card">
-          <div class="reservation-card__header">
-            <div>
-              <h2>{{ reservation.resourceName }}</h2>
-              <p>#{{ reservation.id }}</p>
-            </div>
-
-            <span
-              class="status-badge"
-              [class.status-badge--confirmed]="reservation.status === 'CONFIRMED'"
-              [class.status-badge--pending]="reservation.status === 'PENDING'"
-              [class.status-badge--cancelled]="reservation.status === 'CANCELLED'"
-            >
-              <span class="status-badge__dot" aria-hidden="true"></span>
-              {{ reservationStatusLabel(reservation.status) }}
-            </span>
-          </div>
-
-          <div class="reservation-card__grid">
-            <div class="info-block">
-              <span class="info-block__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="3.75"
-                    y="5.75"
-                    width="16.5"
-                    height="14.5"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                  />
-                  <path
-                    d="M8 3.75V7.25"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M16 3.75V7.25"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                  <path d="M3.75 10H20.25" stroke="currentColor" stroke-width="1.9" />
-                </svg>
-              </span>
-
->>>>>>> origin/feature/demande_affiliation
               <div>
                 <h2>{{ reservation.resourceName }}</h2>
                 <p>#{{ reservation.id }}</p>
@@ -227,7 +175,6 @@
               </div>
             </div>
 
-<<<<<<< HEAD
             <div class="timeline-toggle">
               <button
                 type="button"
@@ -260,25 +207,6 @@
                   </span>
                   <span>Suivi de ma demande</span>
                 </span>
-=======
-          <div class="reservation-card__footer">
-            <button
-              type="button"
-              class="cancel-button"
-              [disabled]="
-                reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
-              "
-              (click)="openCancelConfirmation(reservation.id)"
-            >
-              {{
-                reservation.status === 'CANCELLED'
-                  ? 'Reservation annulee'
-                  : isCancellationPending(reservation.id)
-                    ? 'Annulation en cours...'
-                    : 'Annuler la reservation'
-              }}
-            </button>
->>>>>>> origin/feature/demande_affiliation
 
                 <span
                   class="timeline-toggle__chevron"
@@ -296,7 +224,6 @@
                 </span>
               </button>
 
-<<<<<<< HEAD
               @if (isExpanded(reservation.id)) {
                 <div class="timeline-panel">
                   @for (step of reservation.timeline; track step.label) {
@@ -316,13 +243,17 @@
               <button
                 type="button"
                 class="cancel-button"
-                [disabled]="reservation.status === 'CANCELLED'"
-                (click)="cancelReservation(reservation.id)"
+                [disabled]="
+                  reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
+                "
+                (click)="openCancelConfirmation(reservation.id)"
               >
                 {{
                   reservation.status === 'CANCELLED'
                     ? 'Reservation annulee'
-                    : 'Annuler la reservation'
+                    : isCancellationPending(reservation.id)
+                      ? 'Annulation en cours...'
+                      : 'Annuler la reservation'
                 }}
               </button>
 
@@ -331,41 +262,44 @@
           </article>
         }
       </div>
-    }
-=======
-    @if (isCancellationModalOpen()) {
-      <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
-      <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-modal-title">
-        <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
-        @if (getReservationToCancel(); as reservation) {
-          <p>
-            Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
-            <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
-          </p>
-        }
-        <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>
 
-        <div class="confirm-modal__actions">
-          <button
-            type="button"
-            class="modal-secondary-button"
-            [disabled]="!!cancellationInProgressId()"
-            (click)="closeCancelConfirmation()"
-          >
-            Retour
-          </button>
-          <button
-            type="button"
-            class="modal-danger-button"
-            [disabled]="!!cancellationInProgressId()"
-            (click)="confirmCancellation()"
-          >
-            {{ cancellationInProgressId() ? 'Annulation...' : 'Confirmer' }}
-          </button>
-        </div>
-      </section>
-    }
+      @if (isCancellationModalOpen()) {
+        <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
+        <section
+          class="confirm-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-modal-title"
+        >
+          <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
+          @if (getReservationToCancel(); as reservation) {
+            <p>
+              Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
+              <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
+            </p>
+          }
+          <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>
 
->>>>>>> origin/feature/demande_affiliation
+          <div class="confirm-modal__actions">
+            <button
+              type="button"
+              class="modal-secondary-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="closeCancelConfirmation()"
+            >
+              Retour
+            </button>
+            <button
+              type="button"
+              class="modal-danger-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="confirmCancellation()"
+            >
+              {{ cancellationInProgressId() ? 'Annulation...' : 'Confirmer' }}
+            </button>
+          </div>
+        </section>
+      }
+    }
   </div>
 </section>

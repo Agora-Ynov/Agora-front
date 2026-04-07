@@ -67,55 +67,13 @@ export class MyReservationsComponent {
   private readonly reservationService = inject(ReservationService);
 
   readonly currentUser = this.authService.currentUser;
-<<<<<<< HEAD
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
+  readonly feedbackMessage = signal<string | null>(null);
   readonly reservations = signal<ReservationCard[]>([]);
   readonly expandedReservationId = signal<string | null>(null);
-=======
-  readonly reservations = signal<ReservationCard[]>([
-    {
-      id: 'booking-1',
-      resourceName: 'Salle des Fetes',
-      status: 'CONFIRMED',
-      reservationDate: '2026-04-15',
-      startTime: '14:00',
-      endTime: '23:00',
-      amountEuros: 350,
-      depositEuros: 200,
-      paymentStatus: 'PAID',
-      comment: "Gala annuel de l'association",
-      createdAt: '2026-03-10T00:00:00',
-      timeline: [
-        { label: 'Demande envoyee', date: '10 mars 2026 a 01:00', completed: true },
-        { label: 'Validation administrative', date: '11 mars 2026 a 09:20', completed: true },
-        { label: 'Paiement enregistre', date: '12 mars 2026 a 14:05', completed: true },
-      ],
-    },
-    {
-      id: 'booking-2',
-      resourceName: 'Barnums x5',
-      status: 'PENDING',
-      reservationDate: '2026-05-02',
-      startTime: '08:30',
-      endTime: '18:00',
-      amountEuros: 120,
-      depositEuros: 0,
-      paymentStatus: 'PENDING',
-      comment: 'Materiel pour la fete de quartier',
-      createdAt: '2026-03-28T10:30:00',
-      timeline: [
-        { label: 'Demande envoyee', date: '28 mars 2026 a 11:30', completed: true },
-        { label: 'Instruction en cours', date: 'En attente', completed: false },
-        { label: 'Paiement a regler', date: 'Apres validation', completed: false },
-      ],
-    },
-  ]);
-  readonly expandedReservationId = signal<string | null>('booking-1');
   readonly reservationIdToCancel = signal<string | null>(null);
   readonly cancellationInProgressId = signal<string | null>(null);
-  readonly feedbackMessage = signal<string | null>(null);
->>>>>>> origin/feature/demande_affiliation
 
   readonly displayName = computed(() => {
     const user = this.currentUser();
@@ -200,6 +158,19 @@ export class MyReservationsComponent {
     return this.expandedReservationId() === reservationId;
   }
 
+  isCancellationModalOpen(): boolean {
+    return this.reservationIdToCancel() !== null;
+  }
+
+  isCancellationPending(reservationId: string): boolean {
+    return this.cancellationInProgressId() === reservationId;
+  }
+
+  getReservationToCancel(): ReservationCard | null {
+    const reservationId = this.reservationIdToCancel();
+    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
+  }
+
   formatReservationDate(date: string): string {
     return new Intl.DateTimeFormat('fr-FR', {
       day: 'numeric',
@@ -242,12 +213,13 @@ export class MyReservationsComponent {
     }
   }
 
-<<<<<<< HEAD
   private loadReservations(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.feedbackMessage.set(null);
     this.reservations.set([]);
     this.expandedReservationId.set(null);
+    this.reservationIdToCancel.set(null);
 
     this.http
       .get<ReservationsResponse>('/assets/mocks/api/reservations.get.json')
@@ -354,18 +326,6 @@ export class MyReservationsComponent {
         completed: false,
       },
     ];
-=======
-  isCancellationModalOpen(): boolean {
-    return this.reservationIdToCancel() !== null;
-  }
-
-  isCancellationPending(reservationId: string): boolean {
-    return this.cancellationInProgressId() === reservationId;
-  }
-
-  getReservationToCancel(): ReservationCard | null {
-    const reservationId = this.reservationIdToCancel();
-    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
   }
 
   private getReservationStatus(reservationId: string): ReservationDisplayStatus | null {
@@ -386,6 +346,5 @@ export class MyReservationsComponent {
     };
 
     return [...timeline.filter(step => step.label !== cancellationStep.label), cancellationStep];
->>>>>>> origin/feature/demande_affiliation
   }
 }
