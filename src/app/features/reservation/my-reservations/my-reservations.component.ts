@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { ReservationService } from '../reservation.service';
 
 type ReservationDisplayStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED';
 type ReservationPaymentStatus = 'PAID' | 'PENDING' | 'EXEMPT';
@@ -37,6 +39,7 @@ interface ReservationCard {
 })
 export class MyReservationsComponent {
   private readonly authService = inject(AuthService);
+  private readonly reservationService = inject(ReservationService);
 
   readonly currentUser = this.authService.currentUser;
   readonly reservations = signal<ReservationCard[]>([
@@ -78,6 +81,9 @@ export class MyReservationsComponent {
     },
   ]);
   readonly expandedReservationId = signal<string | null>('booking-1');
+  readonly reservationIdToCancel = signal<string | null>(null);
+  readonly cancellationInProgressId = signal<string | null>(null);
+  readonly feedbackMessage = signal<string | null>(null);
 
   readonly displayName = computed(() => {
     const user = this.currentUser();
@@ -94,12 +100,60 @@ export class MyReservationsComponent {
     );
   }
 
-  cancelReservation(reservationId: string): void {
-    this.reservations.update(reservations =>
-      reservations.map(reservation =>
-        reservation.id === reservationId ? { ...reservation, status: 'CANCELLED' } : reservation
+  openCancelConfirmation(reservationId: string): void {
+    if (this.cancellationInProgressId() || this.getReservationStatus(reservationId) === 'CANCELLED') {
+      return;
+    }
+
+    this.reservationIdToCancel.set(reservationId);
+  }
+
+  closeCancelConfirmation(): void {
+    if (this.cancellationInProgressId()) {
+      return;
+    }
+
+    this.reservationIdToCancel.set(null);
+  }
+
+  confirmCancellation(): void {
+    const reservationId = this.reservationIdToCancel();
+    if (!reservationId || this.cancellationInProgressId()) {
+      return;
+    }
+
+    this.cancellationInProgressId.set(reservationId);
+    this.feedbackMessage.set(null);
+
+    this.reservationService
+      .cancelReservation(reservationId)
+      .pipe(
+        finalize(() => {
+          this.cancellationInProgressId.set(null);
+        })
       )
-    );
+      .subscribe({
+        next: () => {
+          this.reservations.update(reservations =>
+            reservations.map(reservation =>
+              reservation.id === reservationId
+                ? {
+                    ...reservation,
+                    status: 'CANCELLED',
+                    paymentStatus:
+                      reservation.paymentStatus === 'PAID' ? reservation.paymentStatus : 'PENDING',
+                    timeline: this.buildCancelledTimeline(reservation.timeline),
+                  }
+                : reservation
+            )
+          );
+          this.feedbackMessage.set('La reservation a bien ete annulee.');
+          this.reservationIdToCancel.set(null);
+        },
+        error: () => {
+          this.feedbackMessage.set("Impossible d'annuler la reservation pour le moment.");
+        },
+      });
   }
 
   isExpanded(reservationId: string): boolean {
@@ -146,5 +200,38 @@ export class MyReservationsComponent {
       default:
         return 'A regler';
     }
+  }
+
+  isCancellationModalOpen(): boolean {
+    return this.reservationIdToCancel() !== null;
+  }
+
+  isCancellationPending(reservationId: string): boolean {
+    return this.cancellationInProgressId() === reservationId;
+  }
+
+  getReservationToCancel(): ReservationCard | null {
+    const reservationId = this.reservationIdToCancel();
+    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
+  }
+
+  private getReservationStatus(reservationId: string): ReservationDisplayStatus | null {
+    return this.reservations().find(reservation => reservation.id === reservationId)?.status ?? null;
+  }
+
+  private buildCancelledTimeline(timeline: ReservationTimelineStep[]): ReservationTimelineStep[] {
+    const cancellationStep: ReservationTimelineStep = {
+      label: 'Reservation annulee',
+      date: new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date()),
+      completed: true,
+    };
+
+    return [...timeline.filter(step => step.label !== cancellationStep.label), cancellationStep];
   }
 }

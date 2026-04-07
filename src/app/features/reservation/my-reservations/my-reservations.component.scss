@@ -57,6 +57,16 @@
   gap: 1.5rem;
 }
 
+.feedback-banner {
+  margin-bottom: 1.25rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid #bfe7cd;
+  border-radius: 1rem;
+  background: #f3fff7;
+  color: #0d7a3f;
+  font-weight: 600;
+}
+
 .reservation-card {
   padding: 1.9rem;
   border: 1px solid #dbe3ef;
@@ -334,6 +344,73 @@
   cursor: not-allowed;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.36);
+  z-index: 30;
+}
+
+.confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 31;
+  width: min(92vw, 420px);
+  padding: 1.5rem;
+  border: 1px solid #dde5f0;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.2);
+  transform: translate(-50%, -50%);
+}
+
+.confirm-modal h2 {
+  margin: 0;
+  color: #09111f;
+  font-size: 1.25rem;
+}
+
+.confirm-modal p {
+  margin: 0.9rem 0 0;
+  color: #4f627c;
+  line-height: 1.55;
+}
+
+.confirm-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+}
+
+.modal-secondary-button,
+.modal-danger-button {
+  min-height: 2.65rem;
+  padding: 0.7rem 1rem;
+  border-radius: 0.85rem;
+  font: inherit;
+  font-weight: 700;
+}
+
+.modal-secondary-button {
+  border: 1px solid #d3dbe7;
+  background: #fff;
+  color: #415773;
+}
+
+.modal-danger-button {
+  border: 1px solid #dc1f42;
+  background: #dc1f42;
+  color: #fff;
+}
+
+.modal-secondary-button:disabled,
+.modal-danger-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 @media (max-width: 900px) {
   .reservations-page {
     padding-inline: 1rem;
@@ -352,6 +429,10 @@
 
   .status-badge {
     align-self: flex-start;
+  }
+
+  .confirm-modal__actions {
+    flex-direction: column;
   }
 }
 
