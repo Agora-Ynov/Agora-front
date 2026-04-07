@@ -1,8 +1,8 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
+import { ApiService } from '../../../core/api/api.service';
 
 type AuditCategory =
   | 'all'
@@ -48,7 +48,7 @@ interface AdminUsersResponse {
   styleUrl: './admin-audit-page.component.scss',
 })
 export class AdminAuditPageComponent {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(ApiService);
   private readonly document = inject(DOCUMENT);
 
   readonly loading = signal(true);
@@ -160,8 +160,8 @@ export class AdminAuditPageComponent {
 
   constructor() {
     forkJoin({
-      audit: this.http.get<AuditResponse>('/assets/mocks/api/admin.audit.get.json'),
-      users: this.http.get<AdminUsersResponse>('/assets/mocks/api/admin.users.get.json'),
+      audit: this.api.get<AuditResponse>('/api/admin/audit'),
+      users: this.api.get<AdminUsersResponse>('/api/admin/users'),
     })
       .pipe(takeUntilDestroyed())
       .subscribe({

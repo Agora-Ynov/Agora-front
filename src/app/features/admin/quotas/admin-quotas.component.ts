@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
+import { ApiService } from '../../../core/api/api.service';
 
 interface QuotaInfoItemDto {
   label: string;
@@ -53,7 +53,7 @@ interface ResourcesResponse {
   styleUrl: './admin-quotas.component.scss',
 })
 export class AdminQuotasComponent {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(ApiService);
 
   readonly loading = signal(true);
   readonly infoItems = signal<QuotaInfoItemDto[]>([]);
@@ -71,9 +71,9 @@ export class AdminQuotasComponent {
 
   constructor() {
     forkJoin({
-      quotas: this.http.get<AdminQuotasResponse>('/assets/mocks/api/admin.quotas.get.json'),
-      groups: this.http.get<GroupMockDto[]>('/assets/mocks/api/groups.get.json'),
-      resources: this.http.get<ResourcesResponse>('/assets/mocks/api/resources.get.json'),
+      quotas: this.api.get<AdminQuotasResponse>('/api/admin/quotas'),
+      groups: this.api.get<GroupMockDto[]>('/api/admin/groups'),
+      resources: this.api.get<ResourcesResponse>('/api/resources'),
     })
       .pipe(takeUntilDestroyed())
       .subscribe({

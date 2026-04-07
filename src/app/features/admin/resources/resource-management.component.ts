@@ -3,12 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import {
-  AccessibilityTag,
-  ResourceDto,
-  ResourceFormValue,
-  ResourceType,
-} from '../../../core/api/models/resource.model';
+import { ResourceDto, ResourceFormValue, ResourceType } from '../../../core/api/models/resource.model';
 import { ResourceService } from '../../../core/api/resource.service';
 
 @Component({
@@ -35,13 +30,9 @@ export class ResourceManagementComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
     capacity: [null as number | null, [Validators.min(0)]],
-    basePriceEuros: [null as number | null, [Validators.required, Validators.min(0)]],
     depositAmountEuros: [0 as number | null, [Validators.required, Validators.min(0)]],
-    depositExemptible: [false],
     accessibilityTagsText: [''],
     imageUrl: [''],
-    quantity: [null as number | null, [Validators.min(0)]],
-    isActive: [true],
   });
 
   readonly stats = computed(() => this.resourceService.getStats(this.resources()));
@@ -77,13 +68,9 @@ export class ResourceManagementComponent implements OnInit {
       name: '',
       description: '',
       capacity: null,
-      basePriceEuros: null,
       depositAmountEuros: 0,
-      depositExemptible: false,
       accessibilityTagsText: '',
       imageUrl: '',
-      quantity: null,
-      isActive: true,
     });
     this.isModalOpen.set(true);
   }
@@ -98,13 +85,9 @@ export class ResourceManagementComponent implements OnInit {
       name: formValue.name,
       description: formValue.description,
       capacity: formValue.capacity,
-      basePriceEuros: formValue.basePriceEuros,
       depositAmountEuros: formValue.depositAmountEuros,
-      depositExemptible: formValue.depositExemptible,
       accessibilityTagsText: formValue.accessibilityTagsText,
       imageUrl: formValue.imageUrl ?? '',
-      quantity: formValue.quantity,
-      isActive: formValue.isActive,
     });
 
     this.isModalOpen.set(true);
@@ -186,14 +169,11 @@ export class ResourceManagementComponent implements OnInit {
     if (resource.resourceType === 'IMMOBILIER') {
       return resource.capacity ? `${resource.capacity} pers.` : 'Non renseignee';
     }
-
-    return resource.quantity ? `${resource.quantity} unites` : 'Selon materiel';
+    return 'Materiel';
   }
 
   getFeatureLabels(resource: ResourceDto): string[] {
-    return (resource.accessibilityTags ?? []).map(tag =>
-      this.resourceService.formatAccessibilityTag(tag as AccessibilityTag)
-    );
+    return (resource.accessibilityTags ?? []).map(tag => this.resourceService.formatAccessibilityTag(tag));
   }
 
   trackByResourceId(_index: number, resource: ResourceDto): string {

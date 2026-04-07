@@ -80,18 +80,12 @@
           <span class="label">Capacite</span>
           <strong>{{ getCapacityLabel(resource) }}</strong>
         </div>
-
-        <div>
-          <span class="label">Tarif</span>
-          <strong class="price">{{ getPriceEuros(resource.basePriceCents) }}EUR</strong>
-        </div>
       </div>
 
       <div class="deposit-block">
         <span class="label">Caution</span>
         <div>
           <strong class="deposit">{{ getPriceEuros(resource.depositAmountCents) }}EUR</strong>
-          <span class="deposit-exempt" *ngIf="resource.depositExemptible"> (exonerable)</span>
         </div>
       </div>
 
@@ -157,63 +151,34 @@
           ></textarea>
         </div>
 
-        <div class="form-row">
-          <div class="form-group" *ngIf="resourceType() === 'IMMOBILIER'; else quantityField">
-            <label for="resourceCapacity">Capacite (personnes)</label>
-            <input
-              id="resourceCapacity"
-              type="number"
-              formControlName="capacity"
-              placeholder="100"
-            />
-          </div>
-
-          <ng-template #quantityField>
-            <div class="form-group">
-              <label for="resourceQuantity">Quantite (unites)</label>
-              <input
-                id="resourceQuantity"
-                type="number"
-                formControlName="quantity"
-                placeholder="5"
-              />
-            </div>
-          </ng-template>
-
-          <div class="form-group">
-            <label for="resourceBasePrice">Tarif de base (EUR) *</label>
-            <input
-              id="resourceBasePrice"
-              type="number"
-              formControlName="basePriceEuros"
-              placeholder="150"
-            />
-          </div>
+        <div class="form-group" *ngIf="resourceType() === 'IMMOBILIER'">
+          <label for="resourceCapacity">Capacite (personnes)</label>
+          <input
+            id="resourceCapacity"
+            type="number"
+            formControlName="capacity"
+            placeholder="100"
+          />
         </div>
+
+        <!--
+          Champs non présents dans ResourceRequest backend (à réactiver si l’API expose tarif, quantité, exonération) :
+          - quantity (MOBILIER)
+          - basePriceEuros
+          - depositExemptible
+        -->
 
         <div class="form-section-title">Caution</div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="resourceDepositAmount">Montant de la caution (EUR)</label>
-            <input
-              id="resourceDepositAmount"
-              type="number"
-              formControlName="depositAmountEuros"
-              placeholder="0"
-            />
-            <small>Laisser a 0 si aucune caution</small>
-          </div>
-
-          <div class="form-group checkbox-inline">
-            <div class="form-group-title">Exonerable ?</div>
-            <div class="checkbox-line">
-              <input id="depositExemptible" type="checkbox" formControlName="depositExemptible" />
-              <label for="depositExemptible">
-                La caution peut etre exemptee pour certains profils ou groupes.
-              </label>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="resourceDepositAmount">Montant de la caution (EUR)</label>
+          <input
+            id="resourceDepositAmount"
+            type="number"
+            formControlName="depositAmountEuros"
+            placeholder="0"
+          />
+          <small>Laisser a 0 si aucune caution</small>
         </div>
 
         <div class="form-group">

@@ -1,14 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, of, switchMap } from 'rxjs';
 
-import { ResourceDto } from '../../../core/api/models/resource.model';
-import { UserProfile } from '../../../core/auth/auth.model';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
+import { ResourceDto } from '../../../core/api/model/resourceDto';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CatalogueResourcesService } from '../catalogue/catalogue-resources.service';
 import {
   ReservationPricingGroup,
   resolveResourcePricing,
@@ -46,14 +45,14 @@ interface ResourceDetailViewModel {
   styleUrl: './resource-detail.component.scss',
 })
 export class ResourceDetailComponent {
-  private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
-  private readonly catalogueResourcesService = inject(CatalogueResourcesService);
+  private readonly ressourcesService = inject(RessourcesService);
   private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly resource = signal<ResourceDto | null>(null);
+  /** Tarification groupée : pas encore fournie par l’API (ex-mock JSON). */
   readonly userGroups = signal<ReservationPricingGroup[]>([]);
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
@@ -65,6 +64,7 @@ export class ResourceDetailComponent {
     }
 
     const pricing = resolveResourcePricing(resource, this.currentUser(), this.userGroups());
+    const resourceId = String(resource.id ?? '');
     const capacityLabel =
       resource.capacity && resource.capacity > 0
         ? `${resource.capacity} personnes`
@@ -82,11 +82,11 @@ export class ResourceDetailComponent {
       : 'Cette caution est remboursable apres restitution. Elle peut etre exoneree selon votre situation ou votre groupe.';
 
     return {
-      id: resource.id,
+      id: resourceId,
       name: getResourceDisplayName(resource),
       description: resource.description ?? 'Description indisponible.',
       typeLabel: getResourceTypeLabel(resource.resourceType),
-      coverTheme: getResourceCoverTheme(resource.id),
+      coverTheme: getResourceCoverTheme(resourceId),
       capacityLabel,
       priceLabel,
       priceHint,
@@ -99,13 +99,6 @@ export class ResourceDetailComponent {
   });
 
   constructor() {
-    effect(
-      () => {
-        this.loadCurrentUserGroups(this.currentUser());
-      },
-      { allowSignalWrites: true }
-    );
-
     this.route.paramMap
       .pipe(
         takeUntilDestroyed(),
@@ -119,7 +112,9 @@ export class ResourceDetailComponent {
             return of(null);
           }
 
-          return this.catalogueResourcesService.getResourceById(resourceId);
+          return this.ressourcesService.getResourceById(resourceId, 'body', false, {
+            transferCache: false,
+          });
         })
       )
       .subscribe({
@@ -146,24 +141,4 @@ export class ResourceDetailComponent {
     this.authService.logout();
   }
 
-  private loadCurrentUserGroups(user: UserProfile | null): void {
-    if (!user?.groupIds.length) {
-      this.userGroups.set([]);
-      return;
-    }
-
-    this.userGroups.set([]);
-
-    this.http
-      .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: groups => {
-          this.userGroups.set(groups.filter(group => user.groupIds.includes(group.id)));
-        },
-        error: () => {
-          this.userGroups.set([]);
-        },
-      });
-  }
 }

@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
-import { ResourceDto } from '../../../core/api/models/resource.model';
-import { UserProfile } from '../../../core/auth/auth.model';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
+import { PagedResponseResourceDto } from '../../../core/api/model/pagedResponseResourceDto';
+import { ResourceDto } from '../../../core/api/model/resourceDto';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CatalogueResourcesService } from './catalogue-resources.service';
 import { ReservationPricingGroup, resolveResourcePricing } from './resource-pricing.utils';
 import {
   getFeatureLabel,
   getResourceCoverTheme,
+  getResourceDisplayName,
   getResourcePrice,
   getResourceTags,
   getResourceTypeLabel,
@@ -33,6 +34,12 @@ interface FeatureOption {
   shortLabel: string;
 }
 
+interface CoverOverlayBadge {
+  kind: 'capacity' | 'feature';
+  value: string;
+  title: string;
+}
+
 interface CatalogueResource {
   id: string;
   name: string;
@@ -44,9 +51,13 @@ interface CatalogueResource {
   /** Photo renvoyée par l’API (`imageUrl`) — prioritaire à l’affichage */
   imageUrl: string | null;
   tags: string[];
-  features: FeatureFilter[];
+  /** Tags d’accessibilité renvoyés par l’API (codes enum). */
+  features: string[];
+  /** Pastilles sur la photo (maquette catalogue). */
+  overlayBadges: CoverOverlayBadge[];
   pricePerBooking: number;
   depositAmount: number;
+  /** Données brutes du contrat OpenAPI (référence pour prix / détail). */
   source: ResourceDto;
 }
 
@@ -58,24 +69,35 @@ interface CatalogueResource {
   styleUrl: './catalogue.component.scss',
 })
 export class CatalogueComponent {
-  private readonly http = inject(HttpClient);
-  private readonly catalogueResourcesService = inject(CatalogueResourcesService);
+  private readonly ressourcesService = inject(RessourcesService);
   private readonly authService = inject(AuthService);
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
+  /** Remises groupées : pas encore d’endpoint backend (ex-JSON mock) — tableau vide pour l’instant. */
   readonly userGroups = signal<ReservationPricingGroup[]>([]);
 
-  readonly featureOptions: FeatureOption[] = [
-    { id: 'PMR_ACCESS', label: 'Acces PMR', shortLabel: 'PMR' },
+  private static readonly OVERLAY_FEATURE_ORDER: FeatureFilter[] = [
+    'PMR_ACCESS',
+    'PARKING',
+    'SOUND_SYSTEM',
+    'PROJECTOR',
+    'KITCHEN',
+    'STREET_ACCESS',
+  ];
+
+  private static readonly FEATURE_OPTIONS: FeatureOption[] = [
+    { id: 'PMR_ACCESS', label: 'Accès PMR', shortLabel: 'PMR' },
     { id: 'PARKING', label: 'Parking', shortLabel: 'P' },
     { id: 'SOUND_SYSTEM', label: 'Sonorisation', shortLabel: 'Sono' },
-    { id: 'PROJECTOR', label: 'Videoprojecteur', shortLabel: 'Video' },
-    { id: 'KITCHEN', label: 'Cuisine equipee', shortLabel: 'Cuisine' },
-    { id: 'STREET_ACCESS', label: 'Acces rue directe', shortLabel: 'Rue' },
+    { id: 'PROJECTOR', label: 'Vidéoprojecteur', shortLabel: 'Vidéo' },
+    { id: 'KITCHEN', label: 'Cuisine équipée', shortLabel: 'Cuisine' },
+    { id: 'STREET_ACCESS', label: 'Accès rue directe', shortLabel: 'Rue' },
   ];
+
+  readonly featureOptions = CatalogueComponent.FEATURE_OPTIONS;
 
   readonly resources = signal<CatalogueResource[]>([]);
 
@@ -85,11 +107,10 @@ export class CatalogueComponent {
 
     return this.resources().filter(resource => {
       const matchesFamily = family === 'ALL' || resource.family === family;
-      // Comparaison en chaînes : tags API peuvent différer légèrement du typage strict.
-      const tagCodes = resource.features.map(f => String(f));
+      const tagCodes = resource.features;
       const matchesFeatures =
         selectedFeatures.length === 0 ||
-        selectedFeatures.every(feature => tagCodes.includes(String(feature)));
+        selectedFeatures.every(feature => tagCodes.includes(feature));
 
       return matchesFamily && matchesFeatures;
     });
@@ -100,26 +121,27 @@ export class CatalogueComponent {
   readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   constructor() {
-    effect(
-      () => {
-        this.loadCurrentUserGroups(this.currentUser());
-      },
-      { allowSignalWrites: true }
-    );
-
-    this.catalogueResourcesService
-      .getResources()
+    this.ressourcesService
+      .getResources(undefined, undefined, undefined, undefined, 0, 100, 'body', false, {
+        transferCache: false,
+      })
       .pipe(takeUntilDestroyed())
       .subscribe({
-        next: response => {
+        next: (response: PagedResponseResourceDto) => {
+          const rows = response.content ?? [];
           this.resources.set(
-            response.content
+            rows
+              .filter((r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0)
               .map(resource => this.mapResource(resource))
           );
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
-          this.errorMessage.set(error.message || 'Impossible de charger le catalogue.');
+          const message =
+            error.status === 0
+              ? "Impossible de joindre l'API (backend arrete ou mauvais port sur l'hote). Docker : verifier BACKEND_PORT dans .env (souvent 8080) et que le proxy (proxy.conf.js) utilise le meme port."
+              : error.message || 'Impossible de charger le catalogue.';
+          this.errorMessage.set(message);
           this.loading.set(false);
         },
       });
@@ -144,9 +166,15 @@ export class CatalogueComponent {
     return this.selectedFeatures().includes(feature);
   }
 
-  featureLabel(feature: FeatureFilter): string {
+  featureLabel(feature: string): string {
     return getFeatureLabel(feature);
   }
+
+  /** Titre court (avant « — ») comme sur la maquette Figma. */
+  cardTitle(resource: CatalogueResource): string {
+    return getResourceDisplayName(resource.source);
+  }
+
 
   getPriceLabel(resource: CatalogueResource): string {
     const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());
@@ -169,47 +197,60 @@ export class CatalogueComponent {
   }
 
   private mapResource(resource: ResourceDto): CatalogueResource {
-    const description = resource.description ?? 'Description indisponible.';
+    const id = String(resource.id);
+    const description = resource.description?.trim() || 'Description indisponible.';
     const accessibilityTags = resource.accessibilityTags ?? [];
     const depositAmountCents = resource.depositAmountCents ?? 0;
 
     const imageUrl = resource.imageUrl?.trim() || null;
+    const family = resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT';
 
     return {
-      id: resource.id,
-      name: resource.name,
+      id,
+      name: resource.name ?? 'Ressource',
       description,
-      family: resource.resourceType === 'IMMOBILIER' ? 'ROOM' : 'EQUIPMENT',
+      family,
       typeLabel: getResourceTypeLabel(resource.resourceType),
-      coverTheme: getResourceCoverTheme(resource.id),
+      coverTheme: getResourceCoverTheme(id),
       imageUrl,
       tags: getResourceTags(resource),
       features: accessibilityTags,
+      overlayBadges: CatalogueComponent.buildOverlayBadges(family, resource, accessibilityTags),
       pricePerBooking: getResourcePrice(resource),
       depositAmount: Math.round(depositAmountCents / 100),
       source: resource,
     };
   }
 
-  private loadCurrentUserGroups(user: UserProfile | null): void {
-    if (!user?.groupIds.length) {
-      this.userGroups.set([]);
-      return;
-    }
-
-    this.userGroups.set([]);
-
-    this.http
-      .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: groups => {
-          this.userGroups.set(groups.filter(group => user.groupIds.includes(group.id)));
-        },
-        error: () => {
-          this.userGroups.set([]);
-        },
+  private static buildOverlayBadges(
+    family: 'ROOM' | 'EQUIPMENT',
+    resource: ResourceDto,
+    accessibilityTags: string[]
+  ): CoverOverlayBadge[] {
+    const badges: CoverOverlayBadge[] = [];
+    if (family === 'ROOM' && resource.capacity != null && resource.capacity > 0) {
+      badges.push({
+        kind: 'capacity',
+        value: String(resource.capacity),
+        title: `${resource.capacity} places`,
       });
+    }
+    const set = new Set(accessibilityTags);
+    for (const id of CatalogueComponent.OVERLAY_FEATURE_ORDER) {
+      if (!set.has(id)) {
+        continue;
+      }
+      const opt = CatalogueComponent.FEATURE_OPTIONS.find(o => o.id === id);
+      badges.push({
+        kind: 'feature',
+        value: opt?.shortLabel ?? id.slice(0, 3),
+        title: opt?.label ?? id,
+      });
+      if (badges.length >= 5) {
+        break;
+      }
+    }
+    return badges;
   }
 
   private formatPrice(amount: number): string {

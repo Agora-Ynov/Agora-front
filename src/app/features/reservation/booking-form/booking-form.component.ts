@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, of, switchMap } from 'rxjs';
 
-import { ResourceDto } from '../../../core/api/models/resource.model';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
+import { ResourceDto } from '../../../core/api/model/resourceDto';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
-import { CatalogueResourcesService } from '../catalogue/catalogue-resources.service';
 import {
   buildReservationActorOptions,
   ReservationActorOption,
@@ -32,14 +32,14 @@ import {
 })
 export class BookingFormComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly http = inject(HttpClient);
-  private readonly catalogueResourcesService = inject(CatalogueResourcesService);
+  private readonly ressourcesService = inject(RessourcesService);
   private readonly authService = inject(AuthService);
 
   readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly resource = signal<ResourceDto | null>(null);
+  /** Remises groupées : endpoint backend à venir (ex-mock JSON). */
   readonly groups = signal<ReservationPricingGroup[]>([]);
   readonly selectedActorId = signal('personal');
   readonly startDateTime = signal('');
@@ -142,7 +142,9 @@ export class BookingFormComponent {
             return of(null);
           }
 
-          return this.catalogueResourcesService.getResourceById(resourceId);
+          return this.ressourcesService.getResourceById(resourceId, 'body', false, {
+            transferCache: false,
+          });
         })
       )
       .subscribe({
@@ -154,6 +156,7 @@ export class BookingFormComponent {
           }
 
           this.resource.set(resource);
+          this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
           this.errorMessage.set(
@@ -201,31 +204,9 @@ export class BookingFormComponent {
     return `${Math.round(amountCents / 100)}€`;
   }
 
-  private loadGroupsForUser(user: UserProfile | null): void {
-    if (!user?.groupIds.length) {
-      this.groups.set([]);
-      this.finalizeOptionSelection();
-      this.loading.set(false);
-      return;
-    }
-
+  private loadGroupsForUser(_user: UserProfile | null): void {
     this.groups.set([]);
-
-    this.http
-      .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: groups => {
-          this.groups.set(groups.filter(group => user.groupIds.includes(group.id)));
-          this.finalizeOptionSelection();
-          this.loading.set(false);
-        },
-        error: () => {
-          this.groups.set([]);
-          this.finalizeOptionSelection();
-          this.loading.set(false);
-        },
-      });
+    this.finalizeOptionSelection();
   }
 
   private finalizeOptionSelection(): void {
