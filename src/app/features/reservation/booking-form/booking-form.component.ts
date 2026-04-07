@@ -1,6 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, of, switchMap } from 'rxjs';
@@ -37,6 +46,7 @@ export class BookingFormComponent {
   private readonly catalogueResourcesService = inject(CatalogueResourcesService);
   private readonly authService = inject(AuthService);
   private readonly jwtService = inject(JwtService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   readonly loading = signal(true);
@@ -146,7 +156,10 @@ export class BookingFormComponent {
 
   constructor() {
     if (this.authService.isAuthenticated() && !this.currentUser()) {
-      this.authService.getCurrentUser().pipe(takeUntilDestroyed()).subscribe({
+      this.authService
+        .getCurrentUser()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
         error: () => {
           this.groups.set([]);
         },
@@ -169,7 +182,7 @@ export class BookingFormComponent {
 
     this.route.paramMap
       .pipe(
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
         map(params => params.get('id')),
         switchMap(resourceId => {
           this.loading.set(true);
@@ -251,7 +264,7 @@ export class BookingFormComponent {
 
     this.http
       .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: groups => {
           this.groups.set(groups.filter(group => user.groupIds.includes(group.id)));
