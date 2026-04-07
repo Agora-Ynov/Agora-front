@@ -347,11 +347,22 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(15, 23, 42, 0.38);
   z-index: 1000;
 }
 
+.modal-backdrop__dismiss {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.38);
+  cursor: pointer;
+}
+
 .members-modal {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 720px;
   padding: 1.45rem;
@@ -361,6 +372,8 @@
 }
 
 .create-group-modal {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 640px;
   padding: 1.55rem;
