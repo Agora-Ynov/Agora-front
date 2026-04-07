@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: '',
+  apiUrl: 'http://localhost:8081',
   mailhogUrl: 'http://localhost:8025',
   useMockAuth: false,
 };
