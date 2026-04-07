@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -15,13 +15,23 @@ export class HeaderComponent {
 
   currentUser = this.authService.currentUser;
   homeLink = computed(() => '/');
+  readonly isMenuOpen = signal(false);
 
   fullName = computed(() => {
     const user = this.currentUser();
     return user ? `${user.firstName} ${user.lastName}` : '';
   });
 
+  toggleMenu(): void {
+    this.isMenuOpen.update(isOpen => !isOpen);
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen.set(false);
+  }
+
   logout(): void {
+    this.closeMenu();
     this.authService.logout();
   }
 }

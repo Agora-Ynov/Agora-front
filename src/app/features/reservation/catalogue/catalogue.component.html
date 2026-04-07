@@ -8,30 +8,41 @@
     </section>
 
     <section class="catalogue-toolbar" aria-label="Filtres du catalogue">
-      <div class="catalogue-segmented">
+      <div class="catalogue-toolbar__filters">
+        <div class="catalogue-segmented">
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'ALL'"
+            (click)="setFamilyFilter('ALL')"
+          >
+            Tout
+          </button>
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'ROOM'"
+            (click)="setFamilyFilter('ROOM')"
+          >
+            Salles
+          </button>
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'EQUIPMENT'"
+            (click)="setFamilyFilter('EQUIPMENT')"
+          >
+            Materiel
+          </button>
+        </div>
+
         <button
           type="button"
-          class="catalogue-segmented__item"
-          [class.catalogue-segmented__item--active]="familyFilter() === 'ALL'"
-          (click)="setFamilyFilter('ALL')"
+          class="catalogue-reset"
+          [disabled]="!hasActiveFilters()"
+          (click)="resetFilters()"
         >
-          Tout
-        </button>
-        <button
-          type="button"
-          class="catalogue-segmented__item"
-          [class.catalogue-segmented__item--active]="familyFilter() === 'ROOM'"
-          (click)="setFamilyFilter('ROOM')"
-        >
-          Salles
-        </button>
-        <button
-          type="button"
-          class="catalogue-segmented__item"
-          [class.catalogue-segmented__item--active]="familyFilter() === 'EQUIPMENT'"
-          (click)="setFamilyFilter('EQUIPMENT')"
-        >
-          Materiel
+          Reinitialiser
         </button>
       </div>
 

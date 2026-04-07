@@ -131,8 +131,17 @@ export class CatalogueComponent {
     );
   }
 
+  resetFilters(): void {
+    this.familyFilter.set('ALL');
+    this.selectedFeatures.set([]);
+  }
+
   isFeatureSelected(feature: FeatureFilter): boolean {
     return this.selectedFeatures().includes(feature);
+  }
+
+  hasActiveFilters(): boolean {
+    return this.familyFilter() !== 'ALL' || this.selectedFeatures().length > 0;
   }
 
   featureLabel(feature: FeatureFilter): string {
