@@ -86,8 +86,7 @@ export class ProfileComponent {
       },
       {
         label: "Demande d'affiliation",
-        route: '/account',
-        fragment: 'exemptions',
+        route: '/account/affiliation-request',
         variant: 'secondary',
         icon: 'group',
       },
