@@ -139,6 +139,10 @@ export class CatalogueComponent {
     return this.selectedFeatures().includes(feature);
   }
 
+  hasActiveFilters(): boolean {
+    return this.familyFilter() !== 'ALL' || this.selectedFeatures().length > 0;
+  }
+
   featureLabel(feature: FeatureFilter): string {
     return getFeatureLabel(feature);
   }

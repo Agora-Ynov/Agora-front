@@ -21,6 +21,7 @@ export class LoginComponent {
 
   isSubmitting = false;
   errorMessage = '';
+  showPassword = false;
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -63,5 +64,9 @@ export class LoginComponent {
 
   get passwordControl() {
     return this.loginForm.get('password');
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }

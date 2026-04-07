@@ -43,6 +43,8 @@ export class RegisterComponent {
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   registerForm = this.fb.group(
     {
@@ -142,5 +144,13 @@ export class RegisterComponent {
       !!this.registerForm.errors?.['passwordMismatch'] &&
       this.confirmPasswordControl?.touched === true
     );
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 }
