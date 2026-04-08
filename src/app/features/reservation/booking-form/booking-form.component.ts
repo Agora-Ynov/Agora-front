@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map, of, switchMap } from 'rxjs';
+import { combineLatest, map, of, switchMap } from 'rxjs';
 
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { UserProfile } from '../../../core/auth/auth.model';
@@ -180,14 +180,22 @@ export class BookingFormComponent {
       { allowSignalWrites: true }
     );
 
-    this.route.paramMap
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        map(params => params.get('id')),
-        switchMap(resourceId => {
+        map(([params, queryParams]) => ({
+          resourceId: params.get('id'),
+          date: queryParams.get('date'),
+          slotStart: queryParams.get('slotStart'),
+          slotEnd: queryParams.get('slotEnd'),
+          startDateTime: queryParams.get('startDateTime'),
+          endDateTime: queryParams.get('endDateTime'),
+        })),
+        switchMap(({ resourceId, date, slotStart, slotEnd, startDateTime, endDateTime }) => {
           this.loading.set(true);
           this.errorMessage.set(null);
           this.resource.set(null);
+          this.applyPrefilledSlot(date, slotStart, slotEnd, startDateTime, endDateTime);
 
           if (!resourceId) {
             return of(null);
@@ -246,6 +254,38 @@ export class BookingFormComponent {
   onFileSelection(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.selectedFiles.set(Array.from(input.files ?? []));
+  }
+
+  private applyPrefilledSlot(
+    date: string | null,
+    slotStart: string | null,
+    slotEnd: string | null,
+    startDateTime: string | null,
+    endDateTime: string | null
+  ): void {
+    if (startDateTime) {
+      this.startDateTime.set(startDateTime);
+    }
+
+    if (endDateTime) {
+      this.endDateTime.set(endDateTime);
+    }
+
+    if (startDateTime || endDateTime) {
+      return;
+    }
+
+    if (!date) {
+      return;
+    }
+
+    if (slotStart) {
+      this.startDateTime.set(`${date}T${slotStart}`);
+    }
+
+    if (slotEnd) {
+      this.endDateTime.set(`${date}T${slotEnd}`);
+    }
   }
 
   formatAmount(amountCents: number): string {
