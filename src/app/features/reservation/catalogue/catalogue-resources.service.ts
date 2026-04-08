@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, from, switchMap } from 'rxjs';
 import { PagedResponse } from '../../../core/api/models/paged-response.model';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { RessourcesService } from '../../../core/api/api/ressources.service';
@@ -11,14 +11,30 @@ export class CatalogueResourcesService {
 
   getResources(): Observable<PagedResponse<ResourceDto>> {
     return this.ressourcesService.getResources().pipe(
-      map(response => ({
-        content: (response.content ?? []).map(resource => this.toResourceModel(resource)),
-        totalElements: response.totalElements ?? 0,
-        totalPages: response.totalPages ?? 0,
-        page: response.page ?? 0,
-        size: response.size ?? 20,
-      }))
+      switchMap(response => {
+        // Vérifier si c'est un Blob et le parser
+        if (response instanceof Blob) {
+          return from(response.text()).pipe(
+            map(text => {
+              const apiResponse = JSON.parse(text);
+              return this.mapResponse(apiResponse);
+            })
+          );
+        }
+        // Sinon, c'est déjà un objet
+        return from([this.mapResponse(response as any)]);
+      })
     );
+  }
+
+  private mapResponse(apiResponse: any): PagedResponse<ResourceDto> {
+    return {
+      content: (apiResponse.content ?? []).map((resource: OpenApiResourceDto) => this.toResourceModel(resource)),
+      totalElements: apiResponse.totalElements ?? 0,
+      totalPages: apiResponse.totalPages ?? 0,
+      page: apiResponse.page ?? 0,
+      size: apiResponse.size ?? 20,
+    };
   }
 
   getResourceById(resourceId: string): Observable<ResourceDto | null> {
