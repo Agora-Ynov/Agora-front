@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   Component,
   DestroyRef,
@@ -256,23 +256,10 @@ export class BookingFormComponent {
   }
 
   private loadGroupsForUser(_user: UserProfile | null): void {
+    // Endpoint backend à venir : on garde une liste vide pour l’instant.
     this.groups.set([]);
-
-    this.http
-      .get<ReservationPricingGroup[]>('/assets/mocks/api/groups.get.json')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: groups => {
-          this.groups.set(groups.filter(group => user.groupIds.includes(group.id)));
-          this.finalizeOptionSelection();
-          this.loading.set(false);
-        },
-        error: () => {
-          this.groups.set([]);
-          this.finalizeOptionSelection();
-          this.loading.set(false);
-        },
-      });
+    this.finalizeOptionSelection();
+    this.loading.set(false);
   }
 
   private finalizeOptionSelection(): void {

@@ -74,6 +74,9 @@ export class CatalogueComponent {
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
+  readonly hasActiveFilters = computed(
+    () => this.familyFilter() !== 'ALL' || this.selectedFeatures().length > 0
+  );
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   /** Remises groupées : pas encore d’endpoint backend (ex-JSON mock) — tableau vide pour l’instant. */

@@ -8,4 +8,5 @@ export const environment = {
    */
   apiUrl: '',
   mailhogUrl: 'http://localhost:8025',
+  useMockAuth: false,
 };
