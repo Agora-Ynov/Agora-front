@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../../core/api/api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 type AccountTypeFilter = 'ALL' | 'AUTONOMOUS' | 'TUTORED' | 'SUSPENDED';
@@ -36,7 +36,7 @@ interface AdminUsersResponse {
   styleUrl: './user-management-page.component.scss',
 })
 export class UserManagementPageComponent {
-  private readonly http = inject(HttpClient);
+  private readonly api = inject(ApiService);
   private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
@@ -115,8 +115,8 @@ export class UserManagementPageComponent {
   });
 
   constructor() {
-    this.http
-      .get<AdminUsersResponse>('/assets/mocks/api/admin.users.get.json')
+    this.api
+      .get<AdminUsersResponse>('/api/admin/users')
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: response => {

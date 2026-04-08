@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -27,6 +27,16 @@ interface GroupOption {
   subtitle: string;
 }
 
+interface MandateOption {
+  value: string;
+  label: string;
+}
+
+interface AttachedDocument {
+  name: string;
+  sizeLabel: string;
+}
+
 interface DetailFormState {
   associationName: string;
   associationRole: string;
@@ -47,10 +57,12 @@ export class AffiliationRequestComponent {
   private readonly authService = inject(AuthService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   readonly currentStep = signal(1);
   readonly selectedType = signal<AffiliationRequestType | null>(null);
-  readonly newDocumentName = signal('');
-  readonly attachedDocuments = signal<string[]>([]);
+  readonly attachedDocuments = signal<AttachedDocument[]>([]);
+  readonly documentFeedbackMessage = signal<string | null>(null);
+  readonly documentErrorMessage = signal<string | null>(null);
   readonly submissionMessage = signal<string | null>(null);
 
   readonly previousRequests = signal<PreviousRequest[]>([
@@ -94,6 +106,14 @@ export class AffiliationRequestComponent {
       name: 'Conseil Municipal',
       subtitle: 'Groupe institutionnel municipal',
     },
+  ];
+
+  readonly mandateOptions: MandateOption[] = [
+    { value: 'Conseiller(ere) municipal(e)', label: 'Conseiller(ere) municipal(e)' },
+    { value: 'Maire adjoint(e)', label: 'Maire adjoint(e)' },
+    { value: 'Maire', label: 'Maire' },
+    { value: 'Delegue(e) municipal(e)', label: 'Delegue(e) municipal(e)' },
+    { value: 'Autre mandat electif', label: 'Autre mandat electif' },
   ];
 
   readonly requestTypes: RequestTypeOption[] = [
@@ -219,20 +239,38 @@ export class AffiliationRequestComponent {
     this.detailForm.update(current => ({ ...current, [field]: value }));
   }
 
-  addDocument(): void {
-    const fileName = this.newDocumentName().trim();
-    if (!fileName) {
+  openFilePicker(): void {
+    this.fileInput()?.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    if (!files.length) {
       return;
     }
 
-    this.attachedDocuments.update(documents => [...documents, fileName]);
-    this.newDocumentName.set('');
+    this.attachedDocuments.update(documents => [
+      ...documents,
+      ...files.map(file => ({
+        name: file.name,
+        sizeLabel: this.formatFileSize(file.size),
+      })),
+    ]);
+
+    this.documentErrorMessage.set(null);
+    this.documentFeedbackMessage.set(
+      files.length === 1 ? `Document ajoute : ${files[0].name}` : `${files.length} documents ajoutes`
+    );
+    input.value = '';
   }
 
   removeDocument(documentName: string): void {
     this.attachedDocuments.update(documents =>
-      documents.filter(document => document !== documentName)
+      documents.filter(document => document.name !== documentName)
     );
+    this.documentFeedbackMessage.set(`Document retire : ${documentName}`);
+    this.documentErrorMessage.set(null);
   }
 
   nextStep(): void {
@@ -296,5 +334,13 @@ export class AffiliationRequestComponent {
       default:
         return false;
     }
+  }
+
+  private formatFileSize(size: number): string {
+    if (size < 1024 * 1024) {
+      return `${Math.max(1, Math.round(size / 1024))} Ko`;
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} Mo`;
   }
 }

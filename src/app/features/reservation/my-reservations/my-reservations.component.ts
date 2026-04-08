@@ -99,7 +99,10 @@ export class MyReservationsComponent {
   }
 
   openCancelConfirmation(reservationId: string): void {
-    if (this.cancellationInProgressId() || this.getReservationStatus(reservationId) === 'CANCELLED') {
+    if (
+      this.cancellationInProgressId() ||
+      this.getReservationStatus(reservationId) === 'CANCELLED'
+    ) {
       return;
     }
 
@@ -329,7 +332,9 @@ export class MyReservationsComponent {
   }
 
   private getReservationStatus(reservationId: string): ReservationDisplayStatus | null {
-    return this.reservations().find(reservation => reservation.id === reservationId)?.status ?? null;
+    return (
+      this.reservations().find(reservation => reservation.id === reservationId)?.status ?? null
+    );
   }
 
   private buildCancelledTimeline(timeline: ReservationTimelineStep[]): ReservationTimelineStep[] {

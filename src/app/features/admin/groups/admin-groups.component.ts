@@ -125,7 +125,6 @@ export class AdminGroupsComponent {
     const formValue = this.createGroupForm.getRawValue();
     const name = (formValue.name ?? '').trim();
     const groupType = (formValue.groupType ?? 'AUTRE') as AdminGroupFormType;
-    const description = (formValue.description ?? '').trim();
 
     const payload = this.buildCreatePayload(name, groupType);
 
@@ -134,7 +133,7 @@ export class AdminGroupsComponent {
     this.successMessage.set('');
 
     this.adminGroupService
-      .createGroup(payload, { groupType, description })
+      .createGroup(payload)
       .pipe(finalize(() => this.isCreating.set(false)))
       .subscribe({
         next: createdGroup => {
@@ -252,7 +251,7 @@ export class AdminGroupsComponent {
     }
 
     if (group.isPreset) {
-      return "Ce groupe fait partie de la configuration initiale et porte des droits etendus.";
+      return 'Ce groupe fait partie de la configuration initiale et porte des droits etendus.';
     }
 
     return 'Ce groupe est personnalisable et peut etre ajuste selon les besoins du service.';

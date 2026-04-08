@@ -1,6 +1,5 @@
 <header class="navbar">
   <div class="container-fluid d-flex justify-content-between align-items-center px-4">
-    
     <!-- Logo -->
     <div class="navbar-brand d-flex align-items-center gap-2">
       <a routerLink="/" class="d-flex align-items-center gap-2 text-decoration-none">
@@ -17,7 +16,12 @@
 
     <!-- Menu Navigation -->
     <nav class="nav-links d-none d-md-flex gap-4 align-items-center">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link"
+      >
         <span class="material-icons">home</span> Accueil
       </a>
       <a routerLink="/catalogue" routerLinkActive="active" class="nav-link">
@@ -30,12 +34,8 @@
 
     <!-- Auth Buttons -->
     <div class="auth-buttons d-none d-md-flex gap-2 align-items-center">
-      <a routerLink="/auth" class="btn btn-login">
-        Connexion
-      </a>
-      <a routerLink="/register" class="btn btn-register">
-        Inscription
-      </a>
+      <a routerLink="/auth" class="btn btn-login"> Connexion </a>
+      <a routerLink="/register" class="btn btn-register"> Inscription </a>
     </div>
 
     <!-- Mobile Menu Button -->

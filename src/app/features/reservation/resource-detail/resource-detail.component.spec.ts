@@ -4,8 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CatalogueResourcesService } from '../catalogue/catalogue-resources.service';
 import { ResourceDetailComponent } from './resource-detail.component';
 
 describe('ResourceDetailComponent', () => {
@@ -22,7 +22,7 @@ describe('ResourceDetailComponent', () => {
           },
         },
         {
-          provide: CatalogueResourcesService,
+          provide: RessourcesService,
           useValue: {
             getResourceById: () =>
               of({
@@ -60,7 +60,7 @@ describe('ResourceDetailComponent', () => {
       name: 'Salle de reunion',
       typeLabel: 'Salle',
       capacityLabel: '20 personnes',
-      priceLabel: '80EUR',
+      priceLabel: '25EUR',
       depositLabel: '50EUR',
     });
   });

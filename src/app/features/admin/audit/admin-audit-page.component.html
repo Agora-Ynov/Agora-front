@@ -4,21 +4,40 @@
       <div class="audit-hero__title-row">
         <span class="audit-hero__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path
+              d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
           </svg>
         </span>
 
         <div class="audit-hero__copy">
           <h1>Journal d'audit complet</h1>
-          <p>Traçabilité de toutes les actions — réservations, comptes, paiements, affiliations, impersonation</p>
+          <p>
+            Traçabilité de toutes les actions — réservations, comptes, paiements, affiliations,
+            impersonation
+          </p>
         </div>
       </div>
 
       <button type="button" class="audit-export" (click)="exportCsv()">
         <span class="audit-export__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 4.5V14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M8.5 11L12 14.5L15.5 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M12 4.5V14.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path
+              d="M8.5 11L12 14.5L15.5 11"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
             <path d="M5 18.5H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
           </svg>
         </span>
@@ -29,7 +48,9 @@
     <section class="audit-stats">
       @for (stat of stats(); track stat.label) {
         <article class="audit-stat-card">
-          <strong [class]="'audit-stat-card__value audit-stat-card__value--' + stat.tone">{{ stat.value }}</strong>
+          <strong [class]="'audit-stat-card__value audit-stat-card__value--' + stat.tone">{{
+            stat.value
+          }}</strong>
           <span>{{ stat.label }}</span>
         </article>
       }
@@ -39,9 +60,27 @@
       <div class="audit-booking-banner__label">
         <span class="audit-booking-banner__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
-            <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <rect
+              x="4.75"
+              y="5.75"
+              width="14.5"
+              height="13.5"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <path
+              d="M8 4.25V7.25"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path
+              d="M16 4.25V7.25"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
             <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
           </svg>
         </span>
@@ -63,19 +102,24 @@
         <span class="audit-search__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
-            <path d="M16 16L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path
+              d="M16 16L20 20"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
           </svg>
         </span>
         <input
           type="search"
           [value]="searchTerm()"
-          (input)="setSearchTerm(($any($event.target).value))"
+          (input)="setSearchTerm($any($event.target).value)"
           placeholder="Rechercher : action, utilisateur, réservation, ressource, motif..."
         />
       </label>
 
       <label class="audit-select">
-        <select [value]="actorFilter()" (change)="setActorFilter(($any($event.target).value))">
+        <select [value]="actorFilter()" (change)="setActorFilter($any($event.target).value)">
           @for (option of actorOptions(); track option) {
             <option [value]="option">{{ option }}</option>
           }
@@ -95,21 +139,52 @@
             @switch (categoryIcon(tab.id)) {
               @case ('calendar') {
                 <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                  <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <rect
+                    x="4.75"
+                    y="5.75"
+                    width="14.5"
+                    height="13.5"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M8 4.25V7.25"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M16 4.25V7.25"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                   <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
                 </svg>
               }
               @case ('user') {
                 <svg viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                 </svg>
               }
               @case ('card') {
                 <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
+                  <rect
+                    x="4"
+                    y="6"
+                    width="16"
+                    height="12"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
                   <path d="M4 10H20" stroke="currentColor" stroke-width="1.8" />
                 </svg>
               }
@@ -117,13 +192,28 @@
                 <svg viewBox="0 0 24 24" fill="none">
                   <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
                   <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                  <path d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                 </svg>
               }
               @default {
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                  <path
+                    d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               }
             }
@@ -147,21 +237,52 @@
                 @switch (categoryIcon(entry.category)) {
                   @case ('calendar') {
                     <svg viewBox="0 0 24 24" fill="none">
-                      <rect x="4.75" y="5.75" width="14.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.8" />
-                      <path d="M8 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                      <path d="M16 4.25V7.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <rect
+                        x="4.75"
+                        y="5.75"
+                        width="14.5"
+                        height="13.5"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
+                      <path
+                        d="M8 4.25V7.25"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M16 4.25V7.25"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
                       <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.8" />
                     </svg>
                   }
                   @case ('user') {
                     <svg viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
-                      <path d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path
+                        d="M5.5 18C6.5 15.35 8.5 14 12 14C15.5 14 17.5 15.35 18.5 18"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   }
                   @case ('card') {
                     <svg viewBox="0 0 24 24" fill="none">
-                      <rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
+                      <rect
+                        x="4"
+                        y="6"
+                        width="16"
+                        height="12"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                      />
                       <path d="M4 10H20" stroke="currentColor" stroke-width="1.8" />
                     </svg>
                   }
@@ -169,13 +290,28 @@
                     <svg viewBox="0 0 24 24" fill="none">
                       <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
                       <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
-                      <path d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                      <path d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                      <path
+                        d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M15.4 18C16 16.95 16.85 16.2 18 16.2C19.15 16.2 20 16.95 20.6 18"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
                     </svg>
                   }
                   @default {
                     <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                      <path
+                        d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                   }
                 }
@@ -225,14 +361,14 @@
       <div class="audit-footnote__content">
         <h2>A propos du journal d'audit (J7)</h2>
         <p>
-          Chaque action sur une <strong>réservation</strong> (création, validation, refus avec motif, annulation,
-          justificatifs, paiement), sur un <strong>compte</strong> (création, suspension, activation) ou lors d'une
-          <strong>impersonation</strong> est tracée en temps réel avec l'identité de l'acteur, l'IP source et un
-          horodatage précis.
+          Chaque action sur une <strong>réservation</strong> (création, validation, refus avec
+          motif, annulation, justificatifs, paiement), sur un <strong>compte</strong> (création,
+          suspension, activation) ou lors d'une <strong>impersonation</strong> est tracée en temps
+          réel avec l'identité de l'acteur, l'IP source et un horodatage précis.
         </p>
         <p>
-          Les logs sont <strong>immuables</strong> et conservés conformément au RGPD. Ils peuvent être exportés en
-          CSV pour archivage ou audit externe.
+          Les logs sont <strong>immuables</strong> et conservés conformément au RGPD. Ils peuvent
+          être exportés en CSV pour archivage ou audit externe.
         </p>
       </div>
     </section>

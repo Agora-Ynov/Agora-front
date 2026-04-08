@@ -296,13 +296,16 @@
 
         @if (selectedType() === 'ELECTED_MANDATE') {
           <label class="field-group">
-            <span>Fonction ou mandat *</span>
-            <input
-              type="text"
+            <span>Type de mandat *</span>
+            <select
               [value]="detailForm().mandateRole"
-              (input)="updateDetailField('mandateRole', $any($event.target).value)"
-              placeholder="Ex: Conseillere municipale"
-            />
+              (change)="updateDetailField('mandateRole', $any($event.target).value)"
+            >
+              <option value="" disabled>Selectionnez un mandat</option>
+              @for (option of mandateOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
           </label>
         }
 
@@ -382,28 +385,55 @@
 
         <div class="upload-panel">
           <label class="field-group">
-            <span>Ajouter un document (simulation)</span>
+            <span>Ajouter un document</span>
             <div class="upload-row">
               <input
                 type="text"
-                [value]="newDocumentName()"
-                (input)="newDocumentName.set($any($event.target).value)"
-                placeholder="Ex: statuts_association.pdf"
+                readonly
+                value="Choisissez un fichier depuis votre appareil"
+                placeholder="Choisissez un fichier"
               />
-              <button type="button" class="upload-button" (click)="addDocument()">Ajouter</button>
+              <input
+                #fileInput
+                hidden
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                (change)="onFileSelected($event)"
+              />
+              <button
+                type="button"
+                class="upload-button"
+                (click)="openFilePicker()"
+              >
+                Ajouter
+              </button>
             </div>
             <small class="field-help">
               Dans la version reelle, vous pourrez deposer vos fichiers directement (PDF, JPG, PNG
               max 10 Mo par fichier).
             </small>
+            @if (documentErrorMessage()) {
+              <small class="field-error">{{ documentErrorMessage() }}</small>
+            }
+            @if (documentFeedbackMessage()) {
+              <small class="field-success">{{ documentFeedbackMessage() }}</small>
+            }
           </label>
 
           @if (attachedDocuments().length) {
             <div class="document-list">
               @for (document of attachedDocuments(); track document) {
                 <div class="document-item">
-                  <span>{{ document }}</span>
-                  <button type="button" class="document-remove" (click)="removeDocument(document)">
+                  <div class="document-item__meta">
+                    <strong>{{ document.name }}</strong>
+                    <small>{{ document.sizeLabel }}</small>
+                  </div>
+                  <button
+                    type="button"
+                    class="document-remove"
+                    (click)="removeDocument(document.name)"
+                  >
                     Retirer
                   </button>
                 </div>
@@ -482,7 +512,7 @@
             @if (attachedDocuments().length) {
               <ul class="recap-list">
                 @for (document of attachedDocuments(); track document) {
-                  <li>{{ document }}</li>
+                  <li>{{ document.name }}</li>
                 }
               </ul>
             } @else {

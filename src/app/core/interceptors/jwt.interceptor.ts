@@ -12,8 +12,7 @@ const PUBLIC_ROUTES = [
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const jwtService = inject(JwtService);
 
-  const isPublic =
-    req.method === 'POST' && PUBLIC_ROUTES.some(route => req.url.includes(route));
+  const isPublic = req.method === 'POST' && PUBLIC_ROUTES.some(route => req.url.includes(route));
   if (isPublic) return next(req);
 
   const token = jwtService.getAccessToken();

@@ -51,12 +51,7 @@
       <div class="blackout-info__heading">
         <span class="blackout-info__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 8V12"
-              stroke="currentColor"
-              stroke-width="1.9"
-              stroke-linecap="round"
-            />
+            <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
             <path
               d="M12 16H12.01"
               stroke="currentColor"
@@ -115,7 +110,9 @@
                 @for (resourceLabel of group.resourceLabels; track resourceLabel) {
                   <span
                     class="resource-chip"
-                    [class.resource-chip--global]="group.isGlobal && resourceLabel === 'Toutes les ressources'"
+                    [class.resource-chip--global]="
+                      group.isGlobal && resourceLabel === 'Toutes les ressources'
+                    "
                   >
                     {{ resourceLabel }}
                   </span>
@@ -171,13 +168,18 @@
   </main>
 
   @if (isModalOpen()) {
-    <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeModal()"
+      ></button>
       <div
         class="modal-card"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blackout-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <div class="modal-header">
           <div>
@@ -186,18 +188,8 @@
           </div>
           <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fermer">
             <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M7 7L17 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <path
-                d="M17 7L7 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -251,13 +243,18 @@
   }
 
   @if (blackoutPendingDeletion(); as group) {
-    <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeDeleteModal()"
+      ></button>
       <div
         class="modal-card modal-card--danger"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blackout-delete-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <div class="modal-header modal-header--danger">
           <div class="modal-header__lead">
@@ -295,18 +292,8 @@
             aria-label="Fermer"
           >
             <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M7 7L17 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <path
-                d="M17 7L7 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </button>
         </div>

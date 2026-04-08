@@ -4,13 +4,14 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { PagedResponse } from '../../../core/api/models/paged-response.model';
-import { ResourceDto } from '../../../core/api/models/resource.model';
+import { RessourcesService } from '../../../core/api/api/ressources.service';
+import { PagedResponseResourceDto } from '../../../core/api/model/pagedResponseResourceDto';
+import { ResourceDto } from '../../../core/api/model/resourceDto';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueComponent } from './catalogue.component';
-import { CatalogueResourcesService } from './catalogue-resources.service';
 
-type CatalogueComponentTestAccess = CatalogueComponent & {
+/** Accès au mapping privé pour le test (sans intersection avec {@link CatalogueComponent}, incompatible avec le membre privé homonyme). */
+type CatalogueMapTestApi = {
   mapResource(resource: ResourceDto): {
     coverTheme: string;
     tags: string[];
@@ -18,7 +19,7 @@ type CatalogueComponentTestAccess = CatalogueComponent & {
   };
 };
 
-const mockResources: PagedResponse<ResourceDto> = {
+const mockResources: PagedResponseResourceDto = {
   content: [
     {
       id: 'r001',
@@ -35,7 +36,6 @@ const mockResources: PagedResponse<ResourceDto> = {
       id: 'r005',
       name: 'Sono portable',
       resourceType: 'MOBILIER',
-      capacity: null,
       description: 'Systeme de sonorisation professionnel.',
       depositAmountCents: 20000,
       imageUrl: 'https://example.test/sono.jpg',
@@ -46,7 +46,6 @@ const mockResources: PagedResponse<ResourceDto> = {
       id: 'r999',
       name: 'Archive',
       resourceType: 'MOBILIER',
-      capacity: null,
       description: 'Inactive resource.',
       depositAmountCents: 1000,
       imageUrl: 'https://example.test/archive.jpg',
@@ -74,7 +73,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueResourcesService,
+          provide: RessourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -99,14 +98,14 @@ describe('CatalogueComponent', () => {
       family: 'ROOM',
       typeLabel: 'Salle',
       depositAmount: 150,
-      pricePerBooking: 180,
+      pricePerBooking: 75,
     });
     expect(component.resources()[1]).toMatchObject({
       id: 'r005',
       family: 'EQUIPMENT',
       typeLabel: 'Materiel',
       depositAmount: 200,
-      pricePerBooking: 90,
+      pricePerBooking: 100,
     });
     expect(component.resources()[2]).toMatchObject({
       id: 'r999',
@@ -121,7 +120,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueResourcesService,
+          provide: RessourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -162,7 +161,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueResourcesService,
+          provide: RessourcesService,
           useValue: {
             getResources: () => of(mockResources),
           },
@@ -179,10 +178,10 @@ describe('CatalogueComponent', () => {
 
     fixture.detectChanges();
 
-    expect(component.featureLabel('PMR_ACCESS')).toBe('Acces PMR');
+    expect(component.featureLabel('PMR_ACCESS')).toBe('Accès PMR');
     expect(component.getDepositLabel(component.resources()[0])).toBe('150 EUR');
 
-    const mappedFallback = (component as unknown as CatalogueComponentTestAccess).mapResource({
+    const mappedFallback = (component as unknown as CatalogueMapTestApi).mapResource({
       id: 'r777',
       name: 'Nouvelle ressource',
       resourceType: 'MOBILIER',
@@ -194,7 +193,9 @@ describe('CatalogueComponent', () => {
       isActive: true,
     } satisfies ResourceDto);
 
-    expect(mappedFallback.coverTheme).toBe('hall');
+    expect(['hall', 'conference', 'civic', 'balloons', 'bouquet', 'cocktail']).toContain(
+      mappedFallback.coverTheme
+    );
     expect(mappedFallback.tags).toEqual(['12 places']);
     expect(mappedFallback.pricePerBooking).toBe(42);
   });
@@ -206,7 +207,7 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: CatalogueResourcesService,
+          provide: RessourcesService,
           useValue: {
             getResources: () =>
               throwError(

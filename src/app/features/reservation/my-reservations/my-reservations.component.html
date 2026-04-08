@@ -264,7 +264,12 @@
       </div>
 
       @if (isCancellationModalOpen()) {
-        <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
+        <button
+          type="button"
+          class="modal-backdrop"
+          aria-label="Fermer la modale"
+          (click)="closeCancelConfirmation()"
+        ></button>
         <section
           class="confirm-modal"
           role="dialog"
@@ -275,7 +280,8 @@
           @if (getReservationToCancel(); as reservation) {
             <p>
               Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
-              <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
+              <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong
+              >.
             </p>
           }
           <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>

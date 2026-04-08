@@ -1,80 +1,50 @@
-import { ResourceDto as OpenApiResourceDto } from '../model/resourceDto';
-import { ResourceRequest as OpenApiResourceRequest } from '../model/resourceRequest';
 import { TimeSlotDto as OpenApiTimeSlotDto } from '../model/timeSlotDto';
 
+/** Aligné sur le backend / OpenAPI (`ResourceType`). */
 export type ResourceType = 'IMMOBILIER' | 'MOBILIER';
 
-export type AccessibilityTag =
-  | 'PMR_ACCESS'
-  | 'PARKING'
-  | 'SOUND_SYSTEM'
-  | 'PROJECTOR'
-  | 'KITCHEN'
-  | 'STREET_ACCESS';
-
-export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
-
-export interface ResourceDto
-  extends Omit<
-    OpenApiResourceDto,
-    'id' | 'name' | 'resourceType' | 'description' | 'capacity' | 'imageUrl' | 'accessibilityTags'
-  > {
+/**
+ * Ressource catalogue / admin : miroir du contrat API (`ResourceDto` généré).
+ * Les champs optionnels reflètent la sérialisation JSON (absence possible).
+ */
+export interface ResourceDto {
   id: string;
   name: string;
   resourceType: ResourceType;
-  description?: string | null;
-  status?: ResourceStatus;
   capacity?: number | null;
-  location?: string | null;
-  imageUrl?: string | null;
-  requiresDeposit?: boolean;
-  depositExemptible?: boolean;
-  depositAmount?: number;
+  description?: string | null;
   depositAmountCents?: number;
-  basePriceCents?: number;
-  accessibilityTags?: AccessibilityTag[];
+  imageUrl?: string | null;
+  /** Tags d’accessibilité (noms d’enum côté back, ex. PMR_ACCESS). */
+  accessibilityTags?: string[];
   isActive?: boolean;
-  quantity?: number | null;
-  allowedRoles?: string[];
-  quotaPerUser?: number;
-  quotaPeriod?: 'DAILY' | 'WEEKLY' | 'MONTHLY';
-  availabilityStart?: string;
-  availabilityEnd?: string;
-  blackoutDates?: string[];
 }
 
-export interface CreateResourceDto
-  extends Omit<
-    OpenApiResourceRequest,
-    'resourceType' | 'description' | 'capacity' | 'imageUrl' | 'accessibilityTags'
-  > {
+/**
+ * Création / mise à jour : aligné sur `ResourceRequest` (backend).
+ * Pas de tarif de base ni quantité côté API pour l’instant.
+ */
+export interface CreateResourceDto {
   name: string;
   resourceType: ResourceType;
   description: string;
   capacity: number | null;
-  imageUrl?: string | null;
   depositAmountCents: number;
-  accessibilityTags: AccessibilityTag[];
-  isActive?: boolean;
-  basePriceCents?: number;
-  quantity?: number | null;
-  depositExemptible?: boolean;
+  imageUrl?: string | null;
+  accessibilityTags: string[];
 }
 
-export interface UpdateResourceDto extends CreateResourceDto {}
+export type UpdateResourceDto = CreateResourceDto;
 
+/** Formulaire admin : uniquement les champs envoyés au backend. */
 export interface ResourceFormValue {
   resourceType: ResourceType;
   name: string;
   description: string;
   capacity: number | null;
-  basePriceEuros: number | null;
   depositAmountEuros: number | null;
-  depositExemptible: boolean;
   accessibilityTagsText: string;
   imageUrl?: string | null;
-  quantity: number | null;
-  isActive: boolean;
 }
 
 export interface ResourceStats {
@@ -106,3 +76,11 @@ export interface CalendarMonthDto {
   month: number;
   days: CalendarDayDto[];
 }
+
+/*
+ * Anciens types / champs front-only (non exposés par le backend actuel) — à réintroduire quand l’API les fournira :
+ *
+ * export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
+ * export type AccessibilityTag = 'PMR_ACCESS' | 'PARKING' | ... ;
+ * // basePriceCents, quantity, requiresDeposit, depositExemptible, quotas, blackouts embarqués, etc.
+ */

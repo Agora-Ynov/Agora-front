@@ -75,9 +75,7 @@ export const routes: Routes = [
     path: 'admin/quotas',
     canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/admin/quotas/admin-quotas.component').then(
-        m => m.AdminQuotasComponent
-      ),
+      import('./features/admin/quotas/admin-quotas.component').then(m => m.AdminQuotasComponent),
   },
   {
     path: 'admin/blackouts',
@@ -91,9 +89,7 @@ export const routes: Routes = [
     path: 'admin/groups',
     canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/admin/groups/admin-groups.component').then(
-        m => m.AdminGroupsComponent
-      ),
+      import('./features/admin/groups/admin-groups.component').then(m => m.AdminGroupsComponent),
   },
   {
     path: 'admin/users',

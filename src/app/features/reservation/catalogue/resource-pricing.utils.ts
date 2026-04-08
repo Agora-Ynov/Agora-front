@@ -1,4 +1,4 @@
-import { ResourceDto } from '../../../core/api/models/resource.model';
+import { ResourceDto } from '../../../core/api/model/resourceDto';
 import { UserProfile } from '../../../core/auth/auth.model';
 import { getResourcePrice } from './resource-presentation.utils';
 
