@@ -29,7 +29,6 @@
 }
 
 .audit-hero__icon,
-.audit-export__icon,
 .audit-booking-banner__icon,
 .audit-search__icon,
 .audit-tab__icon,
@@ -46,7 +45,6 @@
 }
 
 .audit-hero__icon svg,
-.audit-export__icon svg,
 .audit-booking-banner__icon svg,
 .audit-search__icon svg,
 .audit-tab__icon svg,
@@ -66,20 +64,6 @@
   margin: 0.55rem 0 0;
   color: #4d6484;
   font-size: 1rem;
-}
-
-.audit-export {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7rem;
-  min-height: 2.9rem;
-  padding: 0 1rem;
-  border: 1px solid #d7dde6;
-  border-radius: 0.9rem;
-  background: #fff;
-  color: #111827;
-  font: inherit;
-  cursor: pointer;
 }
 
 .audit-stats {

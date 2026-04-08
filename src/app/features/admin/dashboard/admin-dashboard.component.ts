@@ -10,8 +10,6 @@ type AdminActionIcon =
   | 'my-reservations'
   | 'audit'
   | 'closures'
-  | 'quotas'
-  | 'export'
   | 'resources'
   | 'groups'
   | 'affiliations';
@@ -83,8 +81,6 @@ export class AdminDashboardComponent {
     { label: 'Reservations', icon: 'reservations', route: '/admin/reservations' },
     { label: "Journal d'audit", icon: 'audit', route: '/admin/audit' },
     { label: 'Fermetures', icon: 'closures', route: '/admin/blackouts' },
-    { label: 'Quotas', icon: 'quotas', route: '/admin/quotas' },
-    { label: 'Export CSV/PDF', icon: 'export' },
     { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
     { label: 'Groupes', icon: 'groups', route: '/admin/groups' },
     { label: 'Affiliations', icon: 'affiliations', badgeCount: 2, route: '/admin/affiliations' },
@@ -129,7 +125,6 @@ export class AdminDashboardComponent {
         'Roles DELEGATE_ADMIN et GROUP_MANAGER',
         'Comptes tutelle : internalId format PERR-1948-042',
         'Attributs accessibilite ressources (PMR, parking, sono...)',
-        'Quotas configurables par ressource/groupe (SF-07.5)',
         'Calendrier public disponibilites (SF-07.3)',
         'Selecteur de date+heure (calendrier popover)',
         "Demandes d'affiliation / exoneration avec workflow de validation",
@@ -140,7 +135,6 @@ export class AdminDashboardComponent {
         'Statuts paiement WAIVED et REFUNDED',
         'Flux activation autonome en 7 etapes (lien 72h)',
         'Blackout dates - fermetures configurables (SF-07)',
-        'Export CSV/PDF avec filtres (SF-07.4)',
         'Suspension / reactivation de comptes (SF-07.12)',
         'Recherche par identifiant interne dans utilisateurs',
       ],
