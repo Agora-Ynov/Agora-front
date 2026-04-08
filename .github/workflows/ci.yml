@@ -1,10 +1,18 @@
-name: Front CI — AGORA
+name: Front CI - AGORA
 
 on:
   push:
-    branches: [ main, develop, 'feature/**', 'fix/**' ]
+    branches:
+      - main
+      - develop
+      - develop_front
+      - 'feature/**'
+      - 'fix/**'
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - develop_front
   workflow_dispatch:
 
 permissions:
@@ -14,11 +22,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
+env:
+  NODE_VERSION: '20'
 
-  # ─────────────────────────────────────────
-  # JOB 1 : Lint
-  # ─────────────────────────────────────────
+jobs:
   lint:
     name: Lint ESLint + Prettier
     runs-on: ubuntu-latest
@@ -27,11 +34,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -46,9 +53,6 @@ jobs:
       - name: Verify Angular compile (dev)
         run: npx ng build --configuration development
 
-  # ─────────────────────────────────────────
-  # JOB 2 : Tests unitaires Jest
-  # ─────────────────────────────────────────
   unit-tests:
     name: Tests unitaires Jest
     runs-on: ubuntu-latest
@@ -58,18 +62,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci --no-audit --fund=false
 
       - name: Run Jest
-        run: npm run test -- --ci --reporters=default --reporters=jest-junit
+        run: npm run test -- --ci --runInBand --reporters=default --reporters=jest-junit
         env:
           JEST_JUNIT_OUTPUT_DIR: ./test-results
           JEST_JUNIT_OUTPUT_NAME: jest-results.xml
@@ -82,24 +86,25 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  # ─────────────────────────────────────────
-  # JOB 3 : Build production (main uniquement)
-  # ─────────────────────────────────────────
   build:
     name: Build Angular production
     runs-on: ubuntu-latest
     needs: unit-tests
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.event_name == 'pull_request' ||
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop' ||
+      github.ref == 'refs/heads/develop_front'
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -108,12 +113,12 @@ jobs:
       - name: Build production
         run: npm run build:prod
         env:
-          NODE_OPTIONS: '--max_old_space_size=4096'
+          NODE_OPTIONS: --max_old_space_size=4096
 
       - name: Check bundle size
         run: |
-          echo "## Bundle sizes" >> $GITHUB_STEP_SUMMARY
-          du -sh dist/agora-front/** >> $GITHUB_STEP_SUMMARY || true
+          echo "## Bundle sizes" >> "$GITHUB_STEP_SUMMARY"
+          du -sh dist/agora-front/** >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -122,18 +127,18 @@ jobs:
           path: dist/
           retention-days: 3
 
-  # ─────────────────────────────────────────
-  # JOB 4 : Docker build image front (uniquement sur main)
-  # ─────────────────────────────────────────
   docker:
     name: Build image Docker front
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 20
     permissions:
       contents: read
       packages: write
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: agora-ynov/agora-front
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -141,7 +146,7 @@ jobs:
       - name: Login GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -149,7 +154,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/agora-front
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,prefix=sha-
             type=ref,event=branch
