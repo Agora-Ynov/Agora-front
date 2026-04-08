@@ -1,10 +1,9 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  AuthControllerService,
   AuthMeResponseDto,
   LoginRequestDto,
   LoginResponseDto,
@@ -20,7 +19,6 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly jwtService = inject(JwtService);
   private readonly router = inject(Router);
-  private readonly authController = inject(AuthControllerService);
 
   private _currentUser = signal<UserProfile | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
@@ -43,9 +41,38 @@ export class AuthService {
     this.restoreSession();
   }
 
+  /**
+   * Connexion : enregistre les tokens puis charge le profil **avant** de compléter l’Observable.
+   * HttpClient direct : le client OpenAPI généré met Accept sur le wildcard MIME et en déduit
+   * responseType blob, donc le corps n’est pas parsé en objet (aperçu réseau JSON mais pas accessToken côté JS).
+   */
   login(email: string, password: string): Observable<LoginResponseDto> {
     const body: LoginRequestDto = { email, password };
-    return this.authController.login(body).pipe(tap(response => this.saveSession(response)));
+    return this.http
+      .post<LoginResponseDto>(`${this.apiUrl}/api/auth/login`, body, {
+        withCredentials: true,
+        transferCache: false,
+      })
+      .pipe(
+        switchMap(response => {
+          const accessToken = this.readAccessTokenFromLogin(response);
+          if (!accessToken) {
+            this._currentUser.set(null);
+            return throwError(
+              () =>
+                new HttpErrorResponse({
+                  status: 401,
+                  error: {
+                    message: 'Réponse de connexion sans jeton d’accès.',
+                  },
+                })
+            );
+          }
+          const refreshToken = this.jwtService.getRefreshToken() ?? '';
+          this.jwtService.setTokens(accessToken, refreshToken);
+          return this.getCurrentUser().pipe(map(() => response));
+        })
+      );
   }
 
   logout(): void {
@@ -59,7 +86,10 @@ export class AuthService {
   }
 
   register(data: RegisterRequestDto): Observable<RegisterResponseDto> {
-    return this.authController.register(data);
+    return this.http.post<RegisterResponseDto>(`${this.apiUrl}/api/auth/register`, data, {
+      withCredentials: true,
+      transferCache: false,
+    });
   }
 
   refreshToken(): Observable<{ accessToken: string; refreshToken: string }> {
@@ -127,26 +157,16 @@ export class AuthService {
     return this.jwtService.getAccessToken();
   }
 
-  saveSession(response: LoginResponseDto): void {
-    const accessToken = response.accessToken ?? '';
-    if (!accessToken) {
-      this._currentUser.set(null);
-      return;
-    }
-    const refreshToken = this.jwtService.getRefreshToken() ?? '';
-    this.jwtService.setTokens(accessToken, refreshToken);
-    this.loadCurrentUser().subscribe({
-      error: () => this._currentUser.set(null),
-    });
-  }
-
-  private loadCurrentUser(): Observable<UserProfile> {
-    return this.getCurrentUser();
+  /** Extrait le jeton quelle que soit la casse des clés JSON (camelCase / snake_case). */
+  private readAccessTokenFromLogin(response: LoginResponseDto): string {
+    const raw = response as LoginResponseDto & { access_token?: string };
+    const token = raw.accessToken ?? raw.access_token ?? '';
+    return typeof token === 'string' ? token.trim() : '';
   }
 
   private restoreSession(): void {
     if (this.isAuthenticated()) {
-      this.loadCurrentUser().subscribe({
+      this.getCurrentUser().subscribe({
         error: () => this.clearSession(),
       });
     }

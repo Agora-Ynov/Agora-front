@@ -413,12 +413,14 @@ export class AvailabilityCalendarComponent {
     const filteredSlots =
       selectedResourceId === 'ALL'
         ? slots
-        : slots.filter(slot => slot.resourceId === selectedResourceId);
+        : slots.filter(
+            slot => String(slot.resourceId ?? '') === String(selectedResourceId)
+          );
 
     return {
       isBlackout: !!day.isBlackout,
-      isReserved: filteredSlots.some(slot => !slot.isAvailable),
-      availableCount: filteredSlots.filter(slot => slot.isAvailable).length,
+      isReserved: filteredSlots.some(slot => slot.isAvailable !== true),
+      availableCount: filteredSlots.filter(slot => slot.isAvailable === true).length,
       blackoutReason: day.blackoutReason ?? null,
     };
   }

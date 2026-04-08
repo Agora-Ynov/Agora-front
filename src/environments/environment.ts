@@ -1,4 +1,6 @@
-export const environment = {
+import type { AgoraEnvironment } from './agora-environment';
+
+export const environment: AgoraEnvironment = {
   production: false,
   /** Logs console pour le calendrier (désactivé en prod). */
   debugCalendar: true,
