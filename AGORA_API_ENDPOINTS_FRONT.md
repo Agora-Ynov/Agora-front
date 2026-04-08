@@ -1,6 +1,6 @@
 # AGORA — API Endpoints & Mock JSON (Front)
 
-> **Base URL** : `http://localhost:8080`
+> **Base URL** : `http://localhost:8081`
 > **Auth** : Bearer Token JWT via `POST /api/auth/login` — 15 min. Refresh cookie HttpOnly 7j.
 > 🔒 = endpoint authentifié
 
