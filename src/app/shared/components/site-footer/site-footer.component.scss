@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  margin-top: auto;
+}
+
+.site-footer {
+  border-top: 1px solid #dbe4ef;
+  background: #fff;
+  color: #3f5f8a;
+}
+
+.site-footer__inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+  max-width: 1840px;
+  margin: 0 auto;
+  padding: 1.8rem 1.5rem 2rem;
+}
+
+.site-footer__block {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.site-footer__block strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #385885;
+}
+
+.site-footer__block p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #476792;
+}
+
+.site-footer__block--right {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .site-footer__inner {
+    flex-direction: column;
+    padding: 1.4rem 1rem 1.6rem;
+  }
+
+  .site-footer__block--right {
+    text-align: left;
+  }
+}
