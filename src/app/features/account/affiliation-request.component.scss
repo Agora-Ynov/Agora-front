@@ -342,6 +342,11 @@
   font-size: 0.82rem;
 }
 
+.field-success {
+  color: #10b44a;
+  font-size: 0.82rem;
+}
+
 .field-error--valid {
   color: #10b44a;
 }
@@ -432,6 +437,14 @@
   border: 1px solid #d3dbe7;
   background: #fff;
   color: #111827;
+  cursor: pointer;
+}
+
+.upload-button:disabled {
+  border-color: #d0d5dd;
+  background: #f3f4f6;
+  color: #98a2b3;
+  cursor: not-allowed;
 }
 
 .document-list {
@@ -449,6 +462,22 @@
   border: 1px solid #e4e9f1;
   border-radius: 0.9rem;
   background: #fff;
+}
+
+.document-item__meta {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.document-item__meta strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.document-item__meta small {
+  color: #6b7a91;
+  font-size: 0.78rem;
 }
 
 .document-remove {
