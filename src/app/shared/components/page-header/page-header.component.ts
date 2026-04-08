@@ -14,12 +14,15 @@ export class HeaderComponent {
   private readonly authService = inject(AuthService);
 
   currentUser = this.authService.currentUser;
+  readonly isSessionActive = this.authService.isSessionActive;
   homeLink = computed(() => '/');
   readonly isMenuOpen = signal(false);
 
   fullName = computed(() => {
     const user = this.currentUser();
-    return user ? `${user.firstName} ${user.lastName}` : '';
+    if (!user) return '';
+    const name = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+    return name || user.email || 'Mon compte';
   });
 
   toggleMenu(): void {

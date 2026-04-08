@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
@@ -41,6 +41,7 @@ describe('ResourceDetailComponent', () => {
           provide: AuthService,
           useValue: {
             currentUser: signal(null).asReadonly(),
+            isSessionActive: computed(() => false),
             isAuthenticated: () => false,
             logout: jest.fn(),
           },

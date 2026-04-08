@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, tap, throwError } from 'rxjs';
@@ -24,6 +24,20 @@ export class AuthService {
 
   private _currentUser = signal<UserProfile | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
+
+  /**
+   * État de session utilisable dans les templates (signal).
+   * Ne pas utiliser `computed(() => auth.isAuthenticated())` : `isAuthenticated()` n’est pas un signal,
+   * le computed ne se mettrait jamais à jour.
+   */
+  readonly isSessionActive = computed(() => {
+    const user = this._currentUser();
+    this.jwtService.tokenRevision();
+    if (user !== null) {
+      return true;
+    }
+    return this.isAuthenticated();
+  });
 
   constructor() {
     this.restoreSession();
@@ -72,10 +86,17 @@ export class AuthService {
       );
     }
 
-    return this.authController.me().pipe(
-      map(response => this.mapUserProfile(response)),
-      tap(user => this._currentUser.set(user))
-    );
+    // HttpClient direct : évite le client OpenAPI + cache GET par défaut (`transferCache`) qui peut
+    // servir une réponse périmée / sans en-tête d’auth pour `/api/auth/me`.
+    return this.http
+      .get<AuthMeResponseDto>(`${this.apiUrl}/api/auth/me`, {
+        withCredentials: true,
+        transferCache: false,
+      })
+      .pipe(
+        map(response => this.mapUserProfile(response)),
+        tap(user => this._currentUser.set(user))
+      );
   }
 
   isAuthenticated(): boolean {

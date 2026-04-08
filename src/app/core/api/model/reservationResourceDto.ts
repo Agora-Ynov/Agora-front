@@ -9,16 +9,15 @@
  */
 
 
-export interface ResourceRequest { 
-    name: string;
-    resourceType: ResourceRequest.ResourceTypeEnum;
+export interface ReservationResourceDto { 
+    id?: string;
+    name?: string;
+    resourceType?: ReservationResourceDto.ResourceTypeEnum;
     capacity?: number;
-    description?: string;
     depositAmountCents?: number;
     imageUrl?: string;
-    accessibilityTags: Array<string>;
 }
-export namespace ResourceRequest {
+export namespace ReservationResourceDto {
     export const ResourceTypeEnum = {
         Immobilier: 'IMMOBILIER',
         Mobilier: 'MOBILIER'

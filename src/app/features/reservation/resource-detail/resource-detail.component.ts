@@ -55,7 +55,7 @@ export class ResourceDetailComponent {
   /** Tarification groupée : pas encore fournie par l’API (ex-mock JSON). */
   readonly userGroups = signal<ReservationPricingGroup[]>([]);
   readonly currentUser = this.authService.currentUser;
-  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
+  readonly isAuthenticated = this.authService.isSessionActive;
 
   readonly resourceDetail = computed<ResourceDetailViewModel | null>(() => {
     const resource = this.resource();

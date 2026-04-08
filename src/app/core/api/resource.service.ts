@@ -1,6 +1,9 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { RessourcesService } from './api/ressources.service';
+import { PagedResponseResourceDto } from './model/pagedResponseResourceDto';
 import { ResourceDto as OpenApiResourceDto } from './model/resourceDto';
 import { ResourceRequest } from './model/resourceRequest';
 import {
@@ -24,15 +27,19 @@ const ACCESSIBILITY_LABELS: Record<string, string> = {
   providedIn: 'root',
 })
 export class ResourceService {
+  private readonly http = inject(HttpClient);
   private readonly ressourcesService = inject(RessourcesService);
 
   getAll(): Observable<ResourceDto[]> {
-    return this.ressourcesService
-      .getResources(undefined, undefined, undefined, undefined, 0, 100)
+    const root = environment.apiUrl ?? '';
+    const params = new HttpParams().set('page', '0').set('size', '100');
+    return this.http
+      .get<PagedResponseResourceDto>(`${root}/api/resources`, {
+        params,
+        withCredentials: true,
+      })
       .pipe(
-        map(response =>
-          (response.content ?? []).map(resource => this.fromOpenApiResource(resource))
-        )
+        map(response => (response.content ?? []).map(resource => this.fromOpenApiResource(resource)))
       );
   }
 

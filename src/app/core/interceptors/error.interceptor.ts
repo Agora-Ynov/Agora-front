@@ -12,8 +12,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       switch (error.status) {
         case 401:
-          jwtService.clearTokens();
-          router.navigate(['/login']);
+          // Ne rediriger vers /login que si la requête envoyait un token
+          // (session expirée / token invalide). Pour les accès anonymes à des
+          // endpoints protégés, on laisse le composant gérer l'erreur.
+          if (req.headers.has('Authorization')) {
+            jwtService.clearTokens();
+            router.navigate(['/login']);
+          }
           break;
 
         case 403:

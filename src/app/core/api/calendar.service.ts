@@ -1,15 +1,32 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from './api.service';
+import { environment } from '../../../environments/environment';
+import { CalendarResponseDto } from './model/calendarResponseDto';
 import { CalendarMonthDto } from './models/resource.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CalendarService {
-  private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
 
-  getMonth(year: number, month: number): Observable<CalendarMonthDto> {
-    return this.api.get<CalendarMonthDto>('/api/calendar', { year, month });
+  /**
+   * GET /api/calendar — appel direct (même contrat OpenAPI) pour éviter toute URL
+   * mal formée via {@code configuration.basePath} (ex. chaîne "undefined" + chemin).
+   *
+   * @param resourceId filtre optionnel (ressource unique)
+   */
+  getMonth(year: number, month: number, resourceId?: string): Observable<CalendarMonthDto> {
+    let params = new HttpParams().set('year', String(year)).set('month', String(month));
+    if (resourceId) {
+      params = params.set('resourceId', resourceId);
+    }
+    const root = environment.apiUrl ?? '';
+    const url = `${root}/api/calendar`;
+    return this.http.get<CalendarResponseDto>(url, {
+      params,
+      withCredentials: true,
+    });
   }
 }

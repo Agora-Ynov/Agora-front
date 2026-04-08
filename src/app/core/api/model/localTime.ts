@@ -7,13 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { UserSummaryDto } from './userSummaryDto';
 
 
-export interface LoginResponseDto { 
-    accessToken?: string;
-    tokenType?: string;
-    expiresIn?: number;
-    user?: UserSummaryDto;
+export interface LocalTime { 
+    hour?: number;
+    minute?: number;
+    second?: number;
+    nano?: number;
 }
 

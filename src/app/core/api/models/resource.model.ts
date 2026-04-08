@@ -55,27 +55,10 @@ export interface ResourceStats {
 
 export type ResourceSlotDto = Required<OpenApiTimeSlotDto>;
 
-export interface CalendarSlotDto {
-  resourceId: string;
-  resourceName: string;
-  resourceType: ResourceType;
-  slotStart: string;
-  slotEnd: string;
-  isAvailable: boolean;
-}
-
-export interface CalendarDayDto {
-  date: string;
-  isBlackout: boolean;
-  blackoutReason: string | null;
-  slots: CalendarSlotDto[];
-}
-
-export interface CalendarMonthDto {
-  year: number;
-  month: number;
-  days: CalendarDayDto[];
-}
+/** Calendrier mensuel : alias du DTO OpenAPI (`CalendarResponseDto`). */
+export type { CalendarResponseDto as CalendarMonthDto } from '../model/calendarResponseDto';
+export type { CalendarDayDto } from '../model/calendarDayDto';
+export type { CalendarSlotDto } from '../model/calendarSlotDto';
 
 /*
  * Anciens types / champs front-only (non exposés par le backend actuel) — à réintroduire quand l’API les fournira :

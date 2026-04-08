@@ -1,68 +1,26 @@
-import { inject, Injectable } from '@angular/core';
-import { catchError, delay, Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 
-import { ApiService } from '../../core/api/api.service';
-import { ReservationDto } from '../../core/api/models/reservation.model';
-import { environment } from '../../../environments/environment';
+import { ReservationsControllerService } from '../../core/api/api/reservationsController.service';
+import { PagedResponseReservationListItemDto } from '../../core/api/model/pagedResponseReservationListItemDto';
 
+/**
+ * Réservations : délégation au client OpenAPI généré ({@link ReservationsControllerService}).
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class ReservationService {
-  private readonly api = inject(ApiService);
-  private readonly basePath = '/api/reservations';
-  private readonly mockStorageKey = 'agora.mock.reservations';
-  private readonly useMockReservations = environment.useMockAuth;
+  private readonly reservationsApi = inject(ReservationsControllerService);
+
+  listMyReservations(
+    page = 0,
+    size = 50
+  ): Observable<PagedResponseReservationListItemDto> {
+    return this.reservationsApi.listMyReservations(page, size);
+  }
 
   cancelReservation(reservationId: string): Observable<void> {
-    if (this.useMockReservations) {
-      return this.cancelReservationMock(reservationId);
-    }
-
-    return this.api
-      .delete<void>(`${this.basePath}/${reservationId}`)
-      .pipe(catchError(() => this.cancelReservationMock(reservationId)));
-  }
-
-  private cancelReservationMock(reservationId: string): Observable<void> {
-    const reservations = this.readMockReservations();
-    if (reservations.length > 0) {
-      const now = new Date().toISOString();
-      const updated: ReservationDto[] = reservations.map(reservation =>
-        reservation.id === reservationId
-          ? { ...reservation, status: 'CANCELLED', updatedAt: now }
-          : reservation
-      );
-
-      this.writeMockReservations(updated);
-    }
-
-    return of(void 0).pipe(delay(150));
-  }
-
-  private readMockReservations(): ReservationDto[] {
-    if (typeof localStorage === 'undefined') {
-      return [];
-    }
-
-    const rawValue = localStorage.getItem(this.mockStorageKey);
-    if (!rawValue) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(rawValue);
-      return Array.isArray(parsed) ? (parsed as ReservationDto[]) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private writeMockReservations(reservations: ReservationDto[]): void {
-    if (typeof localStorage === 'undefined') {
-      return;
-    }
-
-    localStorage.setItem(this.mockStorageKey, JSON.stringify(reservations));
+    return this.reservationsApi.cancelReservation(reservationId) as Observable<void>;
   }
 }
