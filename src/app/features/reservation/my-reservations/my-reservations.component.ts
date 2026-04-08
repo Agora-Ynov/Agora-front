@@ -281,11 +281,7 @@ export class MyReservationsComponent {
       return 'PAID';
     }
 
-    if (
-      depositStatus === 'DEPOSIT_EXEMPT' ||
-      depositStatus === 'EXEMPT' ||
-      depositEuros === 0
-    ) {
+    if (depositStatus === 'DEPOSIT_EXEMPT' || depositStatus === 'EXEMPT' || depositEuros === 0) {
       return 'EXEMPT';
     }
 
@@ -336,9 +332,7 @@ export class MyReservationsComponent {
               : depositSt === 'DEPOSIT_EXEMPT' || depositSt === 'EXEMPT'
                 ? 'Aucun depot requis'
                 : 'Depot a effectuer',
-          completed:
-            depositSt !== 'DEPOSIT_PENDING' &&
-            depositSt !== 'REFUNDED',
+          completed: depositSt !== 'DEPOSIT_PENDING' && depositSt !== 'REFUNDED',
         },
       ];
     }

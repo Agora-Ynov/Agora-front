@@ -39,7 +39,9 @@ export class ResourceService {
         withCredentials: true,
       })
       .pipe(
-        map(response => (response.content ?? []).map(resource => this.fromOpenApiResource(resource)))
+        map(response =>
+          (response.content ?? []).map(resource => this.fromOpenApiResource(resource))
+        )
       );
   }
 

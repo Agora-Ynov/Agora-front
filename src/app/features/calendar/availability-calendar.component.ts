@@ -143,8 +143,7 @@ export class AvailabilityCalendarComponent {
     const out: OccupiedSlotPreview[] = [];
     for (const day of data.days) {
       const slots = day.slots ?? [];
-      const filtered =
-        rid === 'ALL' ? slots : slots.filter(s => s.resourceId === rid);
+      const filtered = rid === 'ALL' ? slots : slots.filter(s => s.resourceId === rid);
       for (const slot of filtered) {
         if (slot.isAvailable) {
           continue;
@@ -179,7 +178,9 @@ export class AvailabilityCalendarComponent {
       month: 'long',
       year: 'numeric',
     });
-    const d = day?.date ? new Date(`${String(day.date).slice(0, 10)}T12:00:00`) : new Date(`${iso}T12:00:00`);
+    const d = day?.date
+      ? new Date(`${String(day.date).slice(0, 10)}T12:00:00`)
+      : new Date(`${iso}T12:00:00`);
     const labelDate = Number.isNaN(d.getTime()) ? iso : dateFmt.format(d);
 
     if (!day) {
@@ -304,11 +305,14 @@ export class AvailabilityCalendarComponent {
         catchError(err => {
           if (environment.debugCalendar) {
             const httpErr = err as HttpErrorResponse;
-            console.error('[Agora][Calendar] GET /api/resources a echoue — la grille utilise quand meme le calendrier.', {
-              status: httpErr.status,
-              url: httpErr.url,
-              message: httpErr.message,
-            });
+            console.error(
+              '[Agora][Calendar] GET /api/resources a echoue — la grille utilise quand meme le calendrier.',
+              {
+                status: httpErr.status,
+                url: httpErr.url,
+                message: httpErr.message,
+              }
+            );
           }
           return of<ResourceDto[]>([]);
         })
@@ -332,7 +336,8 @@ export class AvailabilityCalendarComponent {
         next: ({ resources, month }) => {
           if (environment.debugCalendar) {
             const days = month?.days ?? [];
-            const firstKey = days[0]?.date != null ? this.normalizeCalendarDayKey(days[0].date) : null;
+            const firstKey =
+              days[0]?.date != null ? this.normalizeCalendarDayKey(days[0].date) : null;
             // console.info (pas debug) : Chrome masque souvent « Verbose » / console.debug par défaut.
             console.info('[Agora][Calendar] charge', {
               resourcesCount: resources.length,
@@ -413,9 +418,7 @@ export class AvailabilityCalendarComponent {
     const filteredSlots =
       selectedResourceId === 'ALL'
         ? slots
-        : slots.filter(
-            slot => String(slot.resourceId ?? '') === String(selectedResourceId)
-          );
+        : slots.filter(slot => String(slot.resourceId ?? '') === String(selectedResourceId));
 
     return {
       isBlackout: !!day.isBlackout,

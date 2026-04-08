@@ -137,7 +137,12 @@ export class CatalogueComponent {
             (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
           );
           if (isDevMode()) {
-            console.debug('[Agora][Catalogue] rows recus', rows.length, '→ apres filtre', filtered.length);
+            console.debug(
+              '[Agora][Catalogue] rows recus',
+              rows.length,
+              '→ apres filtre',
+              filtered.length
+            );
             if (rows.length > 0 && filtered.length === 0) {
               console.warn('[Agora][Catalogue] TOUS les rows ont ete filtres (id vide ?)', rows);
             }
@@ -146,7 +151,12 @@ export class CatalogueComponent {
         },
         error: (error: HttpErrorResponse) => {
           if (isDevMode()) {
-            console.error('[Agora][Catalogue] erreur chargement ressources', error.status, error.message, error);
+            console.error(
+              '[Agora][Catalogue] erreur chargement ressources',
+              error.status,
+              error.message,
+              error
+            );
           }
           const message =
             error.status === 0

@@ -19,37 +19,37 @@ type CatalogueMapTestApi = {
 };
 
 const mockResources: ResourceDto[] = [
-    {
-      id: 'r001',
-      name: 'Salle des fetes - Grande salle',
-      resourceType: 'IMMOBILIER',
-      capacity: 250,
-      description: 'Grande salle pour evenements.',
-      depositAmountCents: 15000,
-      imageUrl: 'https://example.test/salle.jpg',
-      accessibilityTags: ['PMR_ACCESS', 'PARKING', 'SOUND_SYSTEM'],
-      isActive: true,
-    },
-    {
-      id: 'r005',
-      name: 'Sono portable',
-      resourceType: 'MOBILIER',
-      description: 'Systeme de sonorisation professionnel.',
-      depositAmountCents: 20000,
-      imageUrl: 'https://example.test/sono.jpg',
-      accessibilityTags: ['SOUND_SYSTEM'],
-      isActive: true,
-    },
-    {
-      id: 'r999',
-      name: 'Archive',
-      resourceType: 'MOBILIER',
-      description: 'Inactive resource.',
-      depositAmountCents: 1000,
-      imageUrl: 'https://example.test/archive.jpg',
-      accessibilityTags: [],
-      isActive: false,
-    },
+  {
+    id: 'r001',
+    name: 'Salle des fetes - Grande salle',
+    resourceType: 'IMMOBILIER',
+    capacity: 250,
+    description: 'Grande salle pour evenements.',
+    depositAmountCents: 15000,
+    imageUrl: 'https://example.test/salle.jpg',
+    accessibilityTags: ['PMR_ACCESS', 'PARKING', 'SOUND_SYSTEM'],
+    isActive: true,
+  },
+  {
+    id: 'r005',
+    name: 'Sono portable',
+    resourceType: 'MOBILIER',
+    description: 'Systeme de sonorisation professionnel.',
+    depositAmountCents: 20000,
+    imageUrl: 'https://example.test/sono.jpg',
+    accessibilityTags: ['SOUND_SYSTEM'],
+    isActive: true,
+  },
+  {
+    id: 'r999',
+    name: 'Archive',
+    resourceType: 'MOBILIER',
+    description: 'Inactive resource.',
+    depositAmountCents: 1000,
+    imageUrl: 'https://example.test/archive.jpg',
+    accessibilityTags: [],
+    isActive: false,
+  },
 ];
 
 const mockAuthService = {

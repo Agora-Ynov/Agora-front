@@ -13,10 +13,7 @@ import { PagedResponseReservationListItemDto } from '../../core/api/model/pagedR
 export class ReservationService {
   private readonly reservationsApi = inject(ReservationsControllerService);
 
-  listMyReservations(
-    page = 0,
-    size = 50
-  ): Observable<PagedResponseReservationListItemDto> {
+  listMyReservations(page = 0, size = 50): Observable<PagedResponseReservationListItemDto> {
     return this.reservationsApi.listMyReservations(page, size);
   }
 
