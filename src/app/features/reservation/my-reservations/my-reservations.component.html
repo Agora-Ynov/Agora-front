@@ -3,268 +3,303 @@
     <header class="reservations-hero">
       <div>
         <h1>Mes reservations</h1>
-        <p>Gerez toutes vos reservations de salles et materiel</p>
+        <p>Suivez l'avancement de vos demandes et gerez vos reservations en cours.</p>
       </div>
 
       <a class="hero-action" routerLink="/catalogue">Nouvelle reservation</a>
     </header>
 
-    @if (feedbackMessage()) {
-      <div class="feedback-banner">{{ feedbackMessage() }}</div>
-    }
+    @if (loading()) {
+      <section class="state-card" aria-live="polite">
+        <h2>Chargement de vos reservations</h2>
+        <p>Nous recuperons votre historique pour afficher les demandes en cours.</p>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="state-card state-card--error" aria-live="assertive">
+        <h2>Impossible de charger vos reservations</h2>
+        <p>{{ errorMessage() }}</p>
+        <div class="state-card__actions">
+          <button type="button" class="state-action" (click)="reloadReservations()">
+            Reessayer
+          </button>
+          <a class="state-action state-action--secondary" routerLink="/catalogue">
+            Retour au catalogue
+          </a>
+        </div>
+      </section>
+    } @else if (!reservations().length) {
+      <section class="state-card state-card--empty">
+        <h2>Aucune reservation pour le moment</h2>
+        <p>
+          {{ displayName() }}, vous n'avez pas encore de demande en cours. Vous pouvez lancer une
+          nouvelle reservation depuis le catalogue.
+        </p>
+        <div class="state-card__actions">
+          <a class="state-action" routerLink="/catalogue">Voir le catalogue</a>
+        </div>
+      </section>
+    } @else {
+      @if (feedbackMessage()) {
+        <div class="feedback-banner">{{ feedbackMessage() }}</div>
+      }
 
-    <div class="reservations-list">
-      @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
-        <article class="reservation-card">
-          <div class="reservation-card__header">
-            <div>
-              <h2>{{ reservation.resourceName }}</h2>
-              <p>#{{ reservation.id }}</p>
-            </div>
-
-            <span
-              class="status-badge"
-              [class.status-badge--confirmed]="reservation.status === 'CONFIRMED'"
-              [class.status-badge--pending]="reservation.status === 'PENDING'"
-              [class.status-badge--cancelled]="reservation.status === 'CANCELLED'"
-            >
-              <span class="status-badge__dot" aria-hidden="true"></span>
-              {{ reservationStatusLabel(reservation.status) }}
-            </span>
-          </div>
-
-          <div class="reservation-card__grid">
-            <div class="info-block">
-              <span class="info-block__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="3.75"
-                    y="5.75"
-                    width="16.5"
-                    height="14.5"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                  />
-                  <path
-                    d="M8 3.75V7.25"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M16 3.75V7.25"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                  <path d="M3.75 10H20.25" stroke="currentColor" stroke-width="1.9" />
-                </svg>
-              </span>
-
+      <div class="reservations-list">
+        @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
+          <article class="reservation-card">
+            <div class="reservation-card__header">
               <div>
-                <span class="info-block__label">Periode</span>
-                <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>
-                <p>{{ reservation.startTime }} - {{ reservation.endTime }}</p>
+                <h2>{{ reservation.resourceName }}</h2>
+                <p>#{{ reservation.id }}</p>
               </div>
-            </div>
 
-            <div class="info-block">
-              <span class="info-block__icon info-block__icon--payment" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M13.75 5H9.75C7.40279 5 5.5 6.90279 5.5 9.25C5.5 11.5972 7.40279 13.5 9.75 13.5H14.25C16.5972 13.5 18.5 15.4028 18.5 17.75C18.5 20.0972 16.5972 22 14.25 22H10.25"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M12 2V22"
-                    stroke="currentColor"
-                    stroke-width="1.9"
-                    stroke-linecap="round"
-                  />
-                </svg>
+              <span
+                class="status-badge"
+                [class.status-badge--confirmed]="reservation.status === 'CONFIRMED'"
+                [class.status-badge--pending]="reservation.status === 'PENDING'"
+                [class.status-badge--cancelled]="reservation.status === 'CANCELLED'"
+              >
+                <span class="status-badge__dot" aria-hidden="true"></span>
+                {{ reservationStatusLabel(reservation.status) }}
               </span>
-
-              <div>
-                <span class="info-block__label">Paiement</span>
-                <strong>
-                  {{ reservation.amountEuros }}EUR
-                  @if (reservation.depositEuros > 0) {
-                    <span class="payment-detail"
-                      >(+ {{ reservation.depositEuros }}EUR caution)</span
-                    >
-                  }
-                </strong>
-                <span
-                  class="payment-badge"
-                  [class.payment-badge--paid]="reservation.paymentStatus === 'PAID'"
-                  [class.payment-badge--pending]="reservation.paymentStatus === 'PENDING'"
-                  [class.payment-badge--exempt]="reservation.paymentStatus === 'EXEMPT'"
-                >
-                  {{ paymentStatusLabel(reservation.paymentStatus) }}
-                </span>
-              </div>
             </div>
-          </div>
 
-          <div class="comment-box">
-            <span class="comment-box__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M7 4.75H13.25L17.5 9V19.25H7C5.75736 19.25 4.75 18.2426 4.75 17V7C4.75 5.75736 5.75736 4.75 7 4.75Z"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M13 4.75V9H17.25"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linejoin="round"
-                />
-                <path
-                  d="M8.25 12H14"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M8.25 15H13"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </span>
-
-            <div>
-              <span class="comment-box__label">Commentaire</span>
-              <p>{{ reservation.comment }}</p>
-            </div>
-          </div>
-
-          <div class="timeline-toggle">
-            <button
-              type="button"
-              class="timeline-toggle__button"
-              (click)="toggleTimeline(reservation.id)"
-              [attr.aria-expanded]="isExpanded(reservation.id)"
-            >
-              <span class="timeline-toggle__label">
-                <span class="timeline-toggle__icon" aria-hidden="true">
+            <div class="reservation-card__grid">
+              <div class="info-block">
+                <span class="info-block__icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="3.75"
+                      y="5.75"
+                      width="16.5"
+                      height="14.5"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                    />
                     <path
-                      d="M12 7V12L15 14"
+                      d="M8 3.75V7.25"
                       stroke="currentColor"
                       stroke-width="1.9"
                       stroke-linecap="round"
-                      stroke-linejoin="round"
                     />
                     <path
-                      d="M4.75 12C4.75 8 8 4.75 12 4.75C16 4.75 19.25 8 19.25 12C19.25 16 16 19.25 12 19.25C8 19.25 4.75 16 4.75 12Z"
+                      d="M16 3.75V7.25"
                       stroke="currentColor"
                       stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path d="M3.75 10H20.25" stroke="currentColor" stroke-width="1.9" />
+                  </svg>
+                </span>
+
+                <div>
+                  <span class="info-block__label">Periode</span>
+                  <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>
+                  <p>{{ reservation.startTime }} - {{ reservation.endTime }}</p>
+                </div>
+              </div>
+
+              <div class="info-block">
+                <span class="info-block__icon info-block__icon--payment" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M13.75 5H9.75C7.40279 5 5.5 6.90279 5.5 9.25C5.5 11.5972 7.40279 13.5 9.75 13.5H14.25C16.5972 13.5 18.5 15.4028 18.5 17.75C18.5 20.0972 16.5972 22 14.25 22H10.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
                     />
                     <path
-                      d="M8 2.75V5.5"
+                      d="M12 2V22"
                       stroke="currentColor"
                       stroke-width="1.9"
                       stroke-linecap="round"
                     />
                   </svg>
                 </span>
-                <span>Suivi de ma demande</span>
-              </span>
 
-              <span
-                class="timeline-toggle__chevron"
-                [class.timeline-toggle__chevron--open]="isExpanded(reservation.id)"
-              >
+                <div>
+                  <span class="info-block__label">Paiement</span>
+                  <strong>
+                    {{ reservation.amountEuros }}EUR
+                    @if (reservation.depositEuros > 0) {
+                      <span class="payment-detail"
+                        >(+ {{ reservation.depositEuros }}EUR caution)</span
+                      >
+                    }
+                  </strong>
+                  <span
+                    class="payment-badge"
+                    [class.payment-badge--paid]="reservation.paymentStatus === 'PAID'"
+                    [class.payment-badge--pending]="reservation.paymentStatus === 'PENDING'"
+                    [class.payment-badge--exempt]="reservation.paymentStatus === 'EXEMPT'"
+                  >
+                    {{ paymentStatusLabel(reservation.paymentStatus) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="comment-box">
+              <span class="comment-box__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none">
                   <path
-                    d="M9 6L15 12L9 18"
+                    d="M7 4.75H13.25L17.5 9V19.25H7C5.75736 19.25 4.75 18.2426 4.75 17V7C4.75 5.75736 5.75736 4.75 7 4.75Z"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M13 4.75V9H17.25"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M8.25 12H14"
                     stroke="currentColor"
                     stroke-width="1.9"
                     stroke-linecap="round"
-                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M8.25 15H13"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
                   />
                 </svg>
               </span>
-            </button>
 
-            @if (isExpanded(reservation.id)) {
-              <div class="timeline-panel">
-                @for (step of reservation.timeline; track step.label) {
-                  <div class="timeline-step" [class.timeline-step--pending]="!step.completed">
-                    <span class="timeline-step__marker" aria-hidden="true"></span>
-                    <div>
-                      <strong>{{ step.label }}</strong>
-                      <p>{{ step.date }}</p>
-                    </div>
-                  </div>
-                }
+              <div>
+                <span class="comment-box__label">Commentaire</span>
+                <p>{{ reservation.comment }}</p>
               </div>
-            }
-          </div>
+            </div>
 
-          <div class="reservation-card__footer">
+            <div class="timeline-toggle">
+              <button
+                type="button"
+                class="timeline-toggle__button"
+                (click)="toggleTimeline(reservation.id)"
+                [attr.aria-expanded]="isExpanded(reservation.id)"
+              >
+                <span class="timeline-toggle__label">
+                  <span class="timeline-toggle__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 7V12L15 14"
+                        stroke="currentColor"
+                        stroke-width="1.9"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M4.75 12C4.75 8 8 4.75 12 4.75C16 4.75 19.25 8 19.25 12C19.25 16 16 19.25 12 19.25C8 19.25 4.75 16 4.75 12Z"
+                        stroke="currentColor"
+                        stroke-width="1.9"
+                      />
+                      <path
+                        d="M8 2.75V5.5"
+                        stroke="currentColor"
+                        stroke-width="1.9"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </span>
+                  <span>Suivi de ma demande</span>
+                </span>
+
+                <span
+                  class="timeline-toggle__chevron"
+                  [class.timeline-toggle__chevron--open]="isExpanded(reservation.id)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M9 6L15 12L9 18"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+              </button>
+
+              @if (isExpanded(reservation.id)) {
+                <div class="timeline-panel">
+                  @for (step of reservation.timeline; track step.label) {
+                    <div class="timeline-step" [class.timeline-step--pending]="!step.completed">
+                      <span class="timeline-step__marker" aria-hidden="true"></span>
+                      <div>
+                        <strong>{{ step.label }}</strong>
+                        <p>{{ step.date }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="reservation-card__footer">
+              <button
+                type="button"
+                class="cancel-button"
+                [disabled]="
+                  reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
+                "
+                (click)="openCancelConfirmation(reservation.id)"
+              >
+                {{
+                  reservation.status === 'CANCELLED'
+                    ? 'Reservation annulee'
+                    : isCancellationPending(reservation.id)
+                      ? 'Annulation en cours...'
+                      : 'Annuler la reservation'
+                }}
+              </button>
+
+              <p>Creee le {{ formatCreatedAt(reservation.createdAt) }}</p>
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (isCancellationModalOpen()) {
+        <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
+        <section
+          class="confirm-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-modal-title"
+        >
+          <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
+          @if (getReservationToCancel(); as reservation) {
+            <p>
+              Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
+              <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
+            </p>
+          }
+          <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>
+
+          <div class="confirm-modal__actions">
             <button
               type="button"
-              class="cancel-button"
-              [disabled]="
-                reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
-              "
-              (click)="openCancelConfirmation(reservation.id)"
+              class="modal-secondary-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="closeCancelConfirmation()"
             >
-              {{
-                reservation.status === 'CANCELLED'
-                  ? 'Reservation annulee'
-                  : isCancellationPending(reservation.id)
-                    ? 'Annulation en cours...'
-                    : 'Annuler la reservation'
-              }}
+              Retour
             </button>
-
-            <p>Creee le {{ formatCreatedAt(reservation.createdAt) }}</p>
+            <button
+              type="button"
+              class="modal-danger-button"
+              [disabled]="!!cancellationInProgressId()"
+              (click)="confirmCancellation()"
+            >
+              {{ cancellationInProgressId() ? 'Annulation...' : 'Confirmer' }}
+            </button>
           </div>
-        </article>
+        </section>
       }
-    </div>
-
-    @if (isCancellationModalOpen()) {
-      <div class="modal-backdrop" (click)="closeCancelConfirmation()"></div>
-      <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-modal-title">
-        <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
-        @if (getReservationToCancel(); as reservation) {
-          <p>
-            Vous allez annuler la reservation <strong>{{ reservation.resourceName }}</strong> du
-            <strong>{{ formatReservationDate(reservation.reservationDate) }}</strong>.
-          </p>
-        }
-        <p>Cette action est immediate. Voulez-vous vraiment confirmer l'annulation ?</p>
-
-        <div class="confirm-modal__actions">
-          <button
-            type="button"
-            class="modal-secondary-button"
-            [disabled]="!!cancellationInProgressId()"
-            (click)="closeCancelConfirmation()"
-          >
-            Retour
-          </button>
-          <button
-            type="button"
-            class="modal-danger-button"
-            [disabled]="!!cancellationInProgressId()"
-            (click)="confirmCancellation()"
-          >
-            {{ cancellationInProgressId() ? 'Annulation...' : 'Confirmer' }}
-          </button>
-        </div>
-      </section>
     }
-
   </div>
 </section>
