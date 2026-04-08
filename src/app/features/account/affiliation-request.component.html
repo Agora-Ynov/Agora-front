@@ -296,13 +296,16 @@
 
         @if (selectedType() === 'ELECTED_MANDATE') {
           <label class="field-group">
-            <span>Fonction ou mandat *</span>
-            <input
-              type="text"
+            <span>Type de mandat *</span>
+            <select
               [value]="detailForm().mandateRole"
-              (input)="updateDetailField('mandateRole', $any($event.target).value)"
-              placeholder="Ex: Conseillere municipale"
-            />
+              (change)="updateDetailField('mandateRole', $any($event.target).value)"
+            >
+              <option value="" disabled>Selectionnez un mandat</option>
+              @for (option of mandateOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
           </label>
         }
 

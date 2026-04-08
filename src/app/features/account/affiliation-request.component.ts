@@ -27,6 +27,11 @@ interface GroupOption {
   subtitle: string;
 }
 
+interface MandateOption {
+  value: string;
+  label: string;
+}
+
 interface AttachedDocument {
   name: string;
   sizeLabel: string;
@@ -101,6 +106,14 @@ export class AffiliationRequestComponent {
       name: 'Conseil Municipal',
       subtitle: 'Groupe institutionnel municipal',
     },
+  ];
+
+  readonly mandateOptions: MandateOption[] = [
+    { value: 'Conseiller(ere) municipal(e)', label: 'Conseiller(ere) municipal(e)' },
+    { value: 'Maire adjoint(e)', label: 'Maire adjoint(e)' },
+    { value: 'Maire', label: 'Maire' },
+    { value: 'Delegue(e) municipal(e)', label: 'Delegue(e) municipal(e)' },
+    { value: 'Autre mandat electif', label: 'Autre mandat electif' },
   ];
 
   readonly requestTypes: RequestTypeOption[] = [
