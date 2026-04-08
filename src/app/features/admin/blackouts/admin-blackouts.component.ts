@@ -158,7 +158,7 @@ export class AdminBlackoutsComponent {
     const reason = formValue.reason ?? '';
 
     if (dateTo < dateFrom) {
-      this.errorMessage.set("La date de fin doit etre posterieure ou egale a la date de debut.");
+      this.errorMessage.set('La date de fin doit etre posterieure ou egale a la date de debut.');
       return;
     }
 
@@ -203,9 +203,7 @@ export class AdminBlackoutsComponent {
       .subscribe({
         next: () => {
           const idsToDelete = new Set(group.ids);
-          this.blackouts.set(
-            this.blackouts().filter(blackout => !idsToDelete.has(blackout.id))
-          );
+          this.blackouts.set(this.blackouts().filter(blackout => !idsToDelete.has(blackout.id)));
           this.closeDeleteModal();
           this.successMessage.set('Fermeture supprimee avec succes.');
         },

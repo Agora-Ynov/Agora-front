@@ -100,7 +100,8 @@ export class AdminAuditPageComponent {
     },
     {
       label: 'Validations',
-      value: this.entries().filter(entry => ['info', 'green', 'blue'].includes(entry.severity)).length,
+      value: this.entries().filter(entry => ['info', 'green', 'blue'].includes(entry.severity))
+        .length,
       tone: 'green',
     },
     {
@@ -121,7 +122,11 @@ export class AdminAuditPageComponent {
   ]);
 
   readonly bookingRefs = computed(() => [
-    ...new Set(this.entries().map(entry => entry.bookingRef).filter((entry): entry is string => !!entry)),
+    ...new Set(
+      this.entries()
+        .map(entry => entry.bookingRef)
+        .filter((entry): entry is string => !!entry)
+    ),
   ]);
 
   readonly filteredEntries = computed(() => {
@@ -206,27 +211,27 @@ export class AdminAuditPageComponent {
       ip_source: entry.ipAddress,
     }));
 
-    const header = Object.keys(rows[0] ?? {
-      id: '',
-      categorie: '',
-      gravite: '',
-      libelle: '',
-      role_acteur: '',
-      action: '',
-      date_action: '',
-      acteur: '',
-      cible: '',
-      reservation: '',
-      ressource: '',
-      ip_source: '',
-    });
+    const header = Object.keys(
+      rows[0] ?? {
+        id: '',
+        categorie: '',
+        gravite: '',
+        libelle: '',
+        role_acteur: '',
+        action: '',
+        date_action: '',
+        acteur: '',
+        cible: '',
+        reservation: '',
+        ressource: '',
+        ip_source: '',
+      }
+    );
 
     const csv = [
       header.join(';'),
       ...rows.map(row =>
-        header
-          .map(key => this.escapeCsvValue(String(row[key as keyof typeof row] ?? '')))
-          .join(';'),
+        header.map(key => this.escapeCsvValue(String(row[key as keyof typeof row] ?? ''))).join(';')
       ),
     ].join('\n');
 

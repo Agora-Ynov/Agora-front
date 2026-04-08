@@ -97,7 +97,7 @@ export class RegisterComponent {
             const apiError = error.error as ApiErrorResponse;
             this.errorMessage =
               apiError?.message ??
-              "Compte cree, mais la connexion automatique a echoue. Merci de vous connecter manuellement.";
+              'Compte cree, mais la connexion automatique a echoue. Merci de vous connecter manuellement.';
             void this.router.navigate(['/login']);
           },
         });

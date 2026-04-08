@@ -4,7 +4,11 @@ import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
 import { ResourceService } from '../../core/api/resource.service';
-import { CalendarDayDto, CalendarMonthDto, ResourceDto } from '../../core/api/models/resource.model';
+import {
+  CalendarDayDto,
+  CalendarMonthDto,
+  ResourceDto,
+} from '../../core/api/models/resource.model';
 
 type ResourceFilter = 'ALL' | string;
 
@@ -67,9 +71,7 @@ export class AvailabilityCalendarComponent {
     const firstDayOfMonth = new Date(year, month - 1, 1);
     const mondayFirstOffset = (firstDayOfMonth.getDay() + 6) % 7;
     const gridStart = new Date(year, month - 1, 1 - mondayFirstOffset);
-    const daysByIso = new Map(
-      (this.monthData()?.days ?? []).map(day => [day.date, day] as const)
-    );
+    const daysByIso = new Map((this.monthData()?.days ?? []).map(day => [day.date, day] as const));
 
     return Array.from({ length: 42 }, (_value, index) => {
       const cellDate = new Date(gridStart);

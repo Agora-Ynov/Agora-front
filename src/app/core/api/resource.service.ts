@@ -27,9 +27,13 @@ export class ResourceService {
   private readonly ressourcesService = inject(RessourcesService);
 
   getAll(): Observable<ResourceDto[]> {
-    return this.ressourcesService.getResources(undefined, undefined, undefined, undefined, 0, 100).pipe(
-      map(response => (response.content ?? []).map(resource => this.fromOpenApiResource(resource)))
-    );
+    return this.ressourcesService
+      .getResources(undefined, undefined, undefined, undefined, 0, 100)
+      .pipe(
+        map(response =>
+          (response.content ?? []).map(resource => this.fromOpenApiResource(resource))
+        )
+      );
   }
 
   getById(resourceId: string): Observable<ResourceDto> {
@@ -114,7 +118,9 @@ export class ResourceService {
       .filter(item => allowed.includes(item));
   }
 
-  private toOpenApiResourceRequest(payload: CreateResourceDto | UpdateResourceDto): ResourceRequest {
+  private toOpenApiResourceRequest(
+    payload: CreateResourceDto | UpdateResourceDto
+  ): ResourceRequest {
     return {
       name: payload.name,
       resourceType: payload.resourceType,

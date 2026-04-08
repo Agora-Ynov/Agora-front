@@ -204,13 +204,19 @@
           </div>
 
           <div class="request-actions">
-            <button type="button" class="ghost-btn" (click)="openModal(request, 'VIEW')">Voir</button>
+            <button type="button" class="ghost-btn" (click)="openModal(request, 'VIEW')">
+              Voir
+            </button>
             @if (tab() === 'TO_PROCESS') {
-              <button type="button" class="info-btn" (click)="openModal(request, 'INFO')">Infos</button>
+              <button type="button" class="info-btn" (click)="openModal(request, 'INFO')">
+                Infos
+              </button>
               <button type="button" class="approve-btn" (click)="openModal(request, 'APPROVE')">
                 Approuver
               </button>
-              <button type="button" class="refuse-btn" (click)="openModal(request, 'REFUSE')">Refuser</button>
+              <button type="button" class="refuse-btn" (click)="openModal(request, 'REFUSE')">
+                Refuser
+              </button>
             }
           </div>
         </div>
@@ -222,21 +228,28 @@
         }
       </article>
     } @empty {
-      <div class="empty-state">
-        Aucune demande ne correspond aux filtres actuels.
-      </div>
+      <div class="empty-state">Aucune demande ne correspond aux filtres actuels.</div>
     }
   </section>
 
   @if (selectedRequest(); as request) {
     <div class="modal-backdrop">
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="affiliation-modal-title">
+      <section
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="affiliation-modal-title"
+      >
         <header class="modal-header">
           <div class="modal-header__title">
-            <span class="modal-header__icon modal-header__icon--{{ modalMode()?.toLowerCase() }}"></span>
+            <span
+              class="modal-header__icon modal-header__icon--{{ modalMode()?.toLowerCase() }}"
+            ></span>
             <h3 id="affiliation-modal-title">{{ getModalTitle(modalMode()) }}</h3>
           </div>
-          <button type="button" class="modal-close" aria-label="Fermer" (click)="closeModal()">X</button>
+          <button type="button" class="modal-close" aria-label="Fermer" (click)="closeModal()">
+            X
+          </button>
         </header>
 
         <div class="modal-summary-card">

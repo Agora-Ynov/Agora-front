@@ -101,7 +101,7 @@
             <div
               class="catalogue-card__cover"
               [class.catalogue-card__cover--with-photo]="!!resource.imageUrl"
-              [ngClass]="resource.imageUrl ? null : ('catalogue-card__cover--' + resource.coverTheme)"
+              [ngClass]="resource.imageUrl ? null : 'catalogue-card__cover--' + resource.coverTheme"
             >
               @if (resource.imageUrl) {
                 <img
@@ -163,7 +163,9 @@
                       <span class="catalogue-card__price-unit">/ réservation</span>
                     }
                   </span>
-                  <span class="catalogue-card__deposit-inline">Caution {{ getDepositLabel(resource) }}</span>
+                  <span class="catalogue-card__deposit-inline"
+                    >Caution {{ getDepositLabel(resource) }}</span
+                  >
                 </div>
                 <div class="catalogue-card__actions">
                   <a
@@ -180,7 +182,10 @@
                       Réserver
                     </a>
                   } @else {
-                    <a class="catalogue-card__button catalogue-card__button--primary" routerLink="/login">
+                    <a
+                      class="catalogue-card__button catalogue-card__button--primary"
+                      routerLink="/login"
+                    >
                       Connexion
                     </a>
                   }
@@ -192,7 +197,11 @@
           <article class="catalogue-empty">
             <h2>Aucune ressource ne correspond à ce filtre</h2>
             <p>Retirez un équipement ou repassez sur « Tout » pour élargir la recherche.</p>
-            <button type="button" class="catalogue-card__button catalogue-card__button--ghost" (click)="resetFilters()">
+            <button
+              type="button"
+              class="catalogue-card__button catalogue-card__button--ghost"
+              (click)="resetFilters()"
+            >
               Réinitialiser les filtres
             </button>
           </article>

@@ -11,12 +11,7 @@ interface QuotaInfoItemDto {
 
 interface QuotaItemDto {
   id: string;
-  quotaType:
-    | 'user_monthly'
-    | 'group_monthly'
-    | 'max_duration'
-    | 'min_advance'
-    | 'max_advance';
+  quotaType: 'user_monthly' | 'group_monthly' | 'max_duration' | 'min_advance' | 'max_advance';
   title: string;
   value: number;
   unit: string;

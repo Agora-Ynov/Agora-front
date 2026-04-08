@@ -140,5 +140,4 @@ export class ResourceDetailComponent {
   logout(): void {
     this.authService.logout();
   }
-
 }

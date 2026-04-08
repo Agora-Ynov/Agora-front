@@ -134,7 +134,9 @@ export class CatalogueComponent {
           const rows = response.content ?? [];
           this.resources.set(
             rows
-              .filter((r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0)
+              .filter(
+                (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
+              )
               .map(resource => this.mapResource(resource))
           );
           this.loading.set(false);
@@ -177,7 +179,6 @@ export class CatalogueComponent {
   cardTitle(resource: CatalogueResource): string {
     return getResourceDisplayName(resource.source);
   }
-
 
   getPriceLabel(resource: CatalogueResource): string {
     const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());

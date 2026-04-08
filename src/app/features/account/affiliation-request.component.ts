@@ -67,7 +67,7 @@ export class AffiliationRequestComponent {
       id: 'ELECTED_MANDATE',
       title: 'Mandat electif',
       description:
-        "Vous etes elu(e) municipal(e) et souhaitez etre rattache(e) au Conseil Municipal et beneficier des conditions prevues.",
+        'Vous etes elu(e) municipal(e) et souhaitez etre rattache(e) au Conseil Municipal et beneficier des conditions prevues.',
       badge: 'Exoneration mandat electif + acces prioritaire',
       icon: 'crown',
     },
@@ -87,7 +87,7 @@ export class AffiliationRequestComponent {
         return {
           title: 'Documents necessaires pour une demande "Critere social"',
           items: [
-            "Attestation CAF ou document equivalent de moins de 3 mois",
+            'Attestation CAF ou document equivalent de moins de 3 mois',
             "Justificatif d'aide sociale ou de situation",
             "Piece d'identite en cours de validite",
           ],
@@ -105,7 +105,7 @@ export class AffiliationRequestComponent {
         return {
           title: 'Documents necessaires pour une demande "Rejoindre un groupe"',
           items: [
-            "Nom du groupe souhaite et contact du responsable",
+            'Nom du groupe souhaite et contact du responsable',
             "Justificatif d'adhesion ou invitation du groupe",
             "Document complementaire demande par l'organisation",
           ],

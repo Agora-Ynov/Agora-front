@@ -12,10 +12,7 @@ import {
   RegisterResponseDto,
 } from '../api';
 import { JwtService } from './jwt.service';
-import {
-  UserProfile,
-  UserRole,
-} from './auth.model';
+import { UserProfile, UserRole } from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -53,11 +50,10 @@ export class AuthService {
 
   refreshToken(): Observable<{ accessToken: string; refreshToken: string }> {
     return this.http
-      .post<{ accessToken: string; refreshToken: string }>(
-        `${this.apiUrl}/api/auth/refresh`,
-        {},
-        { withCredentials: true }
-      )
+      .post<{
+        accessToken: string;
+        refreshToken: string;
+      }>(`${this.apiUrl}/api/auth/refresh`, {}, { withCredentials: true })
       .pipe(tap(res => this.jwtService.setTokens(res.accessToken, res.refreshToken)));
   }
 

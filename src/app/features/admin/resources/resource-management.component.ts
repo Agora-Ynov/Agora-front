@@ -3,7 +3,11 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-import { ResourceDto, ResourceFormValue, ResourceType } from '../../../core/api/models/resource.model';
+import {
+  ResourceDto,
+  ResourceFormValue,
+  ResourceType,
+} from '../../../core/api/models/resource.model';
 import { ResourceService } from '../../../core/api/resource.service';
 
 @Component({
@@ -173,7 +177,9 @@ export class ResourceManagementComponent implements OnInit {
   }
 
   getFeatureLabels(resource: ResourceDto): string[] {
-    return (resource.accessibilityTags ?? []).map(tag => this.resourceService.formatAccessibilityTag(tag));
+    return (resource.accessibilityTags ?? []).map(tag =>
+      this.resourceService.formatAccessibilityTag(tag)
+    );
   }
 
   trackByResourceId(_index: number, resource: ResourceDto): string {
