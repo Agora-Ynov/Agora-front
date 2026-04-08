@@ -1,0 +1,321 @@
+<section class="blackout-page">
+  <main class="blackout-main">
+    <section class="blackout-hero">
+      <div>
+        <div class="blackout-hero__title">
+          <span class="blackout-hero__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path
+                d="M4.75 5.75H17.25V18.25H4.75V5.75Z"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M7.5 3.75V7.25"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <path
+                d="M14.5 3.75V7.25"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <path
+                d="M7 17L18 6"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <h1>Fermetures &amp; Blackout dates - SF-07</h1>
+        </div>
+        <p>Gerez les jours feries, fermetures et indisponibilites</p>
+      </div>
+
+      <button type="button" class="blackout-create" (click)="openCreateModal()">
+        <span class="blackout-create__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Ajouter une fermeture</span>
+      </button>
+    </section>
+
+    <section class="blackout-info">
+      <div class="blackout-info__heading">
+        <span class="blackout-info__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+            <path
+              d="M12 16H12.01"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+            />
+            <path
+              d="M10.2 4.85L3.95 15.65C3.18 16.98 4.14 18.65 5.68 18.65H18.32C19.86 18.65 20.82 16.98 20.05 15.65L13.8 4.85C13.03 3.52 10.97 3.52 10.2 4.85Z"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <div>
+          <h2>Impact des blackout dates</h2>
+          <p>
+            Les jours bloques ne peuvent pas faire l'objet de nouvelles reservations. Les
+            reservations existantes confirmees ne sont pas affectees.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    @if (errorMessage()) {
+      <p class="feedback feedback--error">{{ errorMessage() }}</p>
+    }
+
+    @if (successMessage()) {
+      <p class="feedback feedback--success">{{ successMessage() }}</p>
+    }
+
+    <section class="blackout-card">
+      <div class="blackout-card__header">
+        <h2>Fermetures planifiees ({{ plannedCount() }})</h2>
+      </div>
+
+      @if (isLoading()) {
+        <p class="blackout-empty">Chargement des fermetures...</p>
+      } @else if (!groupedBlackouts().length) {
+        <p class="blackout-empty">Aucune fermeture planifiee pour le moment.</p>
+      } @else {
+        <div class="blackout-table">
+          <div class="blackout-table__head">
+            <span>Date</span>
+            <span>Libelle</span>
+            <span>Ressources</span>
+            <span>Actions</span>
+          </div>
+
+          @for (group of groupedBlackouts(); track group.key) {
+            <div class="blackout-row">
+              <div class="blackout-row__date">{{ formatDateRange(group) }}</div>
+              <div class="blackout-row__reason">{{ group.reason }}</div>
+              <div class="blackout-row__resources">
+                @for (resourceLabel of group.resourceLabels; track resourceLabel) {
+                  <span
+                    class="resource-chip"
+                    [class.resource-chip--global]="
+                      group.isGlobal && resourceLabel === 'Toutes les ressources'
+                    "
+                  >
+                    {{ resourceLabel }}
+                  </span>
+                }
+              </div>
+              <div class="blackout-row__actions">
+                <button
+                  type="button"
+                  class="blackout-delete"
+                  [disabled]="deletingKey() === group.key"
+                  (click)="openDeleteModal(group)"
+                  [attr.aria-label]="'Supprimer la fermeture ' + group.reason"
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M6 7.5H18"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M9.5 7.5V6.25C9.5 5.56 10.06 5 10.75 5H13.25C13.94 5 14.5 5.56 14.5 6.25V7.5"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M8 9.5V17.25C8 18.22 8.78 19 9.75 19H14.25C15.22 19 16 18.22 16 17.25V9.5"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M10.5 11.5V16"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M13.5 11.5V16"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </main>
+
+  @if (isModalOpen()) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeModal()"
+      ></button>
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="blackout-modal-title"
+      >
+        <div class="modal-header">
+          <div>
+            <h3 id="blackout-modal-title">Ajouter une fermeture</h3>
+            <p>Creation via POST /api/admin/blackouts</p>
+          </div>
+          <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <form class="modal-form" [formGroup]="form" (ngSubmit)="submitForm()">
+          <label class="form-field">
+            <span>Ressource</span>
+            <select formControlName="resourceId">
+              <option [ngValue]="null">Toutes les ressources</option>
+              @for (resource of activeResources(); track resource.id) {
+                <option [ngValue]="resource.id">{{ resource.name }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Date de debut</span>
+              <input type="date" formControlName="dateFrom" />
+            </label>
+
+            <label class="form-field">
+              <span>Date de fin</span>
+              <input type="date" formControlName="dateTo" />
+            </label>
+          </div>
+
+          <label class="form-field">
+            <span>Libelle</span>
+            <input
+              type="text"
+              formControlName="reason"
+              maxlength="160"
+              placeholder="Ex: Jour ferie - Fete du Travail"
+            />
+          </label>
+
+          <div class="modal-note">
+            <strong>Entree attendue :</strong> `resourceId | null`, `dateFrom`, `dateTo`, `reason`
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="modal-cancel" (click)="closeModal()">Annuler</button>
+            <button type="submit" class="modal-submit" [disabled]="isSaving()">
+              {{ isSaving() ? 'Enregistrement...' : 'Ajouter la fermeture' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (blackoutPendingDeletion(); as group) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeDeleteModal()"
+      ></button>
+      <div
+        class="modal-card modal-card--danger"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="blackout-delete-modal-title"
+      >
+        <div class="modal-header modal-header--danger">
+          <div class="modal-header__lead">
+            <span class="modal-header__danger-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 8V12"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12 16H12.01"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M10.2 4.85L3.95 15.65C3.18 16.98 4.14 18.65 5.68 18.65H18.32C19.86 18.65 20.82 16.98 20.05 15.65L13.8 4.85C13.03 3.52 10.97 3.52 10.2 4.85Z"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <div>
+              <h3 id="blackout-delete-modal-title">Confirmer la suppression</h3>
+              <p>Cette action supprimera la fermeture selectionnee.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="modal-close"
+            (click)="closeDeleteModal()"
+            aria-label="Fermer"
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="delete-summary">
+          <p><strong>Periode :</strong> {{ formatDateRange(group) }}</p>
+          <p><strong>Libelle :</strong> {{ group.reason }}</p>
+          <p><strong>Ressources :</strong> {{ group.resourceLabels.join(', ') }}</p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" (click)="closeDeleteModal()">Annuler</button>
+          <button
+            type="button"
+            class="modal-submit modal-submit--danger"
+            [disabled]="deletingKey() === group.key"
+            (click)="confirmDeleteGroup()"
+          >
+            {{ deletingKey() === group.key ? 'Suppression...' : 'Confirmer la suppression' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

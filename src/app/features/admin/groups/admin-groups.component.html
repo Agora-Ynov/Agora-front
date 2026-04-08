@@ -1,0 +1,385 @@
+<section class="admin-groups-page">
+  <main class="admin-groups-main">
+    <section class="admin-groups-hero">
+      <div>
+        <div class="admin-groups-hero__title">
+          <span class="admin-groups-hero__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
+              <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.9" />
+              <path
+                d="M4.6 18C4.6 15.9 6.3 14.2 8.4 14.2H9.6C11.7 14.2 13.4 15.9 13.4 18"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <path
+                d="M15.1 18C15.1 16.8 16.05 15.85 17.25 15.85H17.75C18.95 15.85 19.9 16.8 19.9 18"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <h1>Groupes organisationnels</h1>
+        </div>
+        <p>Gerez les services, associations et le conseil municipal</p>
+      </div>
+
+      <button type="button" class="admin-groups-create" (click)="openCreateModal()">
+        <span class="admin-groups-create__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+            <path d="M17 8V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M14 11H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Creer un groupe</span>
+      </button>
+    </section>
+
+    @if (errorMessage()) {
+      <p class="feedback feedback--error">{{ errorMessage() }}</p>
+    }
+
+    @if (successMessage()) {
+      <p class="feedback feedback--success">{{ successMessage() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="feedback">Chargement des groupes...</p>
+    } @else if (!groupCards().length) {
+      <p class="feedback">Aucun groupe a afficher pour le moment.</p>
+    } @else {
+      <section class="groups-info-panel">
+        <h2>A propos des groupes organisationnels</h2>
+
+        <ul class="groups-info-list">
+          <li>Les utilisateurs peuvent appartenir a plusieurs groupes</li>
+          <li>Une reservation peut etre faite au nom d'un groupe</li>
+          <li>Le Conseil Municipal dispose de droits speciaux</li>
+          <li>Les groupes permettent de gerer les droits collectifs</li>
+        </ul>
+      </section>
+
+      <section class="group-grid">
+        @for (group of groupCards(); track group.id) {
+          <article class="group-card">
+            <header class="group-card__header">
+              <div class="group-card__title-wrap">
+                <span
+                  class="group-card__icon"
+                  [class]="'group-card__icon--' + group.icon"
+                  aria-hidden="true"
+                >
+                  @switch (group.icon) {
+                    @case ('crown') {
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    }
+                    @case ('service') {
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <rect
+                          x="6.5"
+                          y="4.75"
+                          width="9"
+                          height="14.5"
+                          rx="2"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                        />
+                        <path
+                          d="M9.5 8H12.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M9.5 12H12.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M17.5 8.5H19.5V18.5H10.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    }
+                    @default {
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
+                        <circle cx="17" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" />
+                        <path
+                          d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M15.1 18C15.1 16.8 16.05 15.85 17.25 15.85H17.75C18.95 15.85 19.9 16.8 19.9 18"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                    }
+                  }
+                </span>
+
+                <div>
+                  <h2>{{ group.name }}</h2>
+                  <span class="group-badge">{{ group.badge }}</span>
+                </div>
+              </div>
+            </header>
+
+            <p class="group-card__description">{{ group.description }}</p>
+
+            <div class="group-card__section group-card__section--split">
+              <div>
+                <span class="group-card__label">Membres</span>
+                <strong>{{ group.memberCount }}</strong>
+              </div>
+
+              <button type="button" class="group-card__button" (click)="openMembers(group.id)">
+                Gerer les membres
+              </button>
+            </div>
+
+            <div class="group-card__section">
+              <span class="group-card__label">Droits speciaux</span>
+              <div class="group-chip-list">
+                @for (right of group.specialRights; track right) {
+                  <span class="group-chip">{{ right }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="group-card__highlight">
+              {{ group.highlight }}
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="special-groups-panel">
+        <h2>Groupes speciaux</h2>
+
+        <article class="special-group special-group--council">
+          <div class="special-group__heading">
+            <span class="special-group__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <h3>Conseil Municipal</h3>
+          </div>
+
+          <p>
+            Le conseil municipal est un groupe organisationnel particulier avec des pouvoirs
+            etendus. Certaines validations necessitent l'appartenance a ce groupe. Les membres
+            beneficient d'un acces prioritaire aux ressources et peuvent valider des budgets.
+          </p>
+        </article>
+
+        <article class="special-group special-group--services">
+          <div class="special-group__heading">
+            <span class="special-group__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="6.5"
+                  y="4.75"
+                  width="9"
+                  height="14.5"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path
+                  d="M9.5 8H12.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M9.5 12H12.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M17.5 8.5H19.5V18.5H10.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <h3>Services municipaux</h3>
+          </div>
+
+          <p>
+            Les services municipaux regroupent le personnel administratif de la collectivite. Ils
+            peuvent beneficier de conditions particulieres pour les reservations internes.
+          </p>
+        </article>
+
+        <article class="special-group special-group--associations">
+          <div class="special-group__heading">
+            <span class="special-group__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 19C16.5 15.75 19.5 12.65 19.5 9.3C19.5 7.04 17.71 5.25 15.45 5.25C13.98 5.25 12.73 5.93 12 7.02C11.27 5.93 10.02 5.25 8.55 5.25C6.29 5.25 4.5 7.04 4.5 9.3C4.5 12.65 7.5 15.75 12 19Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <h3>Associations</h3>
+          </div>
+
+          <p>
+            Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
+            reservent des ressources. Les membres d'une association peuvent reserver au nom de leur
+            groupe.
+          </p>
+        </article>
+      </section>
+    }
+  </main>
+
+  @if (selectedGroup(); as group) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeMembersModal()"
+      ></button>
+      <section
+        class="members-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="group-members-title"
+      >
+        <header class="members-modal__header">
+          <div>
+            <h3 id="group-members-title">{{ group.name }}</h3>
+            <p>Liste chargee via GET /api/admin/groups/{{ group.id }}/members</p>
+          </div>
+          <button type="button" class="members-modal__close" (click)="closeMembersModal()">
+            X
+          </button>
+        </header>
+
+        @if (loadingMembers()) {
+          <p class="members-modal__empty">Chargement des membres...</p>
+        } @else if (!groupMembers().length) {
+          <p class="members-modal__empty">Aucun membre dans ce groupe.</p>
+        } @else {
+          <div class="members-list">
+            @for (member of groupMembers(); track member.userId) {
+              <article class="member-row">
+                <div>
+                  <strong>{{ member.firstName }} {{ member.lastName }}</strong>
+                  <p>{{ member.email || 'Sans email' }}</p>
+                </div>
+
+                <div class="member-row__meta">
+                  <span class="group-chip">{{ memberRoleLabel(member.role) }}</span>
+                  <span>Depuis le {{ formatJoinedAt(member.joinedAt) }}</span>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  }
+
+  @if (isCreateModalOpen()) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeCreateModal()"
+      ></button>
+      <section
+        class="create-group-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-group-title"
+      >
+        <header class="create-group-modal__header">
+          <h3 id="create-group-title">Creer un nouveau groupe</h3>
+          <button type="button" class="create-group-modal__close" (click)="closeCreateModal()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <form
+          class="create-group-form"
+          [formGroup]="createGroupForm"
+          (ngSubmit)="submitCreateGroup()"
+        >
+          <label class="create-group-field">
+            <span>Nom du groupe *</span>
+            <input type="text" formControlName="name" placeholder="Ex: Service Administratif" />
+          </label>
+
+          <label class="create-group-field">
+            <span>Type de groupe *</span>
+            <select formControlName="groupType">
+              @for (option of groupTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="create-group-field">
+            <span>Description</span>
+            <textarea
+              formControlName="description"
+              rows="4"
+              placeholder="Description du groupe et de ses activites..."
+            ></textarea>
+          </label>
+
+          <div class="create-group-note">
+            <strong>Mapping API :</strong> le type choisi preconfigure le body `POST
+            /api/admin/groups` avec les droits et remises prevus par les mocks.
+          </div>
+
+          <button type="submit" class="create-group-submit" [disabled]="isCreating()">
+            {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+</section>

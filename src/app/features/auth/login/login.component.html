@@ -1,0 +1,159 @@
+<section class="login-page">
+  <div class="login-wrapper">
+    <div class="login-icon">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="8" width="24" height="48" rx="4" stroke="currentColor" stroke-width="3" />
+        <path d="M28 18H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M28 26H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <path d="M28 34H36" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+        <rect x="12" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3" />
+        <rect x="44" y="24" width="8" height="20" rx="2" stroke="currentColor" stroke-width="3" />
+      </svg>
+    </div>
+
+    <h1 class="login-title">Connexion</h1>
+    <p class="login-subtitle">Accedez a votre espace personnel</p>
+
+    <div class="login-card">
+      <p class="register-text">
+        Pas encore de compte ?
+        <a routerLink="/register">S'inscrire</a>
+      </p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 6H20V18H4V6Z"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M4 8L12 13L20 8"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="votre.email&#64;exemple.fr"
+            />
+          </div>
+          <small class="error" *ngIf="emailControl?.touched && emailControl?.invalid">
+            Veuillez saisir un email valide.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <div class="input-wrapper input-wrapper--password">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7 11V8C7 5.79086 8.79086 4 11 4H13C15.2091 4 17 5.79086 17 8V11"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <rect
+                  x="5"
+                  y="11"
+                  width="14"
+                  height="9"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="********"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              [attr.aria-label]="
+                showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+              [attr.aria-pressed]="showPassword"
+              (click)="togglePasswordVisibility()"
+            >
+              @if (showPassword) {
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 3L21 21"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M10.58 10.58C10.21 10.95 10 11.46 10 12C10 13.1 10.9 14 12 14C12.54 14 13.05 13.79 13.42 13.42"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M9.88 5.09C10.56 4.86 11.27 4.75 12 4.75C16.2 4.75 19.4 7.42 21.5 12C20.78 13.57 19.86 14.87 18.75 15.9"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M14.12 18.91C13.44 19.14 12.73 19.25 12 19.25C7.8 19.25 4.6 16.58 2.5 12C3.22 10.43 4.14 9.13 5.25 8.1"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M2.5 12C4.6 7.42 7.8 4.75 12 4.75C16.2 4.75 19.4 7.42 21.5 12C19.4 16.58 16.2 19.25 12 19.25C7.8 19.25 4.6 16.58 2.5 12Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+              }
+            </button>
+          </div>
+          <small class="error" *ngIf="passwordControl?.touched && passwordControl?.invalid">
+            Le mot de passe est obligatoire.
+          </small>
+        </div>
+
+        <div class="error-box" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Connexion...' : 'Se connecter' }}
+        </button>
+      </form>
+    </div>
+
+    <p class="login-footer">
+      Comptes seed (dev) — mot de passe commun&nbsp;:
+      <strong>Password123!</strong>
+      <br />
+      Utilisateur&nbsp;: <strong>user&#64;agora.local</strong> · Admin&nbsp;:
+      <strong>admin&#64;agora.local</strong>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,212 @@
+<section class="catalogue-page">
+  <main class="catalogue-main">
+    <nav class="catalogue-breadcrumb" aria-label="Fil d'Ariane">
+      <a routerLink="/" class="catalogue-breadcrumb__home" aria-label="Accueil">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 10.5L12 4L20 10.5V19.25C20 19.6642 19.6642 20 19.25 20H14.75V14.75H9.25V20H4.75C4.33579 20 4 19.6642 4 19.25V10.5Z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+      <span class="catalogue-breadcrumb__sep" aria-hidden="true">/</span>
+      <span class="catalogue-breadcrumb__current">catalogue</span>
+    </nav>
+
+    <section class="catalogue-hero">
+      <h1>Catalogue des ressources</h1>
+      <p class="catalogue-hero__lead">
+        Découvrez toutes nos salles et matériels disponibles à la réservation.
+      </p>
+    </section>
+
+    <section class="catalogue-toolbar" aria-label="Filtres du catalogue">
+      <div class="catalogue-toolbar__filters">
+        <div class="catalogue-segmented">
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'ALL'"
+            (click)="setFamilyFilter('ALL')"
+          >
+            Tout
+          </button>
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'ROOM'"
+            (click)="setFamilyFilter('ROOM')"
+          >
+            Salles
+          </button>
+          <button
+            type="button"
+            class="catalogue-segmented__item"
+            [class.catalogue-segmented__item--active]="familyFilter() === 'EQUIPMENT'"
+            (click)="setFamilyFilter('EQUIPMENT')"
+          >
+            Materiel
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="catalogue-reset"
+          [disabled]="!hasActiveFilters()"
+          (click)="resetFilters()"
+        >
+          Matériel
+        </button>
+      </div>
+
+      <div class="catalogue-feature-bar">
+        <span class="catalogue-feature-bar__label">Équipements :</span>
+
+        <div class="catalogue-feature-bar__chips">
+          @for (option of featureOptions; track option.id) {
+            <button
+              type="button"
+              class="catalogue-chip"
+              [class.catalogue-chip--active]="isFeatureSelected(option.id)"
+              (click)="toggleFeature(option.id)"
+            >
+              <span class="catalogue-chip__glyph" aria-hidden="true">{{ option.shortLabel }}</span>
+              <span>{{ option.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <p class="catalogue-toolbar__summary">
+        {{ totalResources() }}
+        {{ totalResources() > 1 ? 'ressources affichées' : 'ressource affichée' }}
+      </p>
+    </section>
+
+    @if (loading()) {
+      <section class="catalogue-feedback" aria-live="polite">
+        <p>Chargement du catalogue…</p>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="catalogue-feedback catalogue-feedback--error" aria-live="assertive">
+        <h2>Le catalogue n'a pas pu être chargé</h2>
+        <p>{{ errorMessage() }}</p>
+      </section>
+    } @else {
+      <section class="catalogue-grid" aria-label="Liste des ressources">
+        @for (resource of filteredResources(); track resource.id) {
+          <article class="catalogue-card">
+            <div
+              class="catalogue-card__cover"
+              [class.catalogue-card__cover--with-photo]="!!resource.imageUrl"
+              [ngClass]="resource.imageUrl ? null : 'catalogue-card__cover--' + resource.coverTheme"
+            >
+              @if (resource.imageUrl) {
+                <img
+                  class="catalogue-card__cover-img"
+                  [src]="resource.imageUrl"
+                  [alt]="'Photo : ' + resource.name"
+                  loading="lazy"
+                  decoding="async"
+                />
+              }
+              <span class="catalogue-card__type">{{ resource.typeLabel }}</span>
+
+              @if (resource.overlayBadges.length > 0) {
+                <div class="catalogue-card__cover-badges">
+                  @for (badge of resource.overlayBadges; track badge.title + badge.kind) {
+                    <span
+                      class="catalogue-card__cover-badge"
+                      [class.catalogue-card__cover-badge--capacity]="badge.kind === 'capacity'"
+                      [attr.title]="badge.title"
+                    >
+                      @if (badge.kind === 'capacity') {
+                        <span class="catalogue-card__cover-badge-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M16 11C17.6569 11 19 9.65685 19 8C19 6.34315 17.6569 5 16 5C14.3431 5 13 6.34315 13 8C13 9.65685 14.3431 11 16 11Z"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                            />
+                            <path
+                              d="M8 11C9.65685 11 11 9.65685 11 8C11 6.34315 9.65685 5 8 5C6.34315 5 5 6.34315 5 8C5 9.65685 6.34315 11 8 11Z"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                            />
+                            <path
+                              d="M4 20C4 16.6863 6.68629 14 10 14H14C17.3137 14 20 16.6863 20 20"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            />
+                          </svg>
+                        </span>
+                      }
+                      <span class="catalogue-card__cover-badge-text">{{ badge.value }}</span>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="catalogue-card__body">
+              <h2 class="catalogue-card__title">{{ cardTitle(resource) }}</h2>
+              <p class="catalogue-card__description">{{ resource.description }}</p>
+
+              <div class="catalogue-card__footer">
+                <div class="catalogue-card__pricing-inline">
+                  <span class="catalogue-card__price-inline">
+                    {{ getPriceLabel(resource) }}
+                    @if (showPriceSuffix(resource)) {
+                      <span class="catalogue-card__price-unit">/ réservation</span>
+                    }
+                  </span>
+                  <span class="catalogue-card__deposit-inline"
+                    >Caution {{ getDepositLabel(resource) }}</span
+                  >
+                </div>
+                <div class="catalogue-card__actions">
+                  <a
+                    class="catalogue-card__button catalogue-card__button--ghost"
+                    [routerLink]="['/catalogue', resource.id]"
+                  >
+                    Détails
+                  </a>
+                  @if (isAuthenticated()) {
+                    <a
+                      class="catalogue-card__button catalogue-card__button--primary"
+                      [routerLink]="['/catalogue', resource.id, 'reserver']"
+                    >
+                      Réserver
+                    </a>
+                  } @else {
+                    <a
+                      class="catalogue-card__button catalogue-card__button--primary"
+                      routerLink="/login"
+                    >
+                      Connexion
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <article class="catalogue-empty">
+            <h2>Aucune ressource ne correspond à ce filtre</h2>
+            <p>Retirez un équipement ou repassez sur « Tout » pour élargir la recherche.</p>
+            <button
+              type="button"
+              class="catalogue-card__button catalogue-card__button--ghost"
+              (click)="resetFilters()"
+            >
+              Réinitialiser les filtres
+            </button>
+          </article>
+        }
+      </section>
+    }
+  </main>
+</section>

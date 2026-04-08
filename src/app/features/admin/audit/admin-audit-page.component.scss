@@ -1,0 +1,494 @@
+:host {
+  display: block;
+}
+
+.audit-page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  color: #111827;
+}
+
+.audit-main {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 1rem 28px 2.5rem;
+}
+
+.audit-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.audit-hero__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.audit-hero__icon,
+.audit-booking-banner__icon,
+.audit-search__icon,
+.audit-tab__icon,
+.audit-node__icon {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.audit-hero__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #ff6a00;
+}
+
+.audit-hero__icon svg,
+.audit-booking-banner__icon svg,
+.audit-search__icon svg,
+.audit-tab__icon svg,
+.audit-node__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.audit-hero__copy h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.audit-hero__copy p {
+  margin: 0.55rem 0 0;
+  color: #4d6484;
+  font-size: 1rem;
+}
+
+.audit-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.95rem;
+  margin-bottom: 1.8rem;
+}
+
+.audit-stat-card {
+  display: grid;
+  place-items: center;
+  gap: 0.45rem;
+  min-height: 6.9rem;
+  padding: 1rem;
+  border: 1px solid #dfe4ea;
+  border-radius: 1.35rem;
+  background: #fff;
+}
+
+.audit-stat-card__value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.audit-stat-card__value--default {
+  color: #24344f;
+}
+
+.audit-stat-card__value--green {
+  color: #0f9d47;
+}
+
+.audit-stat-card__value--red {
+  color: #dc2626;
+}
+
+.audit-stat-card__value--orange {
+  color: #f97316;
+}
+
+.audit-stat-card span:last-child {
+  color: #536b8d;
+}
+
+.audit-booking-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1rem;
+  margin-bottom: 1.8rem;
+  padding: 1.15rem 1.3rem;
+  border: 1px solid #b9d5ff;
+  border-radius: 1.25rem;
+  background: #eef5ff;
+  color: #1d4ed8;
+}
+
+.audit-booking-banner__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.02rem;
+}
+
+.audit-booking-banner__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.audit-booking-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.2rem;
+  padding: 0 0.95rem;
+  border: 1px solid #3b82f6;
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #1d4ed8;
+  font: inherit;
+  cursor: pointer;
+}
+
+.audit-search-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #dfe4ea;
+  border-radius: 1.35rem;
+  background: #fff;
+}
+
+.audit-search {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 2.9rem;
+  padding: 0 1rem;
+  border-radius: 0.9rem;
+  background: #f4f6fb;
+  color: #93a1b5;
+}
+
+.audit-search input,
+.audit-select select {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111827;
+  font: inherit;
+}
+
+.audit-select {
+  display: flex;
+  align-items: center;
+  min-height: 2.9rem;
+  padding: 0 1rem;
+  border: 1px solid #e3e8ef;
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.audit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 2rem;
+}
+
+.audit-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.9rem;
+  padding: 0 1rem;
+  border: 1px solid #dfe4ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #24344f;
+  font: inherit;
+  font-size: 0.96rem;
+  cursor: pointer;
+}
+
+.audit-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  min-height: 1.55rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: #f1f4f9;
+  font-size: 0.82rem;
+}
+
+.audit-tab--active {
+  border-color: #101828;
+  background: #101828;
+  color: #fff;
+}
+
+.audit-tab--active .audit-tab__count {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.audit-list {
+  display: grid;
+  gap: 1.35rem;
+  margin-top: 1.35rem;
+}
+
+.audit-entry {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.audit-node {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid currentColor;
+}
+
+.audit-node::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  width: 2px;
+  height: calc(100% + 18px);
+  background: #e5e7eb;
+  transform: translateX(-50%);
+}
+
+.audit-entry:last-child .audit-node::after {
+  display: none;
+}
+
+.audit-node--warning {
+  color: #f5b300;
+}
+
+.audit-node--info,
+.audit-node--blue {
+  color: #2f6ef5;
+}
+
+.audit-node--orange {
+  color: #ff7a00;
+}
+
+.audit-node--green {
+  color: #0f9d47;
+}
+
+.audit-node--violet {
+  color: #7c3aed;
+}
+
+.audit-card {
+  padding: 1.1rem 1.35rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px solid #dfe4ea;
+  background: #fff;
+}
+
+.audit-card--warning {
+  border-color: #ffd76b;
+  background: #fff9e8;
+}
+
+.audit-card--info,
+.audit-card--blue {
+  border-color: #b9d5ff;
+  background: #eef5ff;
+}
+
+.audit-card--orange {
+  border-color: #ffc78d;
+  background: #fff5ea;
+}
+
+.audit-card--green {
+  border-color: #bfe9cc;
+  background: #f0fbf3;
+}
+
+.audit-card--violet {
+  border-color: #d8c3ff;
+  background: #f7f1ff;
+}
+
+.audit-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.audit-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.audit-card__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.audit-card__chip--primary {
+  border: 1px solid currentColor;
+  color: inherit;
+  background: rgb(255 255 255 / 0.58);
+}
+
+.audit-card__chip--role {
+  background: #eaf0ff;
+  color: #2250c5;
+}
+
+.audit-card h2 {
+  margin: 0.7rem 0 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f97316;
+}
+
+.audit-card--info h2,
+.audit-card--blue h2 {
+  color: #2563eb;
+}
+
+.audit-card--green h2 {
+  color: #0f9d47;
+}
+
+.audit-card--violet h2 {
+  color: #7c3aed;
+}
+
+.audit-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  margin-top: 0.7rem;
+  color: #6b7d95;
+}
+
+.audit-card__booking {
+  padding: 0.08rem 0.45rem;
+  border: 1px solid #d7dce4;
+  border-radius: 0.45rem;
+  background: #fff;
+}
+
+.audit-card__arrow {
+  color: #93a1b5;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.audit-empty {
+  margin-top: 2rem;
+  color: #48627f;
+}
+
+.audit-footnote {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.45rem 1.55rem;
+  border: 1px solid #ffc78d;
+  border-radius: 1.35rem;
+  background: #fff5ea;
+  color: #9a3412;
+}
+
+.audit-footnote__icon {
+  display: inline-flex;
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.audit-footnote__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.audit-footnote__content h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.audit-footnote__content p {
+  margin: 0.55rem 0 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 1200px) {
+  .audit-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .audit-main {
+    padding-inline: 1rem;
+  }
+
+  .audit-hero {
+    flex-direction: column;
+  }
+
+  .audit-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .audit-search-card {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-node {
+    display: none;
+  }
+
+  .audit-footnote {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .audit-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-booking-banner {
+    align-items: flex-start;
+  }
+
+  .audit-booking-banner__label {
+    width: 100%;
+  }
+}

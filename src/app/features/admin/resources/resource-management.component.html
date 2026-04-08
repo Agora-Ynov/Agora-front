@@ -1,0 +1,214 @@
+<section class="resource-page">
+  <div class="page-header">
+    <div>
+      <h1>Gestion des ressources</h1>
+      <p>Gerez les salles et le materiel disponibles a la reservation</p>
+    </div>
+
+    <button class="add-btn" type="button" (click)="openCreateModal()">
+      + Ajouter une ressource
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value rooms">{{ stats().roomsCount }}</div>
+      <div class="stat-label">Salles</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value materials">{{ stats().materialsCount }}</div>
+      <div class="stat-label">Materiels</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value total">{{ stats().totalCount }}</div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+
+  <div class="error-box" *ngIf="errorMessage()">
+    {{ errorMessage() }}
+  </div>
+
+  <div class="success-box" *ngIf="successMessage()">
+    {{ successMessage() }}
+  </div>
+
+  <div class="loading-box" *ngIf="isLoading()">Chargement des ressources...</div>
+
+  <div class="resource-grid" *ngIf="!isLoading()">
+    <article class="resource-card" *ngFor="let resource of resources(); trackBy: trackByResourceId">
+      <div class="card-top">
+        <div class="resource-title-block">
+          <div class="resource-icon" [attr.data-kind]="getTypeIcon(resource.resourceType)"></div>
+
+          <div>
+            <h2>{{ resource.name }}</h2>
+            <span class="type-badge">{{ getTypeLabel(resource.resourceType) }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button
+            type="button"
+            class="icon-btn"
+            (click)="openEditModal(resource)"
+            aria-label="Modifier"
+          >
+            Editer
+          </button>
+          <button
+            type="button"
+            class="icon-btn danger"
+            (click)="deleteResource(resource.id)"
+            aria-label="Supprimer"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+      <p class="resource-description">
+        {{ resource.description || 'Description indisponible.' }}
+      </p>
+
+      <hr />
+
+      <div class="resource-infos">
+        <div>
+          <span class="label">Capacite</span>
+          <strong>{{ getCapacityLabel(resource) }}</strong>
+        </div>
+      </div>
+
+      <div class="deposit-block">
+        <span class="label">Caution</span>
+        <div>
+          <strong class="deposit">{{ getPriceEuros(resource.depositAmountCents) }}EUR</strong>
+        </div>
+      </div>
+
+      <div class="features-block" *ngIf="getFeatureLabels(resource).length">
+        <span class="label">Caracteristiques</span>
+        <div class="feature-tags">
+          <span class="feature-tag" *ngFor="let feature of getFeatureLabels(resource)">{{
+            feature
+          }}</span>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="card-footer-actions">
+        <a class="secondary-btn secondary-btn--link" [routerLink]="['/catalogue', resource.id]">
+          Voir la page
+        </a>
+        <button type="button" class="secondary-btn" disabled>Disponibilites</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="empty-box" *ngIf="!isLoading() && resources().length === 0 && !errorMessage()">
+    Aucune ressource a afficher pour le moment.
+  </div>
+
+  <div class="modal-backdrop" *ngIf="isModalOpen()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ isEditing ? 'Modifier la ressource' : 'Ajouter une nouvelle ressource' }}</h3>
+        <button type="button" class="close-btn" (click)="closeModal()" aria-label="Fermer">
+          X
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submitForm()">
+        <div class="form-group">
+          <label for="resourceType">Type de ressource *</label>
+          <select id="resourceType" formControlName="resourceType">
+            <option value="IMMOBILIER">Salle</option>
+            <option value="MOBILIER">Materiel</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="resourceName">Nom de la ressource *</label>
+          <input
+            id="resourceName"
+            type="text"
+            formControlName="name"
+            placeholder="Ex: Salle des Fetes"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="resourceDescription">Description *</label>
+          <textarea
+            id="resourceDescription"
+            formControlName="description"
+            rows="4"
+            placeholder="Decrivez la ressource..."
+          ></textarea>
+        </div>
+
+        <div class="form-group" *ngIf="resourceType() === 'IMMOBILIER'">
+          <label for="resourceCapacity">Capacite (personnes)</label>
+          <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
+        </div>
+
+        <!--
+          Champs non présents dans ResourceRequest backend (à réactiver si l’API expose tarif, quantité, exonération) :
+          - quantity (MOBILIER)
+          - basePriceEuros
+          - depositExemptible
+        -->
+
+        <div class="form-section-title">Caution</div>
+
+        <div class="form-group">
+          <label for="resourceDepositAmount">Montant de la caution (EUR)</label>
+          <input
+            id="resourceDepositAmount"
+            type="number"
+            formControlName="depositAmountEuros"
+            placeholder="0"
+          />
+          <small>Laisser a 0 si aucune caution</small>
+        </div>
+
+        <div class="form-group">
+          <label for="resourceAccessibilityTags">Caracteristiques</label>
+          <input
+            id="resourceAccessibilityTags"
+            type="text"
+            formControlName="accessibilityTagsText"
+            placeholder="PMR_ACCESS, PARKING, SOUND_SYSTEM"
+          />
+          <small>Utilise les tags API separes par des virgules.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="resourceImageUrl">Image URL</label>
+          <input
+            id="resourceImageUrl"
+            type="url"
+            formControlName="imageUrl"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="submit-btn" [disabled]="isSaving()">
+            {{
+              isSaving()
+                ? 'Enregistrement...'
+                : isEditing
+                  ? 'Modifier la ressource'
+                  : 'Creer la ressource'
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
