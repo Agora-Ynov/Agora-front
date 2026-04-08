@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { AccountType, UserRole } from '../../core/auth/auth.model';
@@ -38,6 +38,8 @@ interface QuickAction {
 })
 export class ProfileComponent {
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly currentUser = this.authService.currentUser;
   readonly isAdmin = computed(() => this.authService.isAdmin());
@@ -100,6 +102,14 @@ export class ProfileComponent {
 
     return actions.filter(action => !action.adminOnly || this.isAdmin());
   });
+
+  constructor() {
+    this.route.fragment.subscribe(fragment => {
+      if (fragment === 'exemptions') {
+        void this.router.navigateByUrl('/account/affiliation-request');
+      }
+    });
+  }
 
   logout(): void {
     this.authService.logout();
