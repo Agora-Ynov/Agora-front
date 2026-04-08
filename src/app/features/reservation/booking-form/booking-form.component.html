@@ -1,6 +1,6 @@
 <section class="booking-page">
   <main class="booking-main">
-    <a class="booking-back" [routerLink]="['/catalogue', resource()?.id]">Retour</a>
+    <a class="booking-back" routerLink="/catalogue">Retour</a>
 
     @if (loading()) {
       <section class="booking-feedback">
@@ -98,7 +98,7 @@
 
             <p class="actor-note">
               Vous n'etes membre d'aucun groupe approprie ?
-              <a routerLink="/account">Faire une demande d'affiliation</a>
+              <a routerLink="/account/affiliation-request">Faire une demande d'affiliation</a>
             </p>
           </article>
 

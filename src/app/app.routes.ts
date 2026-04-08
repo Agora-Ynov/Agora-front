@@ -104,6 +104,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'account/affiliation-request',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account/affiliation-request.component').then(
+        m => m.AffiliationRequestComponent
+      ),
+  },
+  {
     path: 'account',
     canActivate: [authGuard],
     loadComponent: () =>

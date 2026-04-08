@@ -1,18 +1,21 @@
 <section class="home-page">
   <section class="hero-section">
     <div class="hero-content">
-      <h1>Réservation de salles et matériel</h1>
+      <h1>R&eacute;servation de salles et mat&eacute;riel</h1>
       <p>
-        Réservez facilement les ressources municipales pour vos événements, réunions et activités
+        R&eacute;servez facilement les ressources municipales pour vos &eacute;v&eacute;nements,
+        r&eacute;unions et activit&eacute;s
       </p>
 
       <div class="hero-actions">
         <a routerLink="/catalogue" class="btn btn-primary">
           Voir le catalogue
-          <span class="btn-arrow">→</span>
+          <span class="btn-arrow">&rarr;</span>
         </a>
 
-        <a routerLink="/register" class="btn btn-secondary"> Créer un compte </a>
+        @if (!isAuthenticated()) {
+          <a routerLink="/register" class="btn btn-secondary">Cr&eacute;er un compte</a>
+        }
       </div>
     </div>
   </section>
@@ -123,7 +126,7 @@
 
   <section class="how-section">
     <div class="how-card">
-      <h2>Comment ça marche ?</h2>
+      <h2>Comment &ccedil;a marche ?</h2>
 
       <div class="steps-grid">
         <div class="step-item" *ngFor="let step of steps">
@@ -137,16 +140,18 @@
   <section class="why-section">
     <div class="why-content">
       <div class="why-left">
-        <h2>Pourquoi réserver avec nous ?</h2>
+        <h2>Pourquoi r&eacute;server avec nous ?</h2>
 
         <ul class="advantages-list">
           <li *ngFor="let advantage of advantages">
-            <span class="check">✓</span>
+            <span class="check">&#10003;</span>
             <span>{{ advantage }}</span>
           </li>
         </ul>
 
-        <a routerLink="/catalogue" class="btn btn-primary small-btn"> Découvrir les ressources </a>
+        <a routerLink="/catalogue" class="btn btn-primary small-btn">
+          D&eacute;couvrir les ressources
+        </a>
       </div>
 
       <div class="why-right">
@@ -158,8 +163,8 @@
   <section class="help-section">
     <div class="help-card">
       <div class="help-text">
-        <h3>Besoin d'aide pour votre réservation ?</h3>
-        <p>Notre équipe est disponible du lundi au vendredi de 9h à 17h</p>
+        <h3>Besoin d'aide pour votre r&eacute;servation ?</h3>
+        <p>Notre &eacute;quipe est disponible du lundi au vendredi de 9h &agrave; 17h</p>
       </div>
 
       <div class="help-actions">

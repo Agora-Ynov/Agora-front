@@ -55,7 +55,7 @@
 
         <div class="form-group">
           <label for="password">Mot de passe</label>
-          <div class="input-wrapper">
+          <div class="input-wrapper input-wrapper--password">
             <span class="input-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <path
@@ -77,10 +77,54 @@
             </span>
             <input
               id="password"
-              type="password"
+              [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
-              placeholder="••••••••"
+              placeholder="********"
             />
+            <button
+              type="button"
+              class="password-toggle"
+              [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-pressed]="showPassword"
+              (click)="togglePasswordVisibility()"
+            >
+              @if (showPassword) {
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 3L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M10.58 10.58C10.21 10.95 10 11.46 10 12C10 13.1 10.9 14 12 14C12.54 14 13.05 13.79 13.42 13.42"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M9.88 5.09C10.56 4.86 11.27 4.75 12 4.75C16.2 4.75 19.4 7.42 21.5 12C20.78 13.57 19.86 14.87 18.75 15.9"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M14.12 18.91C13.44 19.14 12.73 19.25 12 19.25C7.8 19.25 4.6 16.58 2.5 12C3.22 10.43 4.14 9.13 5.25 8.1"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M2.5 12C4.6 7.42 7.8 4.75 12 4.75C16.2 4.75 19.4 7.42 21.5 12C19.4 16.58 16.2 19.25 12 19.25C7.8 19.25 4.6 16.58 2.5 12Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+                </svg>
+              }
+            </button>
           </div>
           <small class="error" *ngIf="passwordControl?.touched && passwordControl?.invalid">
             Le mot de passe est obligatoire.

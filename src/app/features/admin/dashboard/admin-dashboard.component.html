@@ -113,6 +113,39 @@
 
             <span class="action-tile__icon" aria-hidden="true">
               @switch (action.icon) {
+                @case ('my-reservations') {
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect
+                      x="4.75"
+                      y="5.75"
+                      width="14.5"
+                      height="13.5"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                    />
+                    <path
+                      d="M8 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M16 4.25V7.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                    />
+                    <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.9" />
+                    <path
+                      d="M8.25 13.25L10.5 15.5L15.75 10.25"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                }
                 @case ('users') {
                   <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.9" />
