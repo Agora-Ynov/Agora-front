@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-content {
+  display: block;
+  flex: 1;
+}
