@@ -1,0 +1,64 @@
+.waitlist-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.waitlist-page__hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.waitlist-page__back {
+  white-space: nowrap;
+}
+
+.waitlist-page__error {
+  background: #fdecea;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.waitlist-page__panel {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.waitlist-page__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.waitlist-page__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.waitlist-page__status {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.waitlist-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.waitlist-page__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

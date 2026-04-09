@@ -43,7 +43,7 @@ describe('ResourceDetailComponent', () => {
             currentUser: signal(null).asReadonly(),
             isSessionActive: computed(() => false),
             isAuthenticated: () => false,
-            logout: jest.fn(),
+            logout: jasmine.createSpy('logout'),
           },
         },
       ],
@@ -56,13 +56,15 @@ describe('ResourceDetailComponent', () => {
 
     expect(component.loading()).toBe(false);
     expect(component.errorMessage()).toBeNull();
-    expect(component.resourceDetail()).toMatchObject({
-      id: 'r002',
-      name: 'Salle de reunion',
-      typeLabel: 'Salle',
-      capacityLabel: '20 personnes',
-      priceLabel: 'À confirmer',
-      depositLabel: '50EUR',
-    });
+    expect(component.resourceDetail()).toEqual(
+      jasmine.objectContaining({
+        id: 'r002',
+        name: 'Salle de reunion',
+        typeLabel: 'Salle',
+        capacityLabel: '20 personnes',
+        priceLabel: 'Tarif non renseigné',
+        depositLabel: '50EUR',
+      })
+    );
   });
 });

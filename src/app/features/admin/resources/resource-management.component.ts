@@ -23,6 +23,9 @@ export class ResourceManagementComponent implements OnInit {
   private readonly resourceService = inject(ResourceService);
 
   readonly resources = signal<ResourceDto[]>([]);
+  readonly resourceListPage = signal(0);
+  readonly resourceListPageSize = signal(12);
+  readonly resourceListPageSizeOptions = [6, 12, 24, 48] as const;
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
   readonly isModalOpen = signal(false);
@@ -44,6 +47,18 @@ export class ResourceManagementComponent implements OnInit {
   });
 
   readonly stats = computed(() => this.resourceService.getStats(this.resources()));
+
+  readonly resourceListTotalPages = computed(() => {
+    const n = this.resources().length;
+    const sz = this.resourceListPageSize();
+    return Math.max(1, Math.ceil(n / sz));
+  });
+
+  readonly displayedResources = computed(() => {
+    const all = this.resources();
+    const start = this.resourceListPage() * this.resourceListPageSize();
+    return all.slice(start, start + this.resourceListPageSize());
+  });
   readonly resourceType = computed(
     () => (this.form.controls.resourceType.value ?? 'IMMOBILIER') as ResourceType
   );
@@ -62,10 +77,41 @@ export class ResourceManagementComponent implements OnInit {
       .subscribe({
         next: resources => {
           this.resources.set(resources);
+          this.clampResourceListPage();
           this.errorMessage.set('');
         },
         error: () => this.errorMessage.set('Impossible de charger les ressources.'),
       });
+  }
+
+  private clampResourceListPage(): void {
+    const max = this.resourceListTotalPages() - 1;
+    if (this.resourceListPage() > max) {
+      this.resourceListPage.set(Math.max(0, max));
+    }
+  }
+
+  goResourceListPage(page: number): void {
+    const max = this.resourceListTotalPages() - 1;
+    const p = Math.min(Math.max(0, page), max);
+    if (p === this.resourceListPage()) return;
+    this.resourceListPage.set(p);
+  }
+
+  prevResourceListPage(): void {
+    this.goResourceListPage(this.resourceListPage() - 1);
+  }
+
+  nextResourceListPage(): void {
+    this.goResourceListPage(this.resourceListPage() + 1);
+  }
+
+  setResourceListPageSize(size: number): void {
+    const s = Math.max(1, size);
+    if (s === this.resourceListPageSize()) return;
+    this.resourceListPageSize.set(s);
+    this.resourceListPage.set(0);
+    this.clampResourceListPage();
   }
 
   openCreateModal(): void {
@@ -135,8 +181,10 @@ export class ResourceManagementComponent implements OnInit {
           this.successMessage.set('Ressource modifiee avec succes.');
         } else {
           this.resources.set([resource, ...this.resources()]);
+          this.resourceListPage.set(0);
           this.successMessage.set('Ressource creee avec succes.');
         }
+        this.clampResourceListPage();
 
         this.closeModal();
       },
@@ -155,6 +203,7 @@ export class ResourceManagementComponent implements OnInit {
     this.resourceService.delete(resourceId).subscribe({
       next: () => {
         this.resources.set(this.resources().filter(resource => resource.id !== resourceId));
+        this.clampResourceListPage();
         this.successMessage.set('Ressource supprimee avec succes.');
       },
       error: () => {

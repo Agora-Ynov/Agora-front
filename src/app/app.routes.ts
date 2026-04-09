@@ -111,6 +111,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'account/waitlist',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/waitlist/waitlist-page.component').then(m => m.WaitlistPageComponent),
+  },
+  {
     path: 'account',
     canActivate: [authGuard],
     loadComponent: () =>

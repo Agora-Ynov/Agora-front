@@ -33,6 +33,10 @@
         </article>
       }
     </section>
+    <p class="audit-stats-hint">
+      Les libellés « page » comptent uniquement les entrées affichées ci-dessous, pas tout
+      l’historique.
+    </p>
 
     <section class="audit-booking-banner">
       <div class="audit-booking-banner__label">
@@ -328,30 +332,43 @@
           </article>
         }
       </section>
+      @if (auditTotalElements() > 0) {
+        <div class="audit-pagination" aria-label="Pagination journal d’audit">
+          <div class="audit-pagination__nav">
+            <button
+              type="button"
+              class="audit-pagination__btn"
+              (click)="prevAuditPage()"
+              [disabled]="auditPage() <= 0"
+            >
+              Précédent
+            </button>
+            <span class="audit-pagination__status">
+              Page {{ auditPage() + 1 }} / {{ auditTotalPages() || 1 }}
+              <span class="audit-pagination__total">({{ auditTotalElements() }} entrées)</span>
+            </span>
+            <button
+              type="button"
+              class="audit-pagination__btn"
+              (click)="nextAuditPage()"
+              [disabled]="auditPage() >= (auditTotalPages() || 1) - 1"
+            >
+              Suivant
+            </button>
+          </div>
+          <label class="audit-pagination__size">
+            <span>Par page</span>
+            <select
+              [value]="auditPageSize()"
+              (change)="setAuditPageSize(+$any($event.target).value)"
+            >
+              @for (s of auditPageSizeOptions; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      }
     }
-
-    <section class="audit-footnote">
-      <div class="audit-footnote__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8" />
-          <path d="M12 8.5V12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          <circle cx="12" cy="15.8" r="0.9" fill="currentColor" />
-        </svg>
-      </div>
-
-      <div class="audit-footnote__content">
-        <h2>A propos du journal d'audit (J7)</h2>
-        <p>
-          Chaque action sur une <strong>réservation</strong> (création, série récurrente, annulation
-          de série, validation, refus avec motif, pièces jointes / relais simulé, paiement), sur un
-          <strong>compte</strong> ou lors d'une <strong>impersonation</strong> est tracée avec
-          l'identité de l'acteur et l'horodatage. L'accès à ce journal est réservé aux rôles
-          <strong>SECRETARY_ADMIN</strong>, <strong>ADMIN_SUPPORT</strong> et
-          <strong>SUPERADMIN</strong> (aligné sur l'API). Filtres côté API :
-          <code>adminUserId</code>, <code>targetUserId</code>, <code>impersonationOnly</code>,
-          <code>dateFrom</code>, <code>dateTo</code>.
-        </p>
-      </div>
-    </section>
   </main>
 </section>

@@ -67,10 +67,11 @@
           </svg>
         </span>
         <div>
-          <h2>Impact des blackout dates</h2>
+          <h2>Impact des fermetures</h2>
           <p>
-            Les jours bloques ne peuvent pas faire l'objet de nouvelles reservations. Les
-            reservations existantes confirmees ne sont pas affectees.
+            Les plages definies bloquent les <strong>nouvelles</strong> reservations sur la ou les
+            ressources concernees (ou sur tout le parc si vous choisissez « toutes les ressources »).
+            Les reservations deja confirmees ne sont pas annulees automatiquement.
           </p>
         </div>
       </div>
@@ -184,7 +185,6 @@
         <div class="modal-header">
           <div>
             <h3 id="blackout-modal-title">Ajouter une fermeture</h3>
-            <p>Creation via POST /api/admin/blackouts</p>
           </div>
           <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fermer">
             <svg viewBox="0 0 24 24" fill="none">
@@ -197,12 +197,18 @@
         <form class="modal-form" [formGroup]="form" (ngSubmit)="submitForm()">
           <label class="form-field">
             <span>Ressource</span>
-            <select formControlName="resourceId">
-              <option [ngValue]="null">Toutes les ressources</option>
+            <select formControlName="resourceId" title="Fermeture globale ou limitee a une ressource">
+              <option [ngValue]="null">
+                Toutes les ressources (fermeture globale sur la periode)
+              </option>
               @for (resource of activeResources(); track resource.id) {
-                <option [ngValue]="resource.id">{{ resource.name }}</option>
+                <option [ngValue]="resource.id">{{ resource.name }} uniquement</option>
               }
             </select>
+            <small class="form-field__hint">
+              Une seule ressource a la fois : pour en couvrir plusieurs, creez une fermeture par
+              ressource ou utilisez la ligne « toutes ».
+            </small>
           </label>
 
           <div class="form-grid">
@@ -226,10 +232,6 @@
               placeholder="Ex: Jour ferie - Fete du Travail"
             />
           </label>
-
-          <div class="modal-note">
-            <strong>Entree attendue :</strong> `resourceId | null`, `dateFrom`, `dateTo`, `reason`
-          </div>
 
           <div class="modal-actions">
             <button type="button" class="modal-cancel" (click)="closeModal()">Annuler</button>

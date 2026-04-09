@@ -1,11 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { distinctUntilChanged, finalize, map } from 'rxjs';
+import {
+  Subject,
+  distinctUntilChanged,
+  finalize,
+  map,
+  merge,
+  Observable,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import { LocalTime } from '../../../core/api/model/localTime';
+import { PagedResponseReservationSummaryResponseDto } from '../../../core/api/model/pagedResponseReservationSummaryResponseDto';
 import { ReservationSummaryResponseDto } from '../../../core/api/model/reservationSummaryResponseDto';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservationService } from '../reservation.service';
@@ -46,6 +56,8 @@ interface ReservationCard {
   comment: string;
   createdAt: string;
   timeline: ReservationTimelineStep[];
+  /** Serie recurrente : annulation groupe via API DELETE recurring */
+  recurringGroupId: string | null;
 }
 
 @Component({
@@ -60,6 +72,7 @@ export class MyReservationsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly reservationService = inject(ReservationService);
+  private readonly reload$ = new Subject<void>();
 
   readonly currentUser = this.authService.currentUser;
   readonly loading = signal(true);
@@ -69,6 +82,8 @@ export class MyReservationsComponent {
   readonly expandedReservationId = signal<string | null>(null);
   readonly reservationIdToCancel = signal<string | null>(null);
   readonly cancellationInProgressId = signal<string | null>(null);
+  readonly recurringGroupIdToCancel = signal<string | null>(null);
+  readonly recurringCancelBusy = signal(false);
 
   readonly displayName = computed(() => {
     const user = this.currentUser();
@@ -76,13 +91,21 @@ export class MyReservationsComponent {
   });
 
   constructor() {
-    this.route.queryParamMap
-      .pipe(
+    effect(() => {
+      const open = this.isCancellationModalOpen() || this.isSeriesCancelModalOpen();
+      if (typeof document !== 'undefined') {
+        document.body.classList.toggle('agora-modal-open', open);
+      }
+    });
+    merge(
+      this.route.queryParamMap.pipe(
         map(q => q.toString()),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(() => this.loadReservations());
+        distinctUntilChanged()
+      ),
+      this.reload$
+    )
+      .pipe(switchMap(() => this.fetchReservationList()), takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
   trackByReservationId(_index: number, reservation: ReservationCard): string {
@@ -90,7 +113,7 @@ export class MyReservationsComponent {
   }
 
   reloadReservations(): void {
-    this.loadReservations();
+    this.reload$.next();
   }
 
   toggleTimeline(reservationId: string): void {
@@ -175,6 +198,50 @@ export class MyReservationsComponent {
     return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
   }
 
+  openCancelSeriesConfirmation(recurringGroupId: string | null): void {
+    if (!recurringGroupId || this.recurringCancelBusy()) {
+      return;
+    }
+    this.recurringGroupIdToCancel.set(recurringGroupId);
+  }
+
+  closeCancelSeriesConfirmation(): void {
+    if (this.recurringCancelBusy()) {
+      return;
+    }
+    this.recurringGroupIdToCancel.set(null);
+  }
+
+  isSeriesCancelModalOpen(): boolean {
+    return this.recurringGroupIdToCancel() !== null;
+  }
+
+  confirmRecurringSeriesCancellation(): void {
+    const groupId = this.recurringGroupIdToCancel();
+    if (!groupId) {
+      return;
+    }
+    this.recurringCancelBusy.set(true);
+    this.feedbackMessage.set(null);
+    this.reservationService
+      .cancelRecurringSeries(groupId)
+      .pipe(
+        finalize(() => {
+          this.recurringCancelBusy.set(false);
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.recurringGroupIdToCancel.set(null);
+          this.feedbackMessage.set('Serie annulee (occurrences futures).');
+          this.reload$.next();
+        },
+        error: () => {
+          this.feedbackMessage.set("Impossible d'annuler la serie.");
+        },
+      });
+  }
+
   formatReservationDate(date: string): string {
     return new Intl.DateTimeFormat('fr-FR', {
       day: 'numeric',
@@ -217,10 +284,16 @@ export class MyReservationsComponent {
     }
   }
 
-  private loadReservations(): void {
-    const createdReservationId = this.route.snapshot.queryParamMap.get('created');
-    const recurringCountRaw = this.route.snapshot.queryParamMap.get('recurringCount');
+  /**
+   * Un seul chargement à la fois (évite qu’une requête lente vide la liste après une réponse récente)
+   * et désactive le cache de transfert HTTP sur l’appel liste.
+   */
+  private fetchReservationList(): Observable<PagedResponseReservationSummaryResponseDto> {
+    const snap = this.route.snapshot.queryParamMap;
+    const createdReservationId = snap.get('created');
+    const recurringCountRaw = snap.get('recurringCount');
     const recurringCount = recurringCountRaw ? Number(recurringCountRaw) : 0;
+
     this.loading.set(true);
     this.errorMessage.set(null);
     this.feedbackMessage.set(null);
@@ -228,10 +301,8 @@ export class MyReservationsComponent {
     this.expandedReservationId.set(null);
     this.reservationIdToCancel.set(null);
 
-    this.reservationService
-      .listMyReservations(0, 50)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
+    return this.reservationService.listMyReservations(0, 50).pipe(
+      tap({
         next: response => {
           const reservations = (response.content ?? []).map(item => this.mapReservation(item));
           this.reservations.set(reservations);
@@ -247,15 +318,15 @@ export class MyReservationsComponent {
                 : 'Reservation creee et confirmee. Elle apparait ci-dessous.'
             );
           }
-          this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
           this.errorMessage.set(
             error.message || 'Impossible de charger vos reservations pour le moment.'
           );
-          this.loading.set(false);
         },
-      });
+      }),
+      finalize(() => this.loading.set(false))
+    );
   }
 
   private mapReservation(item: ReservationSummaryResponseDto): ReservationCard {
@@ -281,6 +352,7 @@ export class MyReservationsComponent {
       comment: this.buildComment(item),
       createdAt: item.createdAt ?? '',
       timeline: this.buildTimeline(item),
+      recurringGroupId: item.recurringGroupId?.trim() ? item.recurringGroupId : null,
     };
   }
 

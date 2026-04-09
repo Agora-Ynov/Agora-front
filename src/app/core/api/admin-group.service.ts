@@ -1,8 +1,11 @@
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { AdminGroupsService } from './api/adminGroups.service';
 import { AdminGroupResponseDto } from './model/adminGroupResponseDto';
 import { AddGroupMemberRequestDto } from './model/addGroupMemberRequestDto';
+import { AdminGroupMemberResponseDto } from './model/adminGroupMemberResponseDto';
 import { CreateAdminGroupRequestDto } from './model/createAdminGroupRequestDto';
 import { UpdateAdminGroupRequestDto } from './model/updateAdminGroupRequestDto';
 import {
@@ -18,16 +21,30 @@ import {
 })
 export class AdminGroupService {
   private readonly api = inject(AdminGroupsService);
+  private readonly http = inject(HttpClient);
+  private readonly root = environment.apiUrl ?? '';
 
+  /**
+   * GET via HttpClient + Accept JSON : le client OpenAPI met parfois Accept sur le wildcard MIME
+   * et en déduit responseType blob — le corps JSON n’est alors pas parsé en tableau.
+   */
   getGroups(): Observable<AdminGroupDto[]> {
-    return this.api
-      .list4('body', false, { transferCache: false })
+    return this.http
+      .get<AdminGroupResponseDto[]>(`${this.root}/api/admin/groups`, {
+        withCredentials: true,
+        transferCache: false,
+        headers: { Accept: 'application/json' },
+      })
       .pipe(map(rows => (rows ?? []).map(r => this.mapGroup(r))));
   }
 
   getGroupMembers(groupId: string): Observable<AdminGroupMemberDto[]> {
-    return this.api
-      .listMembers(groupId, 'body', false, { transferCache: false })
+    return this.http
+      .get<AdminGroupMemberResponseDto[]>(`${this.root}/api/admin/groups/${groupId}/members`, {
+        withCredentials: true,
+        transferCache: false,
+        headers: { Accept: 'application/json' },
+      })
       .pipe(map(rows => (rows ?? []).map(r => this.mapMember(r))));
   }
 

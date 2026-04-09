@@ -164,7 +164,18 @@
     </section>
 
     <section class="user-list-card">
-      <h2>Liste des utilisateurs ({{ filteredUsers().length }})</h2>
+      <h2>
+        Liste des utilisateurs
+        @if (usersTotalElements()) {
+          <span class="user-list-card__meta"
+            >({{ usersTotalElements() }} au total — page {{ usersPage() + 1 }} /
+            {{ usersTotalPages() || 1 }})</span
+          >
+        }
+        @if (searchTerm().trim()) {
+          <span class="user-list-card__meta"> — {{ filteredUsers().length }} après recherche</span>
+        }
+      </h2>
 
       @if (loading()) {
         <p class="user-list-card__empty">Chargement des utilisateurs...</p>
@@ -349,6 +360,42 @@
             </article>
           }
         </div>
+        @if (!loading() && usersTotalElements() > 0) {
+          <div class="user-list-pagination" aria-label="Pagination liste utilisateurs">
+            <div class="user-list-pagination__nav">
+              <button
+                type="button"
+                class="user-list-pagination__btn"
+                (click)="prevUsersPage()"
+                [disabled]="usersPage() <= 0"
+              >
+                Précédent
+              </button>
+              <span class="user-list-pagination__status">
+                Page {{ usersPage() + 1 }} / {{ usersTotalPages() || 1 }}
+              </span>
+              <button
+                type="button"
+                class="user-list-pagination__btn"
+                (click)="nextUsersPage()"
+                [disabled]="usersPage() >= (usersTotalPages() || 1) - 1"
+              >
+                Suivant
+              </button>
+            </div>
+            <label class="user-list-pagination__size">
+              <span>Par page</span>
+              <select
+                [value]="usersPageSize()"
+                (change)="setUsersPageSize(+$any($event.target).value)"
+              >
+                @for (s of usersPageSizeOptions; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        }
       }
     </section>
   </main>
@@ -368,9 +415,15 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-user-modal-title"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        (keydown.space)="$event.preventDefault(); $event.stopPropagation()"
       >
         <header class="create-modal__header">
-          <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>
+          <div class="create-modal__heading">
+            <h2 id="create-user-modal-title">Creer un nouvel utilisateur</h2>
+            <p class="create-modal__subtitle">Compte sous tutelle (sans e-mail de connexion)</p>
+          </div>
           <button
             type="button"
             class="create-modal__close"
@@ -382,12 +435,6 @@
         </header>
 
         <div class="create-modal__body">
-          <p class="create-modal__intro">
-            Creation reservee au type <strong>tutelle</strong> (<code
-              >POST /api/admin/users/tutored</code
-            >). Pour un compte autonome, utilisez la page <a routerLink="/register">Inscription</a>.
-          </p>
-
           <div class="create-modal__grid">
             <label class="modal-field">
               <span>Prenom *</span>
@@ -491,14 +538,24 @@
             </div>
           </div>
 
-          <button
-            type="button"
-            class="detail-modal__close"
-            aria-label="Fermer"
-            (click)="closeUserDetail()"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <div class="detail-modal__header-actions">
+            <button
+              type="button"
+              class="detail-modal__pdf"
+              [disabled]="printBusy()"
+              (click)="downloadUserPdf(user)"
+            >
+              {{ printBusy() ? 'PDF...' : 'Fiche PDF' }}
+            </button>
+            <button
+              type="button"
+              class="detail-modal__close"
+              aria-label="Fermer"
+              (click)="closeUserDetail()"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
         </header>
 
         <div class="detail-modal__body">
@@ -576,6 +633,10 @@
 
           <div class="detail-modal__section detail-modal__section--admin-actions">
             <span class="detail-modal__label">Administration</span>
+            <p class="detail-modal__admin-hint">
+              Suspendre désactive le compte. La suppression définitive efface aussi réservations et
+              file d’attente (irréversible).
+            </p>
             <div class="detail-modal__admin-actions">
               @if (rowStatus(user) === 'ACTIVE') {
                 <button
@@ -597,6 +658,14 @@
                   Reactiver le compte
                 </button>
               }
+              <button
+                type="button"
+                class="detail-modal__action detail-modal__action--purge"
+                [disabled]="detailBusy()"
+                (click)="purgeUserPermanently(user)"
+              >
+                Supprimer definitivement
+              </button>
             </div>
           </div>
 

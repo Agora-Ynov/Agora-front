@@ -59,8 +59,8 @@ export class AdminGroupsComponent {
   readonly editingGroup = signal<AdminGroupDto | null>(null);
 
   readonly createGroupForm = this.fb.group({
-    name: ['', [Validators.required, Validators.maxLength(80)]],
-    groupType: ['AUTRE' as AdminGroupFormType, [Validators.required]],
+    name: ['', [Validators.required, Validators.maxLength(120)]],
+    groupTypeDraft: ['Autre', [Validators.required, Validators.maxLength(80)]],
     description: ['', [Validators.maxLength(240)]],
   });
 
@@ -88,11 +88,21 @@ export class AdminGroupsComponent {
     { value: 'MOBILIER_ONLY', label: 'Mobilier uniquement' },
   ];
 
-  readonly groupTypeOptions: Array<{ value: AdminGroupFormType; label: string }> = [
-    { value: 'AUTRE', label: 'Autre' },
-    { value: 'SERVICE', label: 'Service municipal' },
-    { value: 'ASSOCIATION', label: 'Association' },
-  ];
+  readonly groupTypeSuggestions = computed(() => {
+    const presets = ['Service municipal', 'Association', 'Autre'];
+    const seen = new Set(presets.map(p => p.toLowerCase()));
+    const extras: string[] = [];
+    for (const g of this.groups()) {
+      const badge = this.getBadge(g);
+      const key = badge.trim().toLowerCase();
+      if (badge && !seen.has(key)) {
+        seen.add(key);
+        extras.push(badge);
+      }
+    }
+    extras.sort((a, b) => a.localeCompare(b, 'fr'));
+    return [...presets, ...extras];
+  });
 
   readonly groupCards = computed<AdminGroupCardViewModel[]>(() =>
     this.groups().map(group => ({
@@ -283,7 +293,7 @@ export class AdminGroupsComponent {
   openCreateModal(): void {
     this.createGroupForm.reset({
       name: '',
-      groupType: 'AUTRE',
+      groupTypeDraft: 'Autre',
       description: '',
     });
     this.errorMessage.set('');
@@ -302,9 +312,13 @@ export class AdminGroupsComponent {
 
     const formValue = this.createGroupForm.getRawValue();
     const name = (formValue.name ?? '').trim();
-    const groupType = (formValue.groupType ?? 'AUTRE') as AdminGroupFormType;
+    const typeDraft = (formValue.groupTypeDraft ?? '').trim();
+    const preset = this.resolvePresetFromTypeInput(typeDraft);
+    const apiName =
+      preset != null || !typeDraft ? name : `${name} (${typeDraft})`.slice(0, 200);
+    const groupType: AdminGroupFormType = preset ?? 'AUTRE';
 
-    const payload = this.buildCreatePayload(name, groupType);
+    const payload = this.buildCreatePayload(apiName, groupType);
 
     this.isCreating.set(true);
     this.errorMessage.set('');
@@ -345,7 +359,10 @@ export class AdminGroupsComponent {
       .getGroups()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: groups => this.groups.set(groups),
+        next: groups => {
+          this.errorMessage.set('');
+          this.groups.set(groups);
+        },
         error: () => {
           this.groups.set([]);
           this.errorMessage.set('Impossible de charger les groupes administratifs.');
@@ -353,9 +370,30 @@ export class AdminGroupsComponent {
       });
   }
 
+  /** Aligné sur les libellés du datalist et variantes courantes. */
+  private resolvePresetFromTypeInput(raw: string): AdminGroupFormType | null {
+    const t = raw.trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+    if (!t) {
+      return null;
+    }
+    if (t === 'service municipal' || t === 'service' || t.startsWith('service ')) {
+      return 'SERVICE';
+    }
+    if (t === 'association' || t.startsWith('association')) {
+      return 'ASSOCIATION';
+    }
+    if (t === 'autre' || t === 'autres') {
+      return 'AUTRE';
+    }
+    return null;
+  }
+
   private getBadge(group: AdminGroupDto): string {
     if (group.groupType === 'ASSOCIATION') {
       return 'Association';
+    }
+    if (group.groupType === 'SERVICE') {
+      return 'Service';
     }
 
     const lowerName = group.name.toLowerCase();

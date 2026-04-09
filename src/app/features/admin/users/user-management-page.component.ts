@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import {
   AdminUsersService,
   AdminUserRowDto,
+  AdminUsersListResponse,
   CreateTutoredUserRequestDto,
   ActivateAutonomousRequestDto,
   UpdateTutoredUserRequestDto,
 } from '../../../core/api';
+import { ApiService } from '../../../core/api/api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 type AccountTypeFilter = 'ALL' | 'AUTONOMOUS' | 'TUTORED' | 'SUSPENDED';
@@ -24,6 +26,7 @@ type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING_VALIDATION';
 })
 export class UserManagementPageComponent {
   private readonly adminUsers = inject(AdminUsersService);
+  private readonly api = inject(ApiService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -38,11 +41,19 @@ export class UserManagementPageComponent {
   readonly isEditModalOpen = signal(false);
   readonly editingUser = signal<AdminUserRowDto | null>(null);
   readonly impersonateBusy = signal(false);
+  readonly printBusy = signal(false);
 
   readonly statTotal = signal(0);
   readonly statAutonomous = signal(0);
   readonly statTutored = signal(0);
   readonly statSuspended = signal(0);
+
+  /** Pagination liste (API plafonne size à 100). */
+  readonly usersPage = signal(0);
+  readonly usersPageSize = signal(20);
+  readonly usersTotalPages = signal(0);
+  readonly usersTotalElements = signal(0);
+  readonly usersPageSizeOptions = [10, 20, 50, 100] as const;
 
   readonly createFirstName = signal('Jean');
   readonly createLastName = signal('Dupont');
@@ -91,11 +102,22 @@ export class UserManagementPageComponent {
   });
 
   constructor() {
+    effect(() => {
+      const open =
+        this.isCreateModalOpen() ||
+        this.viewedUser() !== null ||
+        this.actingUser() !== null ||
+        this.isEditModalOpen();
+      if (typeof document !== 'undefined') {
+        document.body.classList.toggle('agora-modal-open', open);
+      }
+    });
     this.loadUsers();
   }
 
   setFilter(value: AccountTypeFilter): void {
     this.filter.set(value);
+    this.usersPage.set(0);
     this.loadUsers();
   }
 
@@ -116,16 +138,39 @@ export class UserManagementPageComponent {
     this.loading.set(true);
     const f = this.filter();
     const { accountType, status } = this.apiListParams(f);
-    const opts = { transferCache: false } as const;
+
+    const listParams = (
+      page: number,
+      size: number,
+      extra?: { accountType?: string; status?: string }
+    ): Record<string, string | number | boolean> => ({
+      page,
+      size,
+      ...(extra?.accountType ? { accountType: extra.accountType } : {}),
+      ...(extra?.status ? { status: extra.status } : {}),
+    });
 
     forkJoin({
       counts: forkJoin({
-        total: this.adminUsers.list1(0, 1, undefined, undefined, 'body', false, opts),
-        autonomous: this.adminUsers.list1(0, 1, 'AUTONOMOUS', undefined, 'body', false, opts),
-        tutored: this.adminUsers.list1(0, 1, 'TUTORED', undefined, 'body', false, opts),
-        suspended: this.adminUsers.list1(0, 1, undefined, 'SUSPENDED', 'body', false, opts),
+        total: this.api.getJson<AdminUsersListResponse>('/api/admin/users', listParams(0, 1)),
+        autonomous: this.api.getJson<AdminUsersListResponse>(
+          '/api/admin/users',
+          listParams(0, 1, { accountType: 'AUTONOMOUS' })
+        ),
+        tutored: this.api.getJson<AdminUsersListResponse>(
+          '/api/admin/users',
+          listParams(0, 1, { accountType: 'TUTORED' })
+        ),
+        suspended: this.api.getJson<AdminUsersListResponse>(
+          '/api/admin/users',
+          listParams(0, 1, { status: 'SUSPENDED' })
+        ),
       }),
-      rows: this.adminUsers.list1(0, 500, accountType, status, 'body', false, opts),
+      rows: this.api.getJson<AdminUsersListResponse>('/api/admin/users', {
+        ...listParams(this.usersPage(), this.usersPageSize()),
+        ...(accountType ? { accountType } : {}),
+        ...(status ? { status } : {}),
+      }),
     }).subscribe({
       next: ({ counts, rows }) => {
         this.statTotal.set(counts.total.totalElements ?? 0);
@@ -133,6 +178,15 @@ export class UserManagementPageComponent {
         this.statTutored.set(counts.tutored.totalElements ?? 0);
         this.statSuspended.set(counts.suspended.totalElements ?? 0);
         this.users.set(rows.content ?? []);
+        const tp = rows.totalPages ?? 0;
+        const te = rows.totalElements ?? 0;
+        this.usersTotalPages.set(tp > 0 ? tp : te > 0 ? 1 : 0);
+        this.usersTotalElements.set(te);
+        if (tp > 0 && this.usersPage() >= tp) {
+          this.usersPage.set(tp - 1);
+          this.loadUsers();
+          return;
+        }
         this.loading.set(false);
       },
       error: () => {
@@ -145,6 +199,30 @@ export class UserManagementPageComponent {
 
   setSearchTerm(value: string): void {
     this.searchTerm.set(value);
+  }
+
+  goUsersPage(page: number): void {
+    const max = Math.max(0, (this.usersTotalPages() || 1) - 1);
+    const p = Math.min(Math.max(0, page), max);
+    if (p === this.usersPage()) return;
+    this.usersPage.set(p);
+    this.loadUsers();
+  }
+
+  prevUsersPage(): void {
+    this.goUsersPage(this.usersPage() - 1);
+  }
+
+  nextUsersPage(): void {
+    this.goUsersPage(this.usersPage() + 1);
+  }
+
+  setUsersPageSize(size: number): void {
+    const s = Math.min(100, Math.max(5, size));
+    if (s === this.usersPageSize()) return;
+    this.usersPageSize.set(s);
+    this.usersPage.set(0);
+    this.loadUsers();
   }
 
   openCreateModal(): void {
@@ -318,6 +396,39 @@ export class UserManagementPageComponent {
     return this.rowAccountType(user) === 'TUTORED' && this.rowStatus(user) === 'ACTIVE';
   }
 
+  downloadUserPdf(user: AdminUserRowDto): void {
+    const id = user.id;
+    if (!id) {
+      return;
+    }
+    this.printBusy.set(true);
+    this.adminUsers
+      .printSummary(id, 'response', false, {
+        transferCache: false,
+        httpHeaderAccept: '*/*',
+      })
+      .subscribe({
+        next: res => {
+          this.printBusy.set(false);
+          const raw = res.body as unknown;
+          if (!(raw instanceof Blob)) {
+            this.feedback.set('PDF vide.');
+            return;
+          }
+          const url = URL.createObjectURL(raw);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `fiche-utilisateur-${id}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.printBusy.set(false);
+          this.feedback.set('Impossible de generer la fiche PDF.');
+        },
+      });
+  }
+
   suspendUser(user: AdminUserRowDto): void {
     const id = user.id;
     if (!id) return;
@@ -332,6 +443,38 @@ export class UserManagementPageComponent {
       error: () => {
         this.detailBusy.set(false);
         this.feedback.set('Suspension impossible.');
+      },
+    });
+  }
+
+  purgeUserPermanently(user: AdminUserRowDto): void {
+    const id = user.id;
+    if (!id || this.detailBusy()) {
+      return;
+    }
+    const label = this.getUserLabel(user);
+    if (
+      !window.confirm(
+        `Supprimer définitivement « ${label} » ?\n\n` +
+          `Les réservations, la file d’attente et les jetons liés seront effacés. ` +
+          `Action irréversible.`
+      )
+    ) {
+      return;
+    }
+    this.detailBusy.set(true);
+    this.api.delete(`/api/admin/users/${encodeURIComponent(id)}`).subscribe({
+      next: () => {
+        this.detailBusy.set(false);
+        this.feedback.set('Utilisateur supprime definitivement.');
+        this.closeUserDetail();
+        this.loadUsers();
+      },
+      error: () => {
+        this.detailBusy.set(false);
+        this.feedback.set(
+          'Suppression impossible (superadmin, compte protege, ou erreur serveur).'
+        );
       },
     });
   }

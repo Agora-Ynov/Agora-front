@@ -56,7 +56,7 @@ const mockAuthService = {
   currentUser: signal(null).asReadonly(),
   isSessionActive: computed(() => false),
   isAuthenticated: () => false,
-  logout: jest.fn(),
+  logout: jasmine.createSpy('logout'),
 };
 
 describe('CatalogueComponent', () => {
@@ -87,24 +87,30 @@ describe('CatalogueComponent', () => {
     expect(component.loading()).toBe(false);
     expect(component.errorMessage()).toBeNull();
     expect(component.resources().length).toBe(3);
-    expect(component.resources()[0]).toMatchObject({
-      id: 'r001',
-      family: 'ROOM',
-      typeLabel: 'Salle',
-      depositAmount: 150,
-      pricePerBooking: 0,
-    });
-    expect(component.resources()[1]).toMatchObject({
-      id: 'r005',
-      family: 'EQUIPMENT',
-      typeLabel: 'Materiel',
-      depositAmount: 200,
-      pricePerBooking: 0,
-    });
-    expect(component.resources()[2]).toMatchObject({
-      id: 'r999',
-      family: 'EQUIPMENT',
-    });
+    expect(component.resources()[0]).toEqual(
+      jasmine.objectContaining({
+        id: 'r001',
+        family: 'ROOM',
+        typeLabel: 'Salle',
+        depositAmount: 150,
+        pricePerBooking: 0,
+      })
+    );
+    expect(component.resources()[1]).toEqual(
+      jasmine.objectContaining({
+        id: 'r005',
+        family: 'EQUIPMENT',
+        typeLabel: 'Materiel',
+        depositAmount: 200,
+        pricePerBooking: 0,
+      })
+    );
+    expect(component.resources()[2]).toEqual(
+      jasmine.objectContaining({
+        id: 'r999',
+        family: 'EQUIPMENT',
+      })
+    );
   });
 
   it('should filter resources by family and features', async () => {
@@ -195,44 +201,41 @@ describe('CatalogueComponent', () => {
   });
 
   it('should expose a readable error when mock loading fails', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    try {
-      await TestBed.configureTestingModule({
-        imports: [CatalogueComponent],
-        providers: [
-          provideHttpClient(),
-          provideRouter([]),
-          {
-            provide: ResourceService,
-            useValue: {
-              getAll: () =>
-                throwError(
-                  () =>
-                    new HttpErrorResponse({
-                      status: 500,
-                      statusText: 'Server Error',
-                      error: 'boom',
-                    })
-                ),
-            },
+    spyOn(console, 'error').and.stub();
+
+    await TestBed.configureTestingModule({
+      imports: [CatalogueComponent],
+      providers: [
+        provideHttpClient(),
+        provideRouter([]),
+        {
+          provide: ResourceService,
+          useValue: {
+            getAll: () =>
+              throwError(
+                () =>
+                  new HttpErrorResponse({
+                    status: 500,
+                    statusText: 'Server Error',
+                    error: 'boom',
+                  })
+              ),
           },
-          {
-            provide: AuthService,
-            useValue: mockAuthService,
-          },
-        ],
-      }).compileComponents();
+        },
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+      ],
+    }).compileComponents();
 
-      const fixture = TestBed.createComponent(CatalogueComponent);
-      const component = fixture.componentInstance;
+    const fixture = TestBed.createComponent(CatalogueComponent);
+    const component = fixture.componentInstance;
 
-      fixture.detectChanges();
+    fixture.detectChanges();
 
-      expect(component.loading()).toBe(false);
-      expect(component.errorMessage()).toContain('Http failure response');
-      expect(component.resources()).toEqual([]);
-    } finally {
-      consoleSpy.mockRestore();
-    }
+    expect(component.loading()).toBe(false);
+    expect(component.errorMessage()).toContain('Http failure response');
+    expect(component.resources()).toEqual([]);
   });
 });

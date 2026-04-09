@@ -12,27 +12,41 @@ export class ApiService {
   get<T>(path: string, params?: Record<string, string | number | boolean>): Observable<T> {
     return this.http.get<T>(`${this.base}${path}`, {
       params: this.buildParams(params),
+      withCredentials: true,
+    });
+  }
+
+  /**
+   * GET avec Accept application/json : le client OpenAPI utilise souvent un Accept générique
+   * et force responseType blob, ce qui empêche d'exploiter le corps comme objet typé.
+   */
+  getJson<T>(path: string, params?: Record<string, string | number | boolean>): Observable<T> {
+    return this.http.get<T>(`${this.base}${path}`, {
+      params: this.buildParams(params),
+      withCredentials: true,
+      transferCache: false,
+      headers: { Accept: 'application/json' },
     });
   }
 
   post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(`${this.base}${path}`, body);
+    return this.http.post<T>(`${this.base}${path}`, body, { withCredentials: true });
   }
 
   put<T>(path: string, body: unknown): Observable<T> {
-    return this.http.put<T>(`${this.base}${path}`, body);
+    return this.http.put<T>(`${this.base}${path}`, body, { withCredentials: true });
   }
 
   patch<T>(path: string, body: unknown): Observable<T> {
-    return this.http.patch<T>(`${this.base}${path}`, body);
+    return this.http.patch<T>(`${this.base}${path}`, body, { withCredentials: true });
   }
 
   delete<T>(path: string): Observable<T> {
-    return this.http.delete<T>(`${this.base}${path}`);
+    return this.http.delete<T>(`${this.base}${path}`, { withCredentials: true });
   }
 
   postFormData<T>(path: string, formData: FormData): Observable<T> {
-    return this.http.post<T>(`${this.base}${path}`, formData);
+    return this.http.post<T>(`${this.base}${path}`, formData, { withCredentials: true });
   }
 
   private buildParams(params?: Record<string, string | number | boolean>): HttpParams {

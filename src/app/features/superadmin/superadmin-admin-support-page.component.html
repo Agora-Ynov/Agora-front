@@ -12,27 +12,67 @@
   }
 
   <section class="superadmin-panel">
-    <h2>Ajouter une promotion</h2>
+    <h2>Promouvoir un conseiller municipal</h2>
     <p class="superadmin-panel__hint">
-      Saisir l’UUID utilisateur (depuis la base ou la fiche admin).
+      Membres du groupe <strong>{{ councilGroupLabel }}</strong> (même nom qu’en base). Choisissez une
+      personne puis cliquez sur <strong>Promouvoir</strong>.
     </p>
-    <div class="superadmin-promote">
-      <input
-        type="text"
-        class="superadmin-input"
-        placeholder="UUID utilisateur"
-        [ngModel]="promoteUserId()"
-        (ngModelChange)="promoteUserId.set($event)"
-      />
-      <button
-        type="button"
-        class="superadmin-btn superadmin-btn--primary"
-        [disabled]="!promoteUserId().trim() || promoteBusy()"
-        (click)="promote()"
-      >
-        Promouvoir
-      </button>
-    </div>
+
+    @if (councilLoadError(); as cErr) {
+      <div class="superadmin-page__alert superadmin-page__alert--warn" role="status">{{ cErr }}</div>
+    }
+
+    @if (councilLoading()) {
+      <p>Chargement des membres du conseil…</p>
+    } @else if (!councilLoadError()) {
+      <label class="superadmin-search">
+        <span class="superadmin-search__label">Rechercher (nom, email)</span>
+        <input
+          type="search"
+          class="superadmin-input"
+          placeholder="Ex : Dupont, sophie…"
+          [ngModel]="memberSearch()"
+          (ngModelChange)="memberSearch.set($event)"
+        />
+      </label>
+
+      @if (!filteredCouncilMembers().length) {
+        <p class="superadmin-page__muted">
+          Aucun membre ne correspond à la recherche, ou le groupe est vide.
+        </p>
+      } @else {
+        <div class="superadmin-table superadmin-table--council">
+          <div class="superadmin-table__row superadmin-table__row--head">
+            <span>Nom</span>
+            <span>Email</span>
+            <span></span>
+          </div>
+          @for (row of filteredCouncilMembers(); track row.userId) {
+            <div class="superadmin-table__row">
+              <span>
+                <strong>{{ row.member.firstName }} {{ row.member.lastName }}</strong>
+                <small class="superadmin-page__muted">{{ row.userId }}</small>
+              </span>
+              <span>{{ row.member.email ?? '—' }}</span>
+              <span class="superadmin-table__actions">
+                @if (row.isAlreadySupport) {
+                  <span class="superadmin-pill">Déjà admin support</span>
+                } @else {
+                  <button
+                    type="button"
+                    class="superadmin-btn superadmin-btn--primary"
+                    [disabled]="promoteBusy()"
+                    (click)="promoteMember(row.userId)"
+                  >
+                    Promouvoir
+                  </button>
+                }
+              </span>
+            </div>
+          }
+        </div>
+      }
+    }
   </section>
 
   <section class="superadmin-panel">
@@ -64,11 +104,7 @@
             <span>{{ u.email ?? '—' }}</span>
             <span>{{ u.status }}</span>
             <span class="superadmin-table__actions">
-              <button
-                type="button"
-                class="superadmin-btn superadmin-btn--danger"
-                (click)="revoke(u.id)"
-              >
+              <button type="button" class="superadmin-btn superadmin-btn--danger" (click)="revoke(u.id)">
                 Révoquer
               </button>
             </span>

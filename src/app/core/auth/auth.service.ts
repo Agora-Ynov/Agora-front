@@ -159,8 +159,11 @@ export class AuthService {
     return this.hasRole('DELEGATE_ADMIN');
   }
 
-  /** Entrée de menu « administration » : au moins une zone staff accessible. */
+  /** Entrée de menu « administration » : session valide + au moins une zone staff accessible. */
   canSeeAdminNavigation(): boolean {
+    if (!this.isAuthenticated()) {
+      return false;
+    }
     return this.canAccessFullAdminSpa() || this.canAccessDelegateResourceConsole();
   }
 

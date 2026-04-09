@@ -412,6 +412,41 @@
       </article>
     </section>
 
+    @if (canStaffExports()) {
+      <section class="exports-card" aria-label="Exports CSV administrateur">
+        <h2>Exports CSV</h2>
+        <p class="exports-card__hint">
+          Reservations et paiements (<code>GET /api/admin/exports/...</code>) — reserve au
+          secrétariat / support / superadmin.
+        </p>
+        @if (exportMessage(); as exMsg) {
+          <p class="exports-card__msg" role="status">{{ exMsg }}</p>
+        }
+        <div class="exports-card__dates">
+          <label>
+            Du
+            <input
+              type="date"
+              [value]="exportDateFrom()"
+              (input)="setExportFrom($any($event.target).value)"
+            />
+          </label>
+          <label>
+            Au
+            <input
+              type="date"
+              [value]="exportDateTo()"
+              (input)="setExportTo($any($event.target).value)"
+            />
+          </label>
+        </div>
+        <div class="exports-card__actions">
+          <button type="button" (click)="downloadReservationsExport()">Reservations (.csv)</button>
+          <button type="button" (click)="downloadPaymentsExport()">Paiements (.csv)</button>
+        </div>
+      </section>
+    }
+
     <section class="news-card">
       <div class="news-card__heading">
         <span class="news-card__icon" aria-hidden="true">
@@ -421,18 +456,14 @@
             <path d="M12 7H12.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" />
           </svg>
         </span>
-        <h2>Nouveautes - Alignement cahier fonctionnel</h2>
+        <h2>Synthese (donnees chargees)</h2>
       </div>
 
-      <div class="news-grid">
-        @for (column of newsColumns; track $index) {
-          <ul class="news-list">
-            @for (item of column.items; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
+      <ul class="news-list news-list--single">
+        @for (line of dashboardDigest(); track line) {
+          <li>{{ line }}</li>
         }
-      </div>
+      </ul>
     </section>
   </main>
 </section>

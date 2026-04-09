@@ -1,0 +1,73 @@
+<section class="waitlist-page">
+  <header class="waitlist-page__hero">
+    <div>
+      <h1>Liste d'attente</h1>
+      <p>
+        Inscrivez-vous sur un creneau complet pour la ressource choisie (API
+        <code>GET/POST/DELETE /api/waitlist</code>).
+      </p>
+    </div>
+    <a routerLink="/account" class="waitlist-page__back">Mon compte</a>
+  </header>
+
+  @if (error(); as err) {
+    <div class="waitlist-page__error" role="alert">{{ err }}</div>
+  }
+
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else {
+    <section class="waitlist-page__panel">
+      <h2>Mes inscriptions</h2>
+      @if (!entries().length) {
+        <p>Aucune inscription en liste d'attente.</p>
+      } @else {
+        <ul class="waitlist-page__list">
+          @for (e of entries(); track e.id) {
+            <li>
+              <div>
+                <strong>{{ e.resourceName }}</strong>
+                <span
+                  >{{ e.slotDate }} · {{ e.slotStart }}–{{ e.slotEnd }} — position
+                  {{ e.position }}</span
+                >
+                <span class="waitlist-page__status">{{ e.status }}</span>
+              </div>
+              <button type="button" (click)="cancelEntry(e.id)">Me retirer</button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="waitlist-page__panel">
+      <h2>Nouvelle inscription</h2>
+      <div class="waitlist-page__form">
+        <label>
+          Ressource
+          <select [(ngModel)]="enrollResourceId" name="resourceId">
+            <option value="">— Choisir —</option>
+            @for (r of resources(); track r.id) {
+              <option [value]="r.id">{{ r.name }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Date du creneau
+          <input type="date" [(ngModel)]="enrollDate" name="slotDate" />
+        </label>
+        <label>
+          Debut (HH:mm)
+          <input type="time" [(ngModel)]="enrollStart" name="slotStart" />
+        </label>
+        <label>
+          Fin (HH:mm)
+          <input type="time" [(ngModel)]="enrollEnd" name="slotEnd" />
+        </label>
+        <button type="button" [disabled]="saving()" (click)="enroll()">
+          {{ saving() ? 'Envoi...' : "S'inscrire" }}
+        </button>
+      </div>
+    </section>
+  }
+</section>

@@ -27,6 +27,12 @@
   margin-bottom: 1.25rem;
 }
 
+.superadmin-page__alert--warn {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
 .superadmin-page__muted {
   color: var(--text-muted, #64748b);
   display: block;
@@ -63,11 +69,26 @@
   color: var(--text-muted, #64748b);
 }
 
-.superadmin-promote {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
+.superadmin-search {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.superadmin-search__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.superadmin-pill {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .superadmin-input {
@@ -119,6 +140,14 @@
   align-items: center;
   padding: 0.65rem 0;
   border-bottom: 1px solid var(--border-subtle, #f1f5f9);
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.superadmin-table--council .superadmin-table__row {
+  grid-template-columns: 1.4fr 1.2fr auto;
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;

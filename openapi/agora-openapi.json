@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:56168",
+      "url": "http://localhost:59295",
       "description": "Generated server url"
     }
   ],
@@ -2080,6 +2080,47 @@
         ]
       }
     },
+    "/api/admin/users/{userId}/print-summary": {
+      "get": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Fiche PDF utilisateur (secrétariat)",
+        "operationId": "printSummary",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "byte"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/admin/stats/dashboard": {
       "get": {
         "tags": [
@@ -2663,6 +2704,11 @@
             "type": "integer",
             "format": "int32"
           },
+          "rentalPriceCents": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
           "imageUrl": {
             "maxLength": 500,
             "minLength": 0,
@@ -2701,6 +2747,10 @@
             "type": "string"
           },
           "depositAmountCents": {
+            "type": "number",
+            "format": "double"
+          },
+          "rentalPriceCents": {
             "type": "number",
             "format": "double"
           },
@@ -3256,6 +3306,10 @@
           },
           "userName": {
             "type": "string"
+          },
+          "recurringGroupId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

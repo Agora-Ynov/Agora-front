@@ -63,6 +63,10 @@
   gap: 0.45rem;
   margin-top: 0.65rem;
   flex-shrink: 0;
+  max-height: min(32vh, 240px);
+  overflow-y: auto;
+  padding-bottom: 0.2rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .resource-chip {

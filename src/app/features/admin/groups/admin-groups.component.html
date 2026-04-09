@@ -401,11 +401,22 @@
 
           <label class="create-group-field">
             <span>Type de groupe *</span>
-            <select formControlName="groupType">
-              @for (option of groupTypeOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
+            <input
+              type="text"
+              formControlName="groupTypeDraft"
+              list="admin-group-type-suggestions"
+              placeholder="Ex: Service municipal, Association, ou un libelle personnalise"
+              autocomplete="off"
+            />
+            <datalist id="admin-group-type-suggestions">
+              @for (s of groupTypeSuggestions(); track s) {
+                <option [value]="s"></option>
               }
-            </select>
+            </datalist>
+            <small class="create-group-field__hint">
+              Profils rapides : droits et remises selon Service, Association ou Autre. Tout autre libelle
+              cree un groupe « Autre » et l’ajoute au nom affiche.
+            </small>
           </label>
 
           <label class="create-group-field">
@@ -416,10 +427,6 @@
               placeholder="Description du groupe et de ses activites..."
             ></textarea>
           </label>
-
-          <div class="create-group-note">
-            <strong>API :</strong> creation via le client genere OpenAPI (`POST /api/admin/groups`).
-          </div>
 
           <button type="submit" class="create-group-submit" [disabled]="isCreating()">
             {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}

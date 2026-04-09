@@ -64,8 +64,8 @@ function isRentalPriceKnown(resource: ResourceDto): boolean {
 }
 
 /**
- * Libellé du tarif de location (hors caution). Tant que `rentalPriceCents` est absent,
- * affiche « À confirmer » (sauf libellés d’exonération déjà connus).
+ * Libellé du tarif de location (hors caution). Sans `rentalPriceCents` côté ressource,
+ * pas de montant affichable — libellé neutre (sauf exonération mandat déjà connue).
  */
 export function describeRentalPriceLabel(
   pricing: ResolvedResourcePricing,
@@ -75,7 +75,7 @@ export function describeRentalPriceLabel(
     if (pricing.discountLabel === 'Exoneration mandat electif') {
       return 'Exonéré (mandat)';
     }
-    return 'À confirmer';
+    return 'Tarif non renseigné';
   }
   if (pricing.finalPriceCents === 0) {
     return 'Gratuit';

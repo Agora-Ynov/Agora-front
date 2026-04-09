@@ -159,6 +159,27 @@
   font-size: 1.02rem;
 }
 
+.reservation-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.series-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
 .status-badge,
 .payment-badge {
   display: inline-flex;
@@ -403,25 +424,45 @@
   cursor: not-allowed;
 }
 
-.modal-backdrop {
+.cancel-button--series {
+  background: #fff;
+  color: #b45309;
+  border: 2px solid #f59e0b;
+}
+
+.cancel-button--series:hover:not(:disabled) {
+  background: #fffbeb;
+}
+
+.cancel-button--series:disabled {
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.36);
   z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(16px, 5vh) 16px 32px;
+  background: rgba(15, 23, 42, 0.36);
 }
 
 .confirm-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
+  position: relative;
   z-index: 31;
   width: min(92vw, 420px);
+  margin: 0 auto;
   padding: 1.5rem;
   border: 1px solid #dde5f0;
   border-radius: 1.2rem;
   background: #fff;
   box-shadow: 0 30px 70px rgba(15, 23, 42, 0.2);
-  transform: translate(-50%, -50%);
 }
 
 .confirm-modal h2 {

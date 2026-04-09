@@ -14,6 +14,11 @@ body {
   background: #f7f9fc;
 }
 
+/** Verrouille le défilement du document quand un écran admin ouvre une modale (voir UserManagementPageComponent). */
+body.agora-modal-open {
+  overflow: hidden;
+}
+
 *,
 *::before,
 *::after {

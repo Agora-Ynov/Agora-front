@@ -150,7 +150,7 @@
             <span>{{ adminNavLabel() }}</span>
           </a>
         }
-        @if (isSuperadmin()) {
+        @if (showSuperadminNav()) {
           <a
             routerLink="/superadmin/admin-support"
             routerLinkActive="active-link"

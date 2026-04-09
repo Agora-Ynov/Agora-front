@@ -37,8 +37,16 @@
 
   <div class="loading-box" *ngIf="isLoading()">Chargement des ressources...</div>
 
-  <div class="resource-grid" *ngIf="!isLoading()">
-    <article class="resource-card" *ngFor="let resource of resources(); trackBy: trackByResourceId">
+  <div class="resource-grid-wrap" *ngIf="!isLoading()">
+    <p class="resource-grid-meta" *ngIf="resources().length">
+      Affichage {{ displayedResources().length }} / {{ resources().length }} ressource(s) — page
+      {{ resourceListPage() + 1 }} / {{ resourceListTotalPages() }}
+    </p>
+    <div class="resource-grid">
+      <article
+        class="resource-card"
+        *ngFor="let resource of displayedResources(); trackBy: trackByResourceId"
+      >
       <div class="card-top">
         <div class="resource-title-block">
           <div class="resource-icon" [attr.data-kind]="getTypeIcon(resource.resourceType)"></div>
@@ -117,6 +125,40 @@
         <button type="button" class="secondary-btn" disabled>Disponibilites</button>
       </div>
     </article>
+    </div>
+
+    <div class="resource-pagination" *ngIf="resources().length > 0" aria-label="Pagination ressources">
+      <div class="resource-pagination__nav">
+        <button
+          type="button"
+          class="resource-pagination__btn"
+          (click)="prevResourceListPage()"
+          [disabled]="resourceListPage() <= 0"
+        >
+          Précédent
+        </button>
+        <span class="resource-pagination__status">
+          Page {{ resourceListPage() + 1 }} / {{ resourceListTotalPages() }}
+        </span>
+        <button
+          type="button"
+          class="resource-pagination__btn"
+          (click)="nextResourceListPage()"
+          [disabled]="resourceListPage() >= resourceListTotalPages() - 1"
+        >
+          Suivant
+        </button>
+      </div>
+      <label class="resource-pagination__size">
+        <span>Par page</span>
+        <select
+          [value]="resourceListPageSize()"
+          (change)="setResourceListPageSize(+$any($event.target).value)"
+        >
+          <option *ngFor="let s of resourceListPageSizeOptions" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="empty-box" *ngIf="!isLoading() && resources().length === 0 && !errorMessage()">
@@ -166,21 +208,23 @@
           <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
         </div>
 
-        <div class="form-section-title">Tarif de location</div>
+        <div class="form-section-title">Tarif de location (catalogue)</div>
 
         <div class="form-group">
-          <label for="resourceRentalAmount">Montant (EUR) pour une réservation</label>
+          <label for="resourceRentalAmount">Montant TTC (EUR) pour une réservation</label>
           <input
             id="resourceRentalAmount"
             type="number"
             step="0.01"
+            min="0"
             formControlName="rentalAmountEuros"
-            placeholder="Laisser vide si tarif à confirmer au secrétariat"
+            placeholder="Ex. 120 ou 0 pour gratuit — vide si non renseigné"
           />
-          <small
-            >0 = gratuit. Vide = le catalogue affichera « À confirmer » pour le tarif
-            location.</small
-          >
+          <small>
+            Ce montant est affiché sur la fiche et dans le catalogue.
+            <strong>0</strong> = gratuit. Laisser <strong>vide</strong> = « Tarif non renseigné »
+            côté catalogue (aucun montant en base).
+          </small>
         </div>
 
         <div class="form-section-title">Caution</div>

@@ -34,16 +34,22 @@ export class HeaderComponent {
     this.isMenuOpen.set(false);
   }
 
-  readonly showAdminNav = computed(() => this.authService.canSeeAdminNavigation());
+  readonly showAdminNav = computed(() => {
+    if (!this.currentUser()) {
+      return false;
+    }
+    return this.authService.canSeeAdminNavigation();
+  });
+
+  /** Superadmin : utilisateur chargé (évite d’afficher le lien sur JWT / état transitoire seul). */
+  readonly showSuperadminNav = computed(
+    () => !!this.currentUser() && this.authService.hasRole('SUPERADMIN')
+  );
   readonly adminNavLink = computed(() => this.authService.getAdminEntryPath());
   readonly adminNavLabel = computed(() => this.authService.getAdminNavLabel());
 
   readonly isImpersonating = computed(() => this.authService.isImpersonating());
   readonly impersonationAdminEmail = computed(() => this.authService.getImpersonatedByEmail());
-
-  isSuperadmin(): boolean {
-    return this.authService.hasRole('SUPERADMIN');
-  }
 
   logout(): void {
     this.closeMenu();

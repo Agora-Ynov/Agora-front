@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ResourcesService } from './api/resources.service';
 import { PagedResponseResourceDto } from './model/pagedResponseResourceDto';
@@ -24,21 +24,45 @@ const ALLOWED_ACCESSIBILITY_IDS = new Set<string>(RESOURCE_ACCESSIBILITY_OPTIONS
   providedIn: 'root',
 })
 export class ResourceService {
+  private static readonly LIST_PAGE_SIZE = 100;
+  /** Garde-fou : au-delà, risquerait des requêtes excessives. */
+  private static readonly LIST_MAX_PAGES = 100;
+
   private readonly http = inject(HttpClient);
   private readonly resourcesService = inject(ResourcesService);
 
   getAll(): Observable<ResourceDto[]> {
+    return this.loadResourcePages(0, []);
+  }
+
+  private loadResourcePages(page: number, acc: ResourceDto[]): Observable<ResourceDto[]> {
     const root = environment.apiUrl ?? '';
-    const params = new HttpParams().set('page', '0').set('size', '100');
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('size', String(ResourceService.LIST_PAGE_SIZE));
     return this.http
       .get<PagedResponseResourceDto>(`${root}/api/resources`, {
         params,
         withCredentials: true,
       })
       .pipe(
-        map(response =>
-          (response.content ?? []).map(resource => this.fromOpenApiResource(resource))
-        )
+        switchMap(response => {
+          const chunk = (response.content ?? []).map(r => this.fromOpenApiResource(r));
+          const merged = [...acc, ...chunk];
+          const totalPages = response.totalPages ?? 0;
+          const hasMore =
+            totalPages > 0
+              ? page + 1 < totalPages
+              : chunk.length >= ResourceService.LIST_PAGE_SIZE;
+          if (
+            !hasMore ||
+            page + 1 >= ResourceService.LIST_MAX_PAGES ||
+            chunk.length === 0
+          ) {
+            return of(merged);
+          }
+          return this.loadResourcePages(page + 1, merged);
+        })
       );
   }
 

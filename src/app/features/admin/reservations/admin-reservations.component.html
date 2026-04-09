@@ -33,6 +33,12 @@
       <span>Exo. / dispenses</span>
     </article>
   </section>
+  <p class="stats-page-hint">
+    Ces indicateurs concernent uniquement les réservations chargées sur la page courante ({{
+      reservations().length
+    }}
+    ligne(s) sur {{ resTotalElements() || reservations().length }} au total dans l’API).
+  </p>
 
   <div class="feedback-box" *ngIf="feedbackMessage()">
     {{ feedbackMessage() }}
@@ -60,7 +66,16 @@
 
   <section class="reservations-panel">
     <div class="reservations-panel__header">
-      <h2>Liste des reservations ({{ filteredReservations().length }})</h2>
+      <h2>
+        Liste des réservations —
+        {{ filteredReservations().length }} après filtre
+        @if (resTotalElements()) {
+          <span class="reservations-panel__meta">
+            (page {{ resPage() + 1 }} / {{ resTotalPages() || 1 }}, {{ resTotalElements() }} au
+            total)</span
+          >
+        }
+      </h2>
     </div>
 
     <div class="reservations-table">
@@ -174,6 +189,40 @@
         </article>
       }
     </div>
+
+    @if (!loading() && resTotalElements() > 0) {
+      <div class="reservations-pagination" aria-label="Pagination réservations">
+        <div class="reservations-pagination__nav">
+          <button
+            type="button"
+            class="reservations-pagination__btn"
+            (click)="prevResPage()"
+            [disabled]="resPage() <= 0"
+          >
+            Précédent
+          </button>
+          <span class="reservations-pagination__status">
+            Page {{ resPage() + 1 }} / {{ resTotalPages() || 1 }}
+          </span>
+          <button
+            type="button"
+            class="reservations-pagination__btn"
+            (click)="nextResPage()"
+            [disabled]="resPage() >= (resTotalPages() || 1) - 1"
+          >
+            Suivant
+          </button>
+        </div>
+        <label class="reservations-pagination__size">
+          <span>Par page</span>
+          <select [value]="resPageSize()" (change)="setResPageSize(+$any($event.target).value)">
+            @for (s of resPageSizeOptions; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </label>
+      </div>
+    }
   </section>
 
   @if (selectedReservation(); as reservation) {

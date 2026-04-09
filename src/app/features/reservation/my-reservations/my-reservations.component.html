@@ -52,15 +52,20 @@
                 <p>#{{ reservation.id }}</p>
               </div>
 
-              <span
-                class="status-badge"
-                [class.status-badge--confirmed]="reservation.status === 'CONFIRMED'"
-                [class.status-badge--pending]="reservation.status === 'PENDING'"
-                [class.status-badge--cancelled]="reservation.status === 'CANCELLED'"
-              >
-                <span class="status-badge__dot" aria-hidden="true"></span>
-                {{ reservationStatusLabel(reservation.status) }}
-              </span>
+              <div class="reservation-card__badges">
+                @if (reservation.recurringGroupId) {
+                  <span class="series-badge">Serie recurrente</span>
+                }
+                <span
+                  class="status-badge"
+                  [class.status-badge--confirmed]="reservation.status === 'CONFIRMED'"
+                  [class.status-badge--pending]="reservation.status === 'PENDING'"
+                  [class.status-badge--cancelled]="reservation.status === 'CANCELLED'"
+                >
+                  <span class="status-badge__dot" aria-hidden="true"></span>
+                  {{ reservationStatusLabel(reservation.status) }}
+                </span>
+              </div>
             </div>
 
             <div class="reservation-card__grid">
@@ -240,22 +245,34 @@
             </div>
 
             <div class="reservation-card__footer">
-              <button
-                type="button"
-                class="cancel-button"
-                [disabled]="
-                  reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
-                "
-                (click)="openCancelConfirmation(reservation.id)"
-              >
-                {{
-                  reservation.status === 'CANCELLED'
-                    ? 'Reservation annulee'
-                    : isCancellationPending(reservation.id)
-                      ? 'Annulation en cours...'
-                      : 'Annuler la reservation'
-                }}
-              </button>
+              <div class="reservation-card__footer-actions">
+                <button
+                  type="button"
+                  class="cancel-button"
+                  [disabled]="
+                    reservation.status === 'CANCELLED' || isCancellationPending(reservation.id)
+                  "
+                  (click)="openCancelConfirmation(reservation.id)"
+                >
+                  {{
+                    reservation.status === 'CANCELLED'
+                      ? 'Reservation annulee'
+                      : isCancellationPending(reservation.id)
+                        ? 'Annulation en cours...'
+                        : 'Annuler la reservation'
+                  }}
+                </button>
+                @if (reservation.recurringGroupId && reservation.status !== 'CANCELLED') {
+                  <button
+                    type="button"
+                    class="cancel-button cancel-button--series"
+                    [disabled]="recurringCancelBusy()"
+                    (click)="openCancelSeriesConfirmation(reservation.recurringGroupId)"
+                  >
+                    Annuler toute la serie
+                  </button>
+                }
+              </div>
 
               <p>Creee le {{ formatCreatedAt(reservation.createdAt) }}</p>
             </div>
@@ -264,18 +281,24 @@
       </div>
 
       @if (isCancellationModalOpen()) {
-        <button
-          type="button"
-          class="modal-backdrop"
-          aria-label="Fermer la modale"
+        <div
+          class="modal-overlay"
+          role="button"
+          tabindex="0"
+          aria-label="Fermer"
           (click)="closeCancelConfirmation()"
-        ></button>
-        <section
-          class="confirm-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cancel-modal-title"
+          (keydown.enter)="closeCancelConfirmation()"
+          (keydown.space)="$event.preventDefault(); closeCancelConfirmation()"
         >
+          <section
+            class="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-modal-title"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+            (keydown.space)="$event.preventDefault(); $event.stopPropagation()"
+          >
           <h2 id="cancel-modal-title">Annuler la reservation ?</h2>
           @if (getReservationToCancel(); as reservation) {
             <p>
@@ -305,6 +328,53 @@
             </button>
           </div>
         </section>
+        </div>
+      }
+
+      @if (isSeriesCancelModalOpen()) {
+        <div
+          class="modal-overlay"
+          role="button"
+          tabindex="0"
+          aria-label="Fermer"
+          (click)="closeCancelSeriesConfirmation()"
+          (keydown.enter)="closeCancelSeriesConfirmation()"
+          (keydown.space)="$event.preventDefault(); closeCancelSeriesConfirmation()"
+        >
+          <section
+            class="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-series-modal-title"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+            (keydown.space)="$event.preventDefault(); $event.stopPropagation()"
+          >
+          <h2 id="cancel-series-modal-title">Annuler toute la serie ?</h2>
+          <p>
+            Les occurrences futures de cette serie seront annulees (API
+            <code>DELETE /api/reservations/recurring/&#123;id&#125;</code>).
+          </p>
+          <div class="confirm-modal__actions">
+            <button
+              type="button"
+              class="modal-secondary-button"
+              [disabled]="recurringCancelBusy()"
+              (click)="closeCancelSeriesConfirmation()"
+            >
+              Retour
+            </button>
+            <button
+              type="button"
+              class="modal-danger-button"
+              [disabled]="recurringCancelBusy()"
+              (click)="confirmRecurringSeriesCancellation()"
+            >
+              {{ recurringCancelBusy() ? 'Annulation...' : 'Confirmer' }}
+            </button>
+          </div>
+        </section>
+        </div>
       }
     }
   </div>

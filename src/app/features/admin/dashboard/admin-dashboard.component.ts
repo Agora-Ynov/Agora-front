@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import {
+  AdminExportsService,
   AdminReservationsService,
   AdminStatsService,
   ReservationSummaryResponseDto,
 } from '../../../core/api';
+import { AuthService } from '../../../core/auth/auth.service';
 
 type AdminStatTone = 'warning' | 'success' | 'info' | 'violet';
 type AdminStatIcon = 'clock' | 'check' | 'resource' | 'affiliation';
@@ -45,10 +47,6 @@ interface RecentReservation {
   status: ReservationStatusUi;
 }
 
-interface NewsColumn {
-  items: string[];
-}
-
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -59,9 +57,12 @@ interface NewsColumn {
 export class AdminDashboardComponent implements OnInit {
   private readonly adminStats = inject(AdminStatsService);
   private readonly adminReservations = inject(AdminReservationsService);
+  private readonly adminExports = inject(AdminExportsService);
+  private readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
   readonly loadError = signal<string | null>(null);
+  readonly exportMessage = signal<string | null>(null);
 
   readonly statCards = signal<AdminStatCard[]>([]);
   readonly recentReservations = signal<RecentReservation[]>([]);
@@ -79,24 +80,14 @@ export class AdminDashboardComponent implements OnInit {
     { label: 'Fermetures', icon: 'closures', route: '/admin/blackouts' },
     { label: 'Ressources', icon: 'resources', route: '/admin/resources' },
     { label: 'Groupes', icon: 'groups', route: '/admin/groups' },
-    { label: 'Affiliations', icon: 'affiliations', badgeCount: 0, route: '/admin/affiliations' },
   ];
 
-  readonly newsColumns: NewsColumn[] = [
-    {
-      items: [
-        'API admin : reservations, paiements, statistiques, utilisateurs',
-        'Activation comptes (lien e-mail) et promotion admin support (superadmin)',
-        'Statuts reservation alignes (PENDING_VALIDATION, PENDING_DOCUMENT, etc.)',
-      ],
-    },
-    {
-      items: [
-        'Dashboard : indicateurs issus de GET /api/admin/stats/dashboard',
-        'Liste des reservations recentes : dernieres lignes admin',
-      ],
-    },
-  ];
+  readonly canStaffExports = computed(() => this.auth.canAccessFullAdminSpa());
+
+  readonly exportDateFrom = signal(this.formatIsoDateDaysAgo(30));
+  readonly exportDateTo = signal(this.formatIsoDate(new Date()));
+
+  readonly dashboardDigest = signal<string[]>([]);
 
   ngOnInit(): void {
     this.loading.set(true);
@@ -113,56 +104,143 @@ export class AdminDashboardComponent implements OnInit {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: ({ stats, recent }) => {
-          if (!stats) {
-            this.loadError.set('Statistiques indisponibles.');
-          } else {
-            const today = stats.todayReservations ?? 0;
-            const pendingDep = stats.pendingDeposits ?? 0;
-            const pendingDoc = stats.pendingDocuments ?? 0;
-            const tutored = stats.tutoredAccounts ?? 0;
-
-            this.statCards.set([
-              {
-                label: 'Reservations aujourd’hui',
-                value: today,
-                tone: 'warning',
-                icon: 'clock',
-              },
-              {
-                label: 'Cautions en attente',
-                value: pendingDep,
-                tone: 'success',
-                icon: 'check',
-              },
-              {
-                label: 'Dossiers / documents en attente',
-                value: pendingDoc,
-                tone: 'info',
-                icon: 'resource',
-              },
-              {
-                label: 'Comptes sous tutelle',
-                value: tutored,
-                tone: 'violet',
-                icon: 'affiliation',
-              },
-            ]);
-
-            const total = today + pendingDep + pendingDoc + 1;
-            const validated = Math.min(100, Math.round((today / Math.max(total, 1)) * 100));
-            this.validationRate.set(Number.isFinite(validated) ? validated : 0);
-            this.appliedExemptions.set(0);
-            this.pendingPayments.set(pendingDep);
-            this.totalRevenueLabel.set('N/A');
-          }
-
           const rows = (recent.content ?? []).map(r => this.mapRecent(r));
           this.recentReservations.set(rows);
+
+          if (!stats) {
+            this.loadError.set('Statistiques indisponibles.');
+            this.dashboardDigest.set([
+              'Statistiques indisponibles — verifiez GET /api/admin/stats/dashboard.',
+            ]);
+            return;
+          }
+
+          const today = stats.todayReservations ?? 0;
+          const pendingDep = stats.pendingDeposits ?? 0;
+          const pendingDoc = stats.pendingDocuments ?? 0;
+          const tutored = stats.tutoredAccounts ?? 0;
+
+          this.statCards.set([
+            {
+              label: 'Reservations aujourd’hui',
+              value: today,
+              tone: 'warning',
+              icon: 'clock',
+            },
+            {
+              label: 'Cautions en attente',
+              value: pendingDep,
+              tone: 'success',
+              icon: 'check',
+            },
+            {
+              label: 'Dossiers / documents en attente',
+              value: pendingDoc,
+              tone: 'info',
+              icon: 'resource',
+            },
+            {
+              label: 'Comptes sous tutelle',
+              value: tutored,
+              tone: 'violet',
+              icon: 'affiliation',
+            },
+          ]);
+
+          const total = today + pendingDep + pendingDoc + 1;
+          const validated = Math.min(100, Math.round((today / Math.max(total, 1)) * 100));
+          this.validationRate.set(Number.isFinite(validated) ? validated : 0);
+          this.appliedExemptions.set(0);
+          this.pendingPayments.set(pendingDep);
+          this.totalRevenueLabel.set('N/A');
+
+          this.dashboardDigest.set([
+            `Indicateurs (API) : ${today} reservation(s) aujourd'hui, ${pendingDep} caution(s) en attente, ${pendingDoc} dossier(s) documents, ${tutored} compte(s) sous tutelle.`,
+            `Apercu reservations : ${rows.length} ligne(s) (extrait admin, max 5).`,
+          ]);
         },
         error: () => {
           this.loadError.set('Chargement du tableau de bord impossible.');
         },
       });
+  }
+
+  setExportFrom(value: string): void {
+    this.exportDateFrom.set(value);
+  }
+
+  setExportTo(value: string): void {
+    this.exportDateTo.set(value);
+  }
+
+  downloadReservationsExport(): void {
+    this.exportMessage.set(null);
+    const from = this.exportDateFrom();
+    const to = this.exportDateTo();
+    this.adminExports
+      .exportReservations(from, to, 'response', false, { transferCache: false })
+      .subscribe({
+        next: res => {
+          const body = res.body as unknown;
+          if (body == null) {
+            this.exportMessage.set('Export vide.');
+            return;
+          }
+          const blob = this.csvResponseBodyToBlob(body);
+          this.triggerDownload(`reservations-${from}_${to}.csv`, blob);
+        },
+        error: () => this.exportMessage.set('Export reservations indisponible (droits ou plage).'),
+      });
+  }
+
+  downloadPaymentsExport(): void {
+    this.exportMessage.set(null);
+    const from = this.exportDateFrom();
+    const to = this.exportDateTo();
+    this.adminExports
+      .exportPayments(from, to, 'response', false, { transferCache: false })
+      .subscribe({
+        next: res => {
+          const body = res.body as unknown;
+          if (body == null) {
+            this.exportMessage.set('Export vide.');
+            return;
+          }
+          const blob = this.csvResponseBodyToBlob(body);
+          this.triggerDownload(`paiements-${from}_${to}.csv`, blob);
+        },
+        error: () => this.exportMessage.set('Export paiements indisponible (droits ou plage).'),
+      });
+  }
+
+  /** OpenAPI typote les exports CSV en Array<string> ; la reponse Http est texte ou blob selon le client. */
+  private csvResponseBodyToBlob(body: unknown): Blob {
+    if (body instanceof Blob) {
+      return body;
+    }
+    if (typeof body === 'string') {
+      return new Blob([body], { type: 'text/csv;charset=utf-8' });
+    }
+    return new Blob([], { type: 'text/csv;charset=utf-8' });
+  }
+
+  private triggerDownload(filename: string, blob: Blob): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private formatIsoDate(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+  private formatIsoDateDaysAgo(days: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return this.formatIsoDate(d);
   }
 
   statusLabel(status: ReservationStatusUi): string {
@@ -193,7 +271,7 @@ export class AdminDashboardComponent implements OnInit {
     return {
       id: d.id ?? '',
       title: d.resourceName ?? '—',
-      requester: '—',
+      requester: d.userName?.trim() ? d.userName : '—',
       date: dateLabel,
       status,
     };

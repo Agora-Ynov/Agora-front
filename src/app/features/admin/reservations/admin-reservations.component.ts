@@ -11,6 +11,8 @@ import {
   ReservationSummaryResponseDto,
   AdminPaymentHistoryEntryResponseDto,
 } from '../../../core/api';
+import { PagedResponseReservationSummaryResponseDto } from '../../../core/api/model/pagedResponseReservationSummaryResponseDto';
+import { ApiService } from '../../../core/api/api.service';
 
 type ReservationStatus = ReservationSummaryResponseDto.StatusEnum;
 type DepositStatus = ReservationSummaryResponseDto.DepositStatusEnum;
@@ -52,6 +54,7 @@ interface AdminReservationRow {
 export class AdminReservationsComponent implements OnInit {
   private readonly adminReservations = inject(AdminReservationsService);
   private readonly adminPayments = inject(AdminPaymentsService);
+  private readonly api = inject(ApiService);
 
   readonly loading = signal(false);
   readonly loadError = signal<string | null>(null);
@@ -69,6 +72,11 @@ export class AdminReservationsComponent implements OnInit {
   readonly paymentHistoryLoaded = signal(false);
 
   readonly reservations = signal<AdminReservationRow[]>([]);
+  readonly resPage = signal(0);
+  readonly resPageSize = signal(25);
+  readonly resTotalPages = signal(0);
+  readonly resTotalElements = signal(0);
+  readonly resPageSizeOptions = [10, 25, 50, 100] as const;
 
   readonly filteredReservations = computed(() => {
     const currentFilter = this.filter();
@@ -157,21 +165,54 @@ export class AdminReservationsComponent implements OnInit {
   reloadList(): void {
     this.loading.set(true);
     this.loadError.set(null);
-    this.adminReservations
-      .list2(undefined, undefined, undefined, undefined, 0, 500, 'body', false, {
-        transferCache: false,
+    this.api
+      .getJson<PagedResponseReservationSummaryResponseDto>('/api/admin/reservations', {
+        page: this.resPage(),
+        size: this.resPageSize(),
       })
       .pipe(
         finalize(() => this.loading.set(false)),
         catchError(() => {
           this.loadError.set('Impossible de charger les reservations.');
-          return of({ content: [] });
+          return of({ content: [] } as PagedResponseReservationSummaryResponseDto);
         })
       )
       .subscribe(page => {
         const rows = (page.content ?? []).map(d => this.mapDto(d));
         this.reservations.set(rows);
+        const tp = page.totalPages ?? 0;
+        const te = page.totalElements ?? 0;
+        this.resTotalPages.set(tp > 0 ? tp : te > 0 ? 1 : 0);
+        this.resTotalElements.set(te);
+        if (tp > 0 && this.resPage() >= tp) {
+          this.resPage.set(tp - 1);
+          this.reloadList();
+        }
       });
+  }
+
+  goResPage(p: number): void {
+    const max = Math.max(0, (this.resTotalPages() || 1) - 1);
+    const page = Math.min(Math.max(0, p), max);
+    if (page === this.resPage()) return;
+    this.resPage.set(page);
+    this.reloadList();
+  }
+
+  prevResPage(): void {
+    this.goResPage(this.resPage() - 1);
+  }
+
+  nextResPage(): void {
+    this.goResPage(this.resPage() + 1);
+  }
+
+  setResPageSize(size: number): void {
+    const s = Math.min(100, Math.max(5, size));
+    if (s === this.resPageSize()) return;
+    this.resPageSize.set(s);
+    this.resPage.set(0);
+    this.reloadList();
   }
 
   openReservationDetails(row: AdminReservationRow): void {

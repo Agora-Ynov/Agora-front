@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, Subject } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
+import { AdminUsersListResponse } from '../../../core/api';
 import { ApiService } from '../../../core/api/api.service';
 
 type AuditCategory =
@@ -47,14 +49,6 @@ interface AuditResponse {
   totalPages?: number;
 }
 
-interface AdminUserDto {
-  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING_VALIDATION';
-}
-
-interface AdminUsersResponse {
-  content: AdminUserDto[];
-}
-
 @Component({
   selector: 'app-admin-audit-page',
   standalone: true,
@@ -64,10 +58,16 @@ interface AdminUsersResponse {
 })
 export class AdminAuditPageComponent {
   private readonly api = inject(ApiService);
+  private readonly loadAudit$ = new Subject<void>();
 
   readonly loading = signal(true);
   readonly entries = signal<AuditEntryDto[]>([]);
   readonly suspendedUsers = signal(0);
+  readonly auditPage = signal(0);
+  readonly auditPageSize = signal(25);
+  readonly auditTotalPages = signal(0);
+  readonly auditTotalElements = signal(0);
+  readonly auditPageSizeOptions = [10, 25, 50, 100] as const;
   readonly searchTerm = signal('');
   readonly actorFilter = signal('Tous les acteurs');
   readonly categoryFilter = signal<AuditCategory>('all');
@@ -109,27 +109,27 @@ export class AdminAuditPageComponent {
   readonly stats = computed(() => [
     {
       label: 'Total logs',
-      value: this.entries().length,
+      value: this.auditTotalElements(),
       tone: 'default',
     },
     {
-      label: 'Validations',
+      label: 'Validations (page)',
       value: this.entries().filter(entry => ['info', 'green', 'blue'].includes(entry.severity))
         .length,
       tone: 'green',
     },
     {
-      label: 'Refus',
+      label: 'Refus (page)',
       value: this.entries().filter(entry => ['warning', 'orange'].includes(entry.severity)).length,
       tone: 'red',
     },
     {
-      label: 'Impersonations',
+      label: 'Impersonations (page)',
       value: this.entries().filter(entry => entry.category === 'impersonation').length,
       tone: 'orange',
     },
     {
-      label: 'Suspensions',
+      label: 'Comptes suspendus',
       value: this.suspendedUsers(),
       tone: 'red',
     },
@@ -179,23 +179,81 @@ export class AdminAuditPageComponent {
   });
 
   constructor() {
-    forkJoin({
-      audit: this.api.get<AuditResponse>('/api/admin/audit?page=0&size=100'),
-      users: this.api.get<AdminUsersResponse>('/api/admin/users'),
-    })
-      .pipe(takeUntilDestroyed())
+    this.loadAudit$
+      .pipe(
+        switchMap(() =>
+          forkJoin({
+            audit: this.api
+              .getJson<AuditResponse>('/api/admin/audit', {
+                page: this.auditPage(),
+                size: this.auditPageSize(),
+              })
+              .pipe(catchError(() => of<AuditResponse>({ content: [] }))),
+            suspended: this.api
+              .getJson<AdminUsersListResponse>('/api/admin/users', {
+                page: 0,
+                size: 1,
+                status: 'SUSPENDED',
+              })
+              .pipe(catchError(() => of<AdminUsersListResponse>({}))),
+          })
+        ),
+        takeUntilDestroyed()
+      )
       .subscribe({
-        next: ({ audit, users }) => {
+        next: ({ audit, suspended }) => {
           this.entries.set((audit.content ?? []).map(e => this.mapApiAuditEntry(e)));
-          this.suspendedUsers.set(users.content.filter(user => user.status === 'SUSPENDED').length);
+          this.suspendedUsers.set(suspended.totalElements ?? 0);
+          const tp = audit.totalPages ?? 0;
+          const te = audit.totalElements ?? 0;
+          this.auditTotalPages.set(tp > 0 ? tp : te > 0 ? 1 : 0);
+          this.auditTotalElements.set(te);
+          if (tp > 0 && this.auditPage() >= tp) {
+            this.auditPage.set(tp - 1);
+            this.loadAudit$.next();
+            return;
+          }
           this.loading.set(false);
         },
         error: () => {
           this.entries.set([]);
           this.suspendedUsers.set(0);
+          this.auditTotalElements.set(0);
+          this.auditTotalPages.set(0);
           this.loading.set(false);
         },
       });
+    this.loading.set(true);
+    this.loadAudit$.next();
+  }
+
+  private requestAuditLoad(): void {
+    this.loading.set(true);
+    this.loadAudit$.next();
+  }
+
+  goAuditPage(page: number): void {
+    const max = Math.max(0, (this.auditTotalPages() || 1) - 1);
+    const p = Math.min(Math.max(0, page), max);
+    if (p === this.auditPage()) return;
+    this.auditPage.set(p);
+    this.requestAuditLoad();
+  }
+
+  prevAuditPage(): void {
+    this.goAuditPage(this.auditPage() - 1);
+  }
+
+  nextAuditPage(): void {
+    this.goAuditPage(this.auditPage() + 1);
+  }
+
+  setAuditPageSize(size: number): void {
+    const s = Math.min(100, Math.max(5, size));
+    if (s === this.auditPageSize()) return;
+    this.auditPageSize.set(s);
+    this.auditPage.set(0);
+    this.requestAuditLoad();
   }
 
   private mapApiAuditEntry(e: AdminAuditApiEntry): AuditEntryDto {
