@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -49,7 +49,6 @@ interface AdminUsersResponse {
 })
 export class AdminAuditPageComponent {
   private readonly http = inject(HttpClient);
-  private readonly document = inject(DOCUMENT);
 
   readonly loading = signal(true);
   readonly entries = signal<AuditEntryDto[]>([]);
@@ -190,59 +189,6 @@ export class AdminAuditPageComponent {
     this.categoryFilter.set(value);
   }
 
-  exportCsv(): void {
-    const rows = this.filteredEntries().map(entry => ({
-      id: entry.id,
-      categorie: entry.category,
-      gravite: entry.severity,
-      libelle: entry.label,
-      role_acteur: entry.actorRole,
-      action: entry.title,
-      date_action: this.formatDate(entry.performedAt),
-      acteur: entry.actorName,
-      cible: entry.targetName ?? '',
-      reservation: entry.bookingRef ?? '',
-      ressource: entry.resourceName ?? '',
-      ip_source: entry.ipAddress,
-    }));
-
-    const header = Object.keys(rows[0] ?? {
-      id: '',
-      categorie: '',
-      gravite: '',
-      libelle: '',
-      role_acteur: '',
-      action: '',
-      date_action: '',
-      acteur: '',
-      cible: '',
-      reservation: '',
-      ressource: '',
-      ip_source: '',
-    });
-
-    const csv = [
-      header.join(';'),
-      ...rows.map(row =>
-        header
-          .map(key => this.escapeCsvValue(String(row[key as keyof typeof row] ?? '')))
-          .join(';'),
-      ),
-    ].join('\n');
-
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = globalThis.URL.createObjectURL(blob);
-    const link = this.document.createElement('a');
-    const date = new Date().toISOString().slice(0, 10);
-
-    link.href = url;
-    link.download = `journal-audit-${date}.csv`;
-    this.document.body.appendChild(link);
-    link.click();
-    link.remove();
-    globalThis.URL.revokeObjectURL(url);
-  }
-
   focusBooking(ref: string): void {
     this.searchTerm.set(ref);
   }
@@ -264,10 +210,6 @@ export class AdminAuditPageComponent {
 
   formatBookingRef(value: string): string {
     return value.replace(/^booking-/i, 'booking-');
-  }
-
-  private escapeCsvValue(value: string): string {
-    return `"${value.replaceAll('"', '""')}"`;
   }
 
   categoryIcon(category: AuditCategory): 'shield' | 'calendar' | 'user' | 'card' | 'group' {
