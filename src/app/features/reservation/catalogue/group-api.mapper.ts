@@ -1,7 +1,9 @@
 import { UserGroupApiDto } from '../../../core/api/models/user-group-api.model';
 import { ReservationPricingGroup } from './resource-pricing.utils';
 
-export function mapUserGroupsApiToPricing(rows: UserGroupApiDto[] | null | undefined): ReservationPricingGroup[] {
+export function mapUserGroupsApiToPricing(
+  rows: UserGroupApiDto[] | null | undefined
+): ReservationPricingGroup[] {
   return (rows ?? [])
     .map(g => {
       const id = g.id?.trim();
@@ -10,7 +12,8 @@ export function mapUserGroupsApiToPricing(rows: UserGroupApiDto[] | null | undef
       }
 
       const discountType = (g.discountType ?? 'NONE') as ReservationPricingGroup['discountType'];
-      const discountAppliesTo = (g.discountAppliesTo ?? 'ALL') as ReservationPricingGroup['discountAppliesTo'];
+      const discountAppliesTo = (g.discountAppliesTo ??
+        'ALL') as ReservationPricingGroup['discountAppliesTo'];
 
       return {
         id,

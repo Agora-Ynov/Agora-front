@@ -23,7 +23,9 @@
       <span>Confirmees</span>
     </article>
     <article class="stat-card">
-      <strong class="stat-card__value stat-card__value--alert">{{ stats().paymentsPending }}</strong>
+      <strong class="stat-card__value stat-card__value--alert">{{
+        stats().paymentsPending
+      }}</strong>
       <span>Caution en attente</span>
     </article>
     <article class="stat-card">
@@ -73,7 +75,10 @@
         <span>Actions</span>
       </div>
 
-      @for (reservation of filteredReservations(); track trackByReservationId($index, reservation)) {
+      @for (
+        reservation of filteredReservations();
+        track trackByReservationId($index, reservation)
+      ) {
         <article
           class="reservations-row"
           [class.reservations-row--pending]="statusRowPending(reservation)"
@@ -150,8 +155,18 @@
                 aria-label="Refuser"
               >
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 8L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                  <path d="M16 8L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path
+                    d="M8 8L16 16"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M16 8L8 16"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             }
@@ -292,7 +307,11 @@
         </section>
 
         <div class="modal-actions">
-          <button type="button" class="secondary-action secondary-action--wide" (click)="sendReminder()">
+          <button
+            type="button"
+            class="secondary-action secondary-action--wide"
+            (click)="sendReminder()"
+          >
             Rappel (non API)
           </button>
           <button type="button" class="primary-action" (click)="saveReservationDetails()">
@@ -318,8 +337,18 @@
             <span class="danger-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-                <path d="M8 8L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                <path d="M16 8L8 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path
+                  d="M8 8L16 16"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M16 8L8 16"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
               </svg>
             </span>
             <h3 id="reject-reservation-title">Refuser la reservation</h3>
@@ -350,7 +379,9 @@
           >
             Confirmer le refus
           </button>
-          <button type="button" class="secondary-action" (click)="closeRejectModal()">Annuler</button>
+          <button type="button" class="secondary-action" (click)="closeRejectModal()">
+            Annuler
+          </button>
         </div>
       </section>
     </div>

@@ -212,7 +212,9 @@
                     (change)="updateRecurrenceFrequency($any($event.target).value)"
                   >
                     <option [value]="recurrenceFrequencyOptions.Weekly">Hebdomadaire</option>
-                    <option [value]="recurrenceFrequencyOptions.Biweekly">Toutes les deux semaines</option>
+                    <option [value]="recurrenceFrequencyOptions.Biweekly">
+                      Toutes les deux semaines
+                    </option>
                     <option [value]="recurrenceFrequencyOptions.Monthly">Mensuelle</option>
                   </select>
                 </label>
@@ -377,14 +379,16 @@
                 }
 
                 <p class="summary-pricing-note">
-                  Les frais de location ne sont pas calculés en ligne : le montant sera indiqué lors de la
-                  validation par le secrétariat.
+                  Les frais de location ne sont pas calculés en ligne : le montant sera indiqué lors
+                  de la validation par le secrétariat.
                 </p>
 
                 <div class="summary-divider"></div>
 
                 <div class="summary-line" [class.summary-line--success]="pricing.isDepositExempt">
-                  <span>{{ pricing.isDepositExempt ? 'Caution exoneree' : 'Caution (catalogue)' }}</span>
+                  <span>{{
+                    pricing.isDepositExempt ? 'Caution exoneree' : 'Caution (catalogue)'
+                  }}</span>
                   <strong [class.summary-line__crossed]="pricing.isDepositExempt">
                     {{ formatAmount(depositAmountCents()) }}
                   </strong>

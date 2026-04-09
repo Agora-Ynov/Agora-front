@@ -18,9 +18,7 @@ import {
 const ACCESSIBILITY_LABELS: Record<string, string> = Object.fromEntries(
   RESOURCE_ACCESSIBILITY_OPTIONS.map(o => [o.id, o.label])
 );
-const ALLOWED_ACCESSIBILITY_IDS = new Set<string>(
-  RESOURCE_ACCESSIBILITY_OPTIONS.map(o => o.id)
-);
+const ALLOWED_ACCESSIBILITY_IDS = new Set<string>(RESOURCE_ACCESSIBILITY_OPTIONS.map(o => o.id));
 
 @Injectable({
   providedIn: 'root',
@@ -87,7 +85,9 @@ export class ResourceService {
 
   buildPayload(formValue: ResourceFormValue): CreateResourceDto {
     const rentalPriceCents =
-      formValue.rentalAmountEuros == null ? undefined : this.eurosToCents(formValue.rentalAmountEuros);
+      formValue.rentalAmountEuros == null
+        ? undefined
+        : this.eurosToCents(formValue.rentalAmountEuros);
 
     return {
       name: formValue.name.trim(),
@@ -179,8 +179,7 @@ export class ResourceService {
           ? (raw['rentalPriceCents'] as number)
           : null);
     const name =
-      resource.name ??
-      (typeof raw['name'] === 'string' ? (raw['name'] as string) : undefined);
+      resource.name ?? (typeof raw['name'] === 'string' ? (raw['name'] as string) : undefined);
     const isActive =
       resource.isActive ??
       (typeof raw['is_active'] === 'boolean' ? (raw['is_active'] as boolean) : undefined);

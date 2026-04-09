@@ -101,9 +101,9 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loading.set(true);
     forkJoin({
-      stats: this.adminStats.dashboard('body', false, { transferCache: false }).pipe(
-        catchError(() => of(null))
-      ),
+      stats: this.adminStats
+        .dashboard('body', false, { transferCache: false })
+        .pipe(catchError(() => of(null))),
       recent: this.adminReservations
         .list2(undefined, undefined, undefined, undefined, 0, 5, 'body', false, {
           transferCache: false,

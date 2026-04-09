@@ -218,13 +218,15 @@ export class AdminReservationsComponent implements OnInit {
     const body: AdminPatchReservationStatusRequestDto = {
       status: AdminPatchReservationStatusRequestDto.StatusEnum.Confirmed,
     };
-    this.adminReservations.patchStatus(reservationId, body, undefined, false, { transferCache: false }).subscribe({
-      next: () => {
-        this.feedbackMessage.set('Reservation confirmee.');
-        this.reloadList();
-      },
-      error: () => this.feedbackMessage.set('Echec de la confirmation.'),
-    });
+    this.adminReservations
+      .patchStatus(reservationId, body, undefined, false, { transferCache: false })
+      .subscribe({
+        next: () => {
+          this.feedbackMessage.set('Reservation confirmee.');
+          this.reloadList();
+        },
+        error: () => this.feedbackMessage.set('Echec de la confirmation.'),
+      });
   }
 
   saveReservationDetails(): void {
@@ -236,14 +238,16 @@ export class AdminReservationsComponent implements OnInit {
       comment: this.adminCommentDraft().trim() || undefined,
     };
 
-    this.adminPayments.patch(row.id, paymentBody, undefined, false, { transferCache: false }).subscribe({
-      next: () => {
-        this.feedbackMessage.set('Paiement / commentaire mis a jour.');
-        this.closeReservationDetails();
-        this.reloadList();
-      },
-      error: () => this.feedbackMessage.set('Echec de la mise a jour du paiement.'),
-    });
+    this.adminPayments
+      .patch(row.id, paymentBody, undefined, false, { transferCache: false })
+      .subscribe({
+        next: () => {
+          this.feedbackMessage.set('Paiement / commentaire mis a jour.');
+          this.closeReservationDetails();
+          this.reloadList();
+        },
+        error: () => this.feedbackMessage.set('Echec de la mise a jour du paiement.'),
+      });
   }
 
   saveAdminComment(): void {
@@ -267,14 +271,16 @@ export class AdminReservationsComponent implements OnInit {
       status: AdminPatchReservationStatusRequestDto.StatusEnum.Rejected,
       comment: reason,
     };
-    this.adminReservations.patchStatus(row.id, body, undefined, false, { transferCache: false }).subscribe({
-      next: () => {
-        this.feedbackMessage.set('Reservation refusee.');
-        this.closeRejectModal();
-        this.reloadList();
-      },
-      error: () => this.feedbackMessage.set('Echec du refus.'),
-    });
+    this.adminReservations
+      .patchStatus(row.id, body, undefined, false, { transferCache: false })
+      .subscribe({
+        next: () => {
+          this.feedbackMessage.set('Reservation refusee.');
+          this.closeRejectModal();
+          this.reloadList();
+        },
+        error: () => this.feedbackMessage.set('Echec du refus.'),
+      });
   }
 
   paymentDepositLabel(status: ReservationSummaryResponseDto.DepositStatusEnum): string {
@@ -362,7 +368,12 @@ export class AdminReservationsComponent implements OnInit {
     };
   }
 
-  private formatTime(t: { hour?: number; minute?: number; second?: number; nano?: number }): string {
+  private formatTime(t: {
+    hour?: number;
+    minute?: number;
+    second?: number;
+    nano?: number;
+  }): string {
     const h = t.hour ?? 0;
     const m = t.minute ?? 0;
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;

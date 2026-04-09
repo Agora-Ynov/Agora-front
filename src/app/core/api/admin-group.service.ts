@@ -40,7 +40,8 @@ export class AdminGroupService {
       canBookMobilier: payload.canBookMobilier,
       discountType: payload.discountType as CreateAdminGroupRequestDto['discountType'],
       discountValue: payload.discountValue,
-      discountAppliesTo: payload.discountAppliesTo as CreateAdminGroupRequestDto['discountAppliesTo'],
+      discountAppliesTo:
+        payload.discountAppliesTo as CreateAdminGroupRequestDto['discountAppliesTo'],
     };
     return this.api
       .create(body, 'body', false, { transferCache: false })

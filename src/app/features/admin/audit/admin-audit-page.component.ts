@@ -201,7 +201,11 @@ export class AdminAuditPageComponent {
   private mapApiAuditEntry(e: AdminAuditApiEntry): AuditEntryDto {
     const action = e.action ?? '';
     let category: Exclude<AuditCategory, 'all'> = 'accounts';
-    if (/RESERVATION|BOOKING|SLOT|DOCUMENT|PJ|RESOURCE_CREATED|RESOURCE_UPDATED|RESOURCE_DEACTIVATED/i.test(action)) {
+    if (
+      /RESERVATION|BOOKING|SLOT|DOCUMENT|PJ|RESOURCE_CREATED|RESOURCE_UPDATED|RESOURCE_DEACTIVATED/i.test(
+        action
+      )
+    ) {
       category = 'reservations';
     } else if (/PAYMENT|DEPOSIT|CAUTION/i.test(action)) {
       category = 'payments';

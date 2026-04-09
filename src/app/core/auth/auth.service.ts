@@ -53,9 +53,7 @@ export class AuthService {
         withCredentials: true,
         transferCache: false,
       })
-      .pipe(
-        switchMap(response => this.establishSessionFromLoginResponse(response))
-      );
+      .pipe(switchMap(response => this.establishSessionFromLoginResponse(response)));
   }
 
   /**

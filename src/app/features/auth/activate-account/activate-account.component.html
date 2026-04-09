@@ -9,7 +9,9 @@
       <a routerLink="/login" class="activate-link">Retour a la connexion</a>
     } @else {
       @if (emailHint(); as mail) {
-        <p class="activate-hint">Compte associe a <strong>{{ mail }}</strong></p>
+        <p class="activate-hint">
+          Compte associe a <strong>{{ mail }}</strong>
+        </p>
       }
       <label class="activate-field">
         <span>Nouveau mot de passe</span>
@@ -32,12 +34,7 @@
       @if (error(); as err) {
         <p class="activate-error">{{ err }}</p>
       }
-      <button
-        type="button"
-        class="activate-submit"
-        [disabled]="submitting()"
-        (click)="submit()"
-      >
+      <button type="button" class="activate-submit" [disabled]="submitting()" (click)="submit()">
         {{ submitting() ? 'Activation...' : 'Valider et se connecter' }}
       </button>
     }

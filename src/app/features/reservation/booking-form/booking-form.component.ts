@@ -81,10 +81,9 @@ export class BookingFormComponent {
   readonly isRecurring = signal(false);
   /** Dernier jour inclus de la série (aligné sur CreateRecurringReservationRequestDto.endDate). */
   readonly recurrenceEndDate = signal('');
-  readonly recurrenceFrequency =
-    signal<CreateRecurringReservationRequestDto.FrequencyEnum>(
-      CreateRecurringReservationRequestDto.FrequencyEnum.Weekly
-    );
+  readonly recurrenceFrequency = signal<CreateRecurringReservationRequestDto.FrequencyEnum>(
+    CreateRecurringReservationRequestDto.FrequencyEnum.Weekly
+  );
   readonly recurrenceFrequencyOptions = CreateRecurringReservationRequestDto.FrequencyEnum;
   readonly notes = signal('');
   readonly acceptTerms = signal(false);
@@ -396,9 +395,7 @@ export class BookingFormComponent {
       .createReservation(body, 'body', false, { transferCache: false })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        switchMap(detail =>
-          this.uploadPendingDocuments(detail.id).pipe(map(() => detail))
-        ),
+        switchMap(detail => this.uploadPendingDocuments(detail.id).pipe(map(() => detail))),
         finalize(() => this.submitting.set(false))
       )
       .subscribe({
@@ -491,7 +488,9 @@ export class BookingFormComponent {
 
     const purpose = this.notes().trim();
     if (purpose.length < 3) {
-      this.submitError.set("Precisez l'objet de la reservation (au moins 3 caracteres) dans le commentaire.");
+      this.submitError.set(
+        "Precisez l'objet de la reservation (au moins 3 caracteres) dans le commentaire."
+      );
       return null;
     }
 
@@ -544,7 +543,9 @@ export class BookingFormComponent {
 
     const purpose = this.notes().trim();
     if (purpose.length < 3) {
-      this.submitError.set("Precisez l'objet de la reservation (au moins 3 caracteres) dans le commentaire.");
+      this.submitError.set(
+        "Precisez l'objet de la reservation (au moins 3 caracteres) dans le commentaire."
+      );
       return null;
     }
 
@@ -554,7 +555,9 @@ export class BookingFormComponent {
       return null;
     }
     if (seriesEnd < start.date) {
-      this.submitError.set('La fin de la serie doit etre le meme jour ou apres le premier creneau.');
+      this.submitError.set(
+        'La fin de la serie doit etre le meme jour ou apres le premier creneau.'
+      );
       return null;
     }
 

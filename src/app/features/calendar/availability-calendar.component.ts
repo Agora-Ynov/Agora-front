@@ -7,11 +7,7 @@ import { finalize, forkJoin, of, switchMap } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
 import { ResourceService } from '../../core/api/resource.service';
 import { CalendarResponseDto } from '../../core/api/model/calendarResponseDto';
-import {
-  CalendarDayDto,
-  CalendarSlotDto,
-  ResourceDto,
-} from '../../core/api/models/resource.model';
+import { CalendarDayDto, CalendarSlotDto, ResourceDto } from '../../core/api/models/resource.model';
 import { toDateTimeLocalValue } from '../../shared/utils/datetime-local';
 
 interface CalendarMonthRequest {
@@ -136,7 +132,7 @@ export class AvailabilityCalendarComponent {
       const isoDate = this.toIsoDate(date);
       const day = this.getCalendarDay(isoDate);
       const daySlots = selectedResourceId
-        ? day?.slots?.filter(slot => slot.resourceId === selectedResourceId) ?? []
+        ? (day?.slots?.filter(slot => slot.resourceId === selectedResourceId) ?? [])
         : [];
 
       return {
@@ -249,7 +245,10 @@ export class AvailabilityCalendarComponent {
       return;
     }
 
-    if (clickedEnd === selectedStart && this.isRangeAvailable(day, cell.slotStart, currentSelection.slotEnd)) {
+    if (
+      clickedEnd === selectedStart &&
+      this.isRangeAvailable(day, cell.slotStart, currentSelection.slotEnd)
+    ) {
       this.selectedRange.set({
         date: day.isoDate,
         slotStart: cell.slotStart,
@@ -258,7 +257,10 @@ export class AvailabilityCalendarComponent {
       return;
     }
 
-    if (clickedStart === selectedEnd && this.isRangeAvailable(day, currentSelection.slotStart, cell.slotEnd)) {
+    if (
+      clickedStart === selectedEnd &&
+      this.isRangeAvailable(day, currentSelection.slotStart, cell.slotEnd)
+    ) {
       this.selectedRange.set({
         date: day.isoDate,
         slotStart: currentSelection.slotStart,
@@ -267,10 +269,7 @@ export class AvailabilityCalendarComponent {
       return;
     }
 
-    if (
-      clickedStart >= selectedStart &&
-      clickedStart < selectedEnd
-    ) {
+    if (clickedStart >= selectedStart && clickedStart < selectedEnd) {
       this.selectedRange.set({
         date: day.isoDate,
         slotStart: cell.slotStart,

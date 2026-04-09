@@ -221,19 +221,21 @@ export class UserManagementPageComponent {
       notesAdmin: this.editNotesAdmin().trim() || undefined,
     };
     this.editBusy.set(true);
-    this.adminUsers.updateTutored(user.id, body, undefined, false, { transferCache: false }).subscribe({
-      next: () => {
-        this.editBusy.set(false);
-        this.feedback.set('Fiche sous tutelle mise a jour.');
-        this.closeEditModal();
-        this.closeUserDetail();
-        this.loadUsers();
-      },
-      error: () => {
-        this.editBusy.set(false);
-        this.feedback.set('Echec de la mise a jour.');
-      },
-    });
+    this.adminUsers
+      .updateTutored(user.id, body, undefined, false, { transferCache: false })
+      .subscribe({
+        next: () => {
+          this.editBusy.set(false);
+          this.feedback.set('Fiche sous tutelle mise a jour.');
+          this.closeEditModal();
+          this.closeUserDetail();
+          this.loadUsers();
+        },
+        error: () => {
+          this.editBusy.set(false);
+          this.feedback.set('Echec de la mise a jour.');
+        },
+      });
   }
 
   openActingModal(user: AdminUserRowDto): void {
