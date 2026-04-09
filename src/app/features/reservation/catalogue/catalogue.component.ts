@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, isDevMode, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 
-import { RessourcesService } from '../../../core/api/api/ressources.service';
-import { PagedResponseResourceDto } from '../../../core/api/model/pagedResponseResourceDto';
-import { ResourceDto } from '../../../core/api/model/resourceDto';
+import { ResourceDto as OpenApiResourceDto } from '../../../core/api/model/resourceDto';
+import { ResourceService } from '../../../core/api/resource.service';
+import { ResourceDto } from '../../../core/api/models/resource.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservationPricingGroup, resolveResourcePricing } from './resource-pricing.utils';
 import {
@@ -57,8 +58,8 @@ interface CatalogueResource {
   overlayBadges: CoverOverlayBadge[];
   pricePerBooking: number;
   depositAmount: number;
-  /** Données brutes du contrat OpenAPI (référence pour prix / détail). */
-  source: ResourceDto;
+  /** Données brutes alignées OpenAPI (référence pour prix / détail). */
+  source: OpenApiResourceDto;
 }
 
 @Component({
@@ -69,7 +70,7 @@ interface CatalogueResource {
   styleUrl: './catalogue.component.scss',
 })
 export class CatalogueComponent {
-  private readonly ressourcesService = inject(RessourcesService);
+  private readonly resourceService = inject(ResourceService);
   private readonly authService = inject(AuthService);
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
@@ -121,33 +122,47 @@ export class CatalogueComponent {
 
   readonly totalResources = computed(() => this.filteredResources().length);
   readonly currentUser = this.authService.currentUser;
-  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
+  readonly isAuthenticated = this.authService.isSessionActive;
 
   constructor() {
-    this.ressourcesService
-      .getResources(undefined, undefined, undefined, undefined, 0, 100, 'body', false, {
-        transferCache: false,
-      })
-      .pipe(takeUntilDestroyed())
+    this.resourceService
+      .getAll()
+      .pipe(
+        takeUntilDestroyed(),
+        finalize(() => this.loading.set(false))
+      )
       .subscribe({
-        next: (response: PagedResponseResourceDto) => {
-          const rows = response.content ?? [];
-          this.resources.set(
-            rows
-              .filter(
-                (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
-              )
-              .map(resource => this.mapResource(resource))
+        next: rows => {
+          const filtered = rows.filter(
+            (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
           );
-          this.loading.set(false);
+          if (isDevMode()) {
+            console.debug(
+              '[Agora][Catalogue] rows recus',
+              rows.length,
+              '→ apres filtre',
+              filtered.length
+            );
+            if (rows.length > 0 && filtered.length === 0) {
+              console.warn('[Agora][Catalogue] TOUS les rows ont ete filtres (id vide ?)', rows);
+            }
+          }
+          this.resources.set(filtered.map(resource => this.mapResource(resource)));
         },
         error: (error: HttpErrorResponse) => {
+          if (isDevMode()) {
+            console.error(
+              '[Agora][Catalogue] erreur chargement ressources',
+              error.status,
+              error.message,
+              error
+            );
+          }
           const message =
             error.status === 0
               ? "Impossible de joindre l'API (backend arrete ou mauvais port sur l'hote). Docker : verifier BACKEND_PORT dans .env (souvent 8080) et que le proxy (proxy.conf.js) utilise le meme port."
               : error.message || 'Impossible de charger le catalogue.';
           this.errorMessage.set(message);
-          this.loading.set(false);
         },
       });
   }
@@ -201,6 +216,7 @@ export class CatalogueComponent {
   }
 
   private mapResource(resource: ResourceDto): CatalogueResource {
+    const api = resource as unknown as OpenApiResourceDto;
     const id = String(resource.id);
     const description = resource.description?.trim() || 'Description indisponible.';
     const accessibilityTags = resource.accessibilityTags ?? [];
@@ -214,21 +230,21 @@ export class CatalogueComponent {
       name: resource.name ?? 'Ressource',
       description,
       family,
-      typeLabel: getResourceTypeLabel(resource.resourceType),
+      typeLabel: getResourceTypeLabel(api.resourceType),
       coverTheme: getResourceCoverTheme(id),
       imageUrl,
-      tags: getResourceTags(resource),
+      tags: getResourceTags(api),
       features: accessibilityTags,
-      overlayBadges: CatalogueComponent.buildOverlayBadges(family, resource, accessibilityTags),
-      pricePerBooking: getResourcePrice(resource),
+      overlayBadges: CatalogueComponent.buildOverlayBadges(family, api, accessibilityTags),
+      pricePerBooking: getResourcePrice(api),
       depositAmount: Math.round(depositAmountCents / 100),
-      source: resource,
+      source: api,
     };
   }
 
   private static buildOverlayBadges(
     family: 'ROOM' | 'EQUIPMENT',
-    resource: ResourceDto,
+    resource: OpenApiResourceDto,
     accessibilityTags: string[]
   ): CoverOverlayBadge[] {
     const badges: CoverOverlayBadge[] = [];

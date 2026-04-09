@@ -1,36 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { LocalTime } from '../../../core/api/model/localTime';
+import { ReservationListItemDto } from '../../../core/api/model/reservationListItemDto';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservationService } from '../reservation.service';
 
 type ReservationDisplayStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED';
 type ReservationPaymentStatus = 'PAID' | 'PENDING' | 'EXEMPT';
-type ReservationApiStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED';
-type ReservationDepositStatus = 'DEPOSIT_PAID' | 'DEPOSIT_PENDING' | 'DEPOSIT_EXEMPT';
-
-interface ReservationsResponse {
-  content: ReservationApiItem[];
-}
-
-interface ReservationApiItem {
-  id: string;
-  resourceName: string;
-  resourceType: string;
-  date: string;
-  slotStart: string;
-  slotEnd: string;
-  status: ReservationApiStatus;
-  depositStatus: ReservationDepositStatus;
-  depositAmountCents: number;
-  depositAmountFullCents: number;
-  discountLabel?: string;
-  createdAt: string;
-}
+/** Statuts renvoyés par l’API (liste / détail). */
+type ReservationApiStatus =
+  | 'CONFIRMED'
+  | 'PENDING_VALIDATION'
+  | 'PENDING_DOCUMENT'
+  | 'CANCELLED'
+  | 'REJECTED';
+type ReservationDepositStatus =
+  | 'DEPOSIT_PAID'
+  | 'DEPOSIT_PENDING'
+  | 'DEPOSIT_EXEMPT'
+  | 'EXEMPT'
+  | 'REFUNDED'
+  | 'WAIVED';
 
 interface ReservationTimelineStep {
   label: string;
@@ -62,7 +57,6 @@ interface ReservationCard {
 })
 export class MyReservationsComponent {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly reservationService = inject(ReservationService);
 
@@ -224,8 +218,8 @@ export class MyReservationsComponent {
     this.expandedReservationId.set(null);
     this.reservationIdToCancel.set(null);
 
-    this.http
-      .get<ReservationsResponse>('/assets/mocks/api/reservations.get.json')
+    this.reservationService
+      .listMyReservations(0, 50)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: response => {
@@ -243,26 +237,40 @@ export class MyReservationsComponent {
       });
   }
 
-  private mapReservation(item: ReservationApiItem): ReservationCard {
+  private mapReservation(item: ReservationListItemDto): ReservationCard {
     const depositEuros = Math.round((item.depositAmountCents ?? 0) / 100);
     const amountEuros = Math.round(
       Math.max((item.depositAmountFullCents ?? 0) - (item.depositAmountCents ?? 0), 0) / 100
     );
+    const status = (item.status ?? 'PENDING_VALIDATION') as ReservationApiStatus;
 
     return {
-      id: item.id,
-      resourceName: item.resourceName,
-      status: item.status,
-      reservationDate: item.date,
-      startTime: item.slotStart,
-      endTime: item.slotEnd,
+      id: item.id ?? '',
+      resourceName: item.resourceName ?? '',
+      status: this.toDisplayStatus(status),
+      reservationDate: item.date ?? '',
+      startTime: this.formatSlotTime(item.slotStart),
+      endTime: this.formatSlotTime(item.slotEnd),
       amountEuros,
       depositEuros,
-      paymentStatus: this.mapPaymentStatus(item.depositStatus, depositEuros),
+      paymentStatus: this.mapPaymentStatus(
+        (item.depositStatus ?? 'DEPOSIT_PENDING') as ReservationDepositStatus,
+        depositEuros
+      ),
       comment: this.buildComment(item),
-      createdAt: item.createdAt,
+      createdAt: item.createdAt ?? '',
       timeline: this.buildTimeline(item),
     };
+  }
+
+  private toDisplayStatus(status: ReservationApiStatus): ReservationDisplayStatus {
+    if (status === 'CANCELLED') {
+      return 'CANCELLED';
+    }
+    if (status === 'CONFIRMED') {
+      return 'CONFIRMED';
+    }
+    return 'PENDING';
   }
 
   private mapPaymentStatus(
@@ -273,27 +281,44 @@ export class MyReservationsComponent {
       return 'PAID';
     }
 
-    if (depositStatus === 'DEPOSIT_EXEMPT' || depositEuros === 0) {
+    if (depositStatus === 'DEPOSIT_EXEMPT' || depositStatus === 'EXEMPT' || depositEuros === 0) {
       return 'EXEMPT';
+    }
+
+    if (depositStatus === 'REFUNDED' || depositStatus === 'WAIVED') {
+      return 'PENDING';
     }
 
     return 'PENDING';
   }
 
-  private buildComment(item: ReservationApiItem): string {
+  private formatSlotTime(value: string | LocalTime | undefined): string {
+    if (value === undefined || value === null) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value.length >= 8 && value.includes(':') ? value.slice(0, 5) : value;
+    }
+    const h = value.hour ?? 0;
+    const m = value.minute ?? 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  private buildComment(item: ReservationListItemDto): string {
     if (item.discountLabel) {
       return `Tarification appliquee : ${item.discountLabel}`;
     }
 
-    if (item.resourceType === 'IMMOBILIER') {
+    if (item.resourceType === ReservationListItemDto.ResourceTypeEnum.Immobilier) {
       return 'Reservation de salle en attente des prochaines etapes administratives.';
     }
 
     return 'Reservation de materiel en cours de traitement.';
   }
 
-  private buildTimeline(item: ReservationApiItem): ReservationTimelineStep[] {
-    const createdAtLabel = this.formatCreatedAt(item.createdAt);
+  private buildTimeline(item: ReservationListItemDto): ReservationTimelineStep[] {
+    const createdAtLabel = this.formatCreatedAt(item.createdAt ?? '');
+    const depositSt = item.depositStatus as ReservationDepositStatus | undefined;
 
     if (item.status === 'CONFIRMED') {
       return [
@@ -302,12 +327,12 @@ export class MyReservationsComponent {
         {
           label: 'Paiement et caution',
           date:
-            item.depositStatus === 'DEPOSIT_PAID'
+            depositSt === 'DEPOSIT_PAID'
               ? 'Paiement enregistre'
-              : item.depositStatus === 'DEPOSIT_EXEMPT'
+              : depositSt === 'DEPOSIT_EXEMPT' || depositSt === 'EXEMPT'
                 ? 'Aucun depot requis'
                 : 'Depot a effectuer',
-          completed: item.depositStatus !== 'DEPOSIT_PENDING',
+          completed: depositSt !== 'DEPOSIT_PENDING' && depositSt !== 'REFUNDED',
         },
       ];
     }
@@ -325,7 +350,7 @@ export class MyReservationsComponent {
       { label: 'Instruction en cours', date: 'Analyse de la demande', completed: false },
       {
         label: 'Paiement et caution',
-        date: item.depositStatus === 'DEPOSIT_PENDING' ? 'En attente de validation' : 'A confirmer',
+        date: depositSt === 'DEPOSIT_PENDING' ? 'En attente de validation' : 'A confirmer',
         completed: false,
       },
     ];

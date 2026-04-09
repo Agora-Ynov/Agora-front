@@ -188,18 +188,30 @@
               [class.calendar-cell--muted]="!cell.inCurrentMonth"
               [class.calendar-cell--today]="cell.isToday"
               [class.calendar-cell--blackout]="cell.isBlackout"
+              [class.calendar-cell--interactive]="cell.inCurrentMonth"
+              [class.calendar-cell--picked]="selectedDayIso() === cell.isoDate"
+              [attr.tabindex]="cell.inCurrentMonth ? 0 : -1"
+              [attr.role]="cell.inCurrentMonth ? 'button' : null"
+              [attr.aria-pressed]="cell.inCurrentMonth && selectedDayIso() === cell.isoDate"
+              [attr.aria-label]="
+                cell.inCurrentMonth ? 'Ouvrir le detail du jour ' + cell.dayNumber : null
+              "
+              (click)="onCellClick(cell, $event)"
+              (keydown)="onCellKeydown($event, cell)"
             >
               <span class="calendar-cell__day">{{ cell.dayNumber }}</span>
 
               @if (cell.isBlackout) {
                 <div class="calendar-cell__status calendar-cell__status--blackout">
                   <span class="calendar-cell__marker"></span>
-                  <span>{{ cell.blackoutReason || 'Blackout' }}</span>
+                  <span class="calendar-cell__status-text">{{
+                    cell.blackoutReason || 'Fermeture'
+                  }}</span>
                 </div>
               } @else if (cell.isReserved) {
                 <div class="calendar-cell__status calendar-cell__status--reserved">
                   <span class="calendar-cell__marker"></span>
-                  <span>Reserve</span>
+                  <span class="calendar-cell__status-text">Indisponible</span>
                 </div>
               } @else if (cell.availableCount > 0) {
                 <div class="calendar-cell__status calendar-cell__status--available">
@@ -209,22 +221,78 @@
             </article>
           }
         </div>
+
+        @if (selectedDayPanel(); as detail) {
+          <aside class="calendar-day-panel" aria-live="polite">
+            <div class="calendar-day-panel__head">
+              <h3 class="calendar-day-panel__title">{{ detail.labelDate }}</h3>
+              <button
+                type="button"
+                class="calendar-day-panel__close"
+                (click)="closeDayPanel()"
+                aria-label="Fermer le detail du jour"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M7 7L17 17M17 7L7 17"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            @if (detail.isBlackout) {
+              <p class="calendar-day-panel__emphasis">
+                {{ detail.blackoutReason || 'Fermeture exceptionnelle' }}
+              </p>
+            } @else if (detail.hasReservedSlots && !canViewReservationDetails()) {
+              <p class="calendar-day-panel__muted">Indisponible</p>
+            } @else if (detail.hasReservedSlots && canViewReservationDetails()) {
+              <p class="calendar-day-panel__lead">Creneaux occupes :</p>
+              <ul class="calendar-day-panel__list">
+                @for (line of detail.reservedLines; track line) {
+                  <li>{{ line }}</li>
+                }
+              </ul>
+            } @else if (detail.availableCount > 0) {
+              <p class="calendar-day-panel__emphasis">
+                {{ detail.availableCount }} creneau(x) disponible(s) sur cette ressource / filtre.
+              </p>
+            } @else {
+              <p class="calendar-day-panel__muted">Aucun creneau sur cette vue pour ce jour.</p>
+            }
+          </aside>
+        }
       }
     </section>
 
     <section class="upcoming-panel">
-      <h2>Prochaines reservations confirmees</h2>
+      <h2>Creneaux indisponibles ce mois-ci</h2>
+      <p class="upcoming-panel__hint">
+        Donnees issues du calendrier (meme source que la grille). Comptes demo : voir seeds back
+        (profil dev).
+      </p>
 
       <div class="upcoming-list">
-        @for (reservation of upcomingReservations; track reservation.id) {
-          <article class="upcoming-item">
-            <div>
-              <strong>{{ reservation.resourceName }}</strong>
-              <p>{{ reservation.dateLabel }}</p>
-            </div>
-
-            <span class="upcoming-item__status">{{ reservation.statusLabel }}</span>
+        @for (row of occupiedSlotsPreview(); track row.id) {
+          <article
+            class="upcoming-item"
+            [class.upcoming-item--public]="!canViewReservationDetails()"
+          >
+            @if (canViewReservationDetails()) {
+              <div>
+                <strong>{{ row.resourceName }}</strong>
+                <p>{{ row.detailLine }}</p>
+              </div>
+              <span class="upcoming-item__status">Indisponible</span>
+            } @else {
+              <p class="upcoming-item__public-line">Indisponible</p>
+            }
           </article>
+        } @empty {
+          <p class="upcoming-panel__empty">Aucun creneau occupe sur cette vue.</p>
         }
       </div>
     </section>
@@ -237,16 +305,5 @@
 
       <a routerLink="/catalogue" class="calendar-cta__button">Voir le catalogue</a>
     </section>
-
-    <footer class="calendar-footer">
-      <div>
-        <strong>Agora - Service des Reservations</strong>
-        <p>&copy; 2026 Tous droits reserves</p>
-      </div>
-      <div>
-        <strong>Horaires d'ouverture : Lun-Ven 9h-17h</strong>
-        <p>Contact : 01 23 45 67 89</p>
-      </div>
-    </footer>
   </main>
 </section>

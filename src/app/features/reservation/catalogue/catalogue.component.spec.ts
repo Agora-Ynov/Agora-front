@@ -1,12 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { provideHttpClient } from '@angular/common/http';
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { RessourcesService } from '../../../core/api/api/ressources.service';
-import { PagedResponseResourceDto } from '../../../core/api/model/pagedResponseResourceDto';
-import { ResourceDto } from '../../../core/api/model/resourceDto';
+import { ResourceDto } from '../../../core/api/models/resource.model';
+import { ResourceService } from '../../../core/api/resource.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CatalogueComponent } from './catalogue.component';
 
@@ -19,48 +18,43 @@ type CatalogueMapTestApi = {
   };
 };
 
-const mockResources: PagedResponseResourceDto = {
-  content: [
-    {
-      id: 'r001',
-      name: 'Salle des fetes - Grande salle',
-      resourceType: 'IMMOBILIER',
-      capacity: 250,
-      description: 'Grande salle pour evenements.',
-      depositAmountCents: 15000,
-      imageUrl: 'https://example.test/salle.jpg',
-      accessibilityTags: ['PMR_ACCESS', 'PARKING', 'SOUND_SYSTEM'],
-      isActive: true,
-    },
-    {
-      id: 'r005',
-      name: 'Sono portable',
-      resourceType: 'MOBILIER',
-      description: 'Systeme de sonorisation professionnel.',
-      depositAmountCents: 20000,
-      imageUrl: 'https://example.test/sono.jpg',
-      accessibilityTags: ['SOUND_SYSTEM'],
-      isActive: true,
-    },
-    {
-      id: 'r999',
-      name: 'Archive',
-      resourceType: 'MOBILIER',
-      description: 'Inactive resource.',
-      depositAmountCents: 1000,
-      imageUrl: 'https://example.test/archive.jpg',
-      accessibilityTags: [],
-      isActive: false,
-    },
-  ],
-  totalElements: 3,
-  totalPages: 1,
-  page: 0,
-  size: 20,
-};
+const mockResources: ResourceDto[] = [
+  {
+    id: 'r001',
+    name: 'Salle des fetes - Grande salle',
+    resourceType: 'IMMOBILIER',
+    capacity: 250,
+    description: 'Grande salle pour evenements.',
+    depositAmountCents: 15000,
+    imageUrl: 'https://example.test/salle.jpg',
+    accessibilityTags: ['PMR_ACCESS', 'PARKING', 'SOUND_SYSTEM'],
+    isActive: true,
+  },
+  {
+    id: 'r005',
+    name: 'Sono portable',
+    resourceType: 'MOBILIER',
+    description: 'Systeme de sonorisation professionnel.',
+    depositAmountCents: 20000,
+    imageUrl: 'https://example.test/sono.jpg',
+    accessibilityTags: ['SOUND_SYSTEM'],
+    isActive: true,
+  },
+  {
+    id: 'r999',
+    name: 'Archive',
+    resourceType: 'MOBILIER',
+    description: 'Inactive resource.',
+    depositAmountCents: 1000,
+    imageUrl: 'https://example.test/archive.jpg',
+    accessibilityTags: [],
+    isActive: false,
+  },
+];
 
 const mockAuthService = {
   currentUser: signal(null).asReadonly(),
+  isSessionActive: computed(() => false),
   isAuthenticated: () => false,
   logout: jest.fn(),
 };
@@ -73,9 +67,9 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: RessourcesService,
+          provide: ResourceService,
           useValue: {
-            getResources: () => of(mockResources),
+            getAll: () => of(mockResources),
           },
         },
         {
@@ -120,9 +114,9 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: RessourcesService,
+          provide: ResourceService,
           useValue: {
-            getResources: () => of(mockResources),
+            getAll: () => of(mockResources),
           },
         },
         {
@@ -161,9 +155,9 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: RessourcesService,
+          provide: ResourceService,
           useValue: {
-            getResources: () => of(mockResources),
+            getAll: () => of(mockResources),
           },
         },
         {
@@ -207,9 +201,9 @@ describe('CatalogueComponent', () => {
         provideHttpClient(),
         provideRouter([]),
         {
-          provide: RessourcesService,
+          provide: ResourceService,
           useValue: {
-            getResources: () =>
+            getAll: () =>
               throwError(
                 () =>
                   new HttpErrorResponse({

@@ -72,12 +72,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/quotas',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/quotas/admin-quotas.component').then(m => m.AdminQuotasComponent),
-  },
-  {
     path: 'admin/blackouts',
     canActivate: [adminGuard],
     loadComponent: () =>

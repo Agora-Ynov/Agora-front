@@ -22,6 +22,8 @@ import { Observable } from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
+import { CalendarResponseDto } from '../model/calendarResponseDto';
+// @ts-ignore
 import { PagedResponseResourceDto } from '../model/pagedResponseResourceDto';
 // @ts-ignore
 import { ResourceDto } from '../model/resourceDto';
@@ -195,6 +197,119 @@ export class RessourcesService extends BaseService {
     const { basePath, withCredentials } = this.configuration;
     return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
+      responseType: <any>responseType_,
+      ...(withCredentials ? { withCredentials } : {}),
+      headers: localVarHeaders,
+      observe: observe,
+      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+      reportProgress: reportProgress,
+    });
+  }
+
+  /**
+   * Vue calendrier mensuelle
+   * Créneaux par ressource pour un mois donné (lecture). Paramètre optionnel resourceId pour filtrer.
+   * @endpoint get /api/calendar
+   * @param year Année
+   * @param month Mois (1-12)
+   * @param resourceId Filtrer sur une ressource (optionnel)
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public getCalendar(
+    year: number,
+    month: number,
+    resourceId?: string,
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<CalendarResponseDto>;
+  public getCalendar(
+    year: number,
+    month: number,
+    resourceId?: string,
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<CalendarResponseDto>>;
+  public getCalendar(
+    year: number,
+    month: number,
+    resourceId?: string,
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<CalendarResponseDto>>;
+  public getCalendar(
+    year: number,
+    month: number,
+    resourceId?: string,
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
+    if (year === null || year === undefined) {
+      throw new Error('Required parameter year was null or undefined when calling getCalendar.');
+    }
+    if (month === null || month === undefined) {
+      throw new Error('Required parameter month was null or undefined when calling getCalendar.');
+    }
+
+    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+    localVarQueryParameters = this.addToHttpParams(
+      localVarQueryParameters,
+      'year',
+      <any>year,
+      QueryParamStyle.Form,
+      true
+    );
+
+    localVarQueryParameters = this.addToHttpParams(
+      localVarQueryParameters,
+      'month',
+      <any>month,
+      QueryParamStyle.Form,
+      true
+    );
+
+    localVarQueryParameters = this.addToHttpParams(
+      localVarQueryParameters,
+      'resourceId',
+      <any>resourceId,
+      QueryParamStyle.Form,
+      true
+    );
+
+    let localVarHeaders = this.defaultHeaders;
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/calendar`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<CalendarResponseDto>('get', `${basePath}${localVarPath}`, {
+      context: localVarHttpContext,
+      params: localVarQueryParameters.toHttpParams(),
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,

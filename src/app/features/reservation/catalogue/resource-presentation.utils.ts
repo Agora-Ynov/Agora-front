@@ -43,8 +43,13 @@ export function getFeatureCompactLabel(feature: string): string {
   return featureCompactLabelMap[feature] ?? getFeatureLabel(feature);
 }
 
-export function getResourceTypeLabel(resourceType: ResourceDto['resourceType']): string {
-  return resourceType === 'IMMOBILIER' ? 'Salle' : 'Materiel';
+export function getResourceTypeLabel(
+  resourceType: ResourceDto['resourceType'] | undefined | null
+): string {
+  if (resourceType === 'IMMOBILIER') {
+    return 'Salle';
+  }
+  return 'Materiel';
 }
 
 export function getResourceDisplayName(resource: ResourceDto): string {

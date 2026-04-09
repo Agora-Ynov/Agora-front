@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { ApiErrorResponse } from '../../../core/auth/auth.model';
+import { messageFromApiError } from '../../../core/auth/api-error.util';
 
 @Component({
   selector: 'app-login',
@@ -50,10 +49,9 @@ export class LoginComponent {
           this.isSubmitting = false;
           void this.router.navigate(['/catalogue']);
         },
-        error: (error: HttpErrorResponse) => {
+        error: (error: unknown) => {
           this.isSubmitting = false;
-          const apiError = error.error as ApiErrorResponse;
-          this.errorMessage = apiError?.message ?? 'Une erreur est survenue lors de la connexion.';
+          this.errorMessage = messageFromApiError(error);
         },
       });
   }

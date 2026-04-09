@@ -13,7 +13,8 @@ import { Configuration } from './configuration';
 import { OpenApiHttpParams, QueryParamStyle, concatHttpParamsObject } from './query.params';
 
 export class BaseService {
-  protected basePath = 'http://127.0.0.1:8082';
+  /** Défaut relatif (dev + proxy) — évite CORS si `Configuration.basePath` est absent. Regén. OpenAPI peut réécrire. */
+  protected basePath = '';
   public defaultHeaders = new HttpHeaders();
   public configuration: Configuration;
   public encoder: HttpParameterCodec;
@@ -62,11 +63,17 @@ export class BaseService {
       return httpParams.append(key, JSON.stringify(value));
     } else {
       // Form-style, SpaceDelimited or PipeDelimited
-
-      if (Object(value) !== value) {
-        // If it is a primitive type, add its string representation
-        return httpParams.append(key, value.toString());
-      } else if (value instanceof Date) {
+      // Primitives : inclure 0 / false (Object(0) !== 0 est vrai → ancien code cassait page=0, size, etc.)
+      const primitive = typeof value;
+      if (
+        primitive === 'string' ||
+        primitive === 'number' ||
+        primitive === 'boolean' ||
+        primitive === 'bigint'
+      ) {
+        return httpParams.append(key, String(value));
+      }
+      if (value instanceof Date) {
         return httpParams.append(key, value.toISOString());
       } else if (Array.isArray(value)) {
         // Otherwise, if it's an array, add each element.

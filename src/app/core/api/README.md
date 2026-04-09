@@ -1,6 +1,6 @@
 # @
 
-Backend de réservation de ressources pour une mairie
+Backend de réservation de ressources pour une mairie.  Authentification : Bearer JWT (`Authorization: Bearer <accessToken>`), refresh HttpOnly sur `/api/auth/refresh`.  Les schémas reflètent le contrat fonctionnel (endpoints, DTOs). Documentation interactive : `/swagger-ui.html`, OpenAPI JSON : `/v3/api-docs`. 
 
 The version of the OpenAPI document: 1.0.0
 

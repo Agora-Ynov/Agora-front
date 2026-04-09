@@ -1,5 +1,9 @@
-export const environment = {
+import type { AgoraEnvironment } from './agora-environment';
+
+export const environment: AgoraEnvironment = {
   production: false,
+  /** Logs console pour le calendrier (désactivé en prod). */
+  debugCalendar: true,
   /**
    * Chaîne vide en dev : les appels vont vers `/api/...` sur l’origine du `ng serve`
    * (ex. http://localhost:4200) et le **proxy** (`proxy.conf.js`) relaie vers le back.

@@ -143,7 +143,7 @@
       </nav>
 
       <div class="header-actions">
-        <ng-container *ngIf="currentUser(); else guestActions">
+        @if (currentUser()) {
           <a routerLink="/account" class="user-name" (click)="closeMenu()">
             <span class="user-name__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
@@ -184,12 +184,12 @@
             </span>
             <span>Deconnexion</span>
           </button>
-        </ng-container>
-
-        <ng-template #guestActions>
+        } @else if (isSessionActive()) {
+          <span class="action-link action-link--pending" aria-busy="true">Chargement…</span>
+        } @else {
           <a routerLink="/login" class="action-link" (click)="closeMenu()">Connexion</a>
           <a routerLink="/register" class="action-btn" (click)="closeMenu()">Inscription</a>
-        </ng-template>
+        }
       </div>
     </div>
   </div>

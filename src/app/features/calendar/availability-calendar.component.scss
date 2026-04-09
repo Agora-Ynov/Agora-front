@@ -240,11 +240,116 @@
   color: #334155;
 }
 
+.calendar-cell--interactive {
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    border-color: #c7d2e0;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+}
+
+.calendar-cell--picked {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.22);
+}
+
+.calendar-cell__status-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .calendar-cell__marker {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
   background: currentColor;
+}
+
+.calendar-day-panel {
+  margin-top: 1.25rem;
+  padding: 1.2rem 1.35rem 1.35rem;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.calendar-day-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-day-panel__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: capitalize;
+}
+
+.calendar-day-panel__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.calendar-day-panel__emphasis {
+  margin: 0.85rem 0 0;
+  font-size: 1rem;
+  color: #0f172a;
+  line-height: 1.45;
+}
+
+.calendar-day-panel__muted {
+  margin: 0.85rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.calendar-day-panel__lead {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.calendar-day-panel__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #0f172a;
+  line-height: 1.5;
 }
 
 .upcoming-panel {
@@ -261,6 +366,19 @@
   margin: 0;
   font-size: 1.2rem;
   font-weight: 800;
+}
+
+.upcoming-panel__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.upcoming-panel__empty {
+  margin: 0.75rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
 }
 
 .upcoming-list {
@@ -299,6 +417,18 @@
   color: #16a34a;
   background: #f0fdf4;
   font-weight: 600;
+}
+
+.upcoming-item--public {
+  justify-content: center;
+  padding: 1rem 1.25rem;
+}
+
+.upcoming-item__public-line {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #475569;
 }
 
 .calendar-cta {

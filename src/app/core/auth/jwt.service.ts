@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { TokenPayload } from './auth.model';
 
 const ACCESS_TOKEN_KEY = 'agora_access_token';
@@ -6,6 +6,9 @@ const REFRESH_TOKEN_KEY = 'agora_refresh_token';
 
 @Injectable({ providedIn: 'root' })
 export class JwtService {
+  /** Incrémenté à chaque changement de tokens pour des `computed` réactifs côté UI. */
+  readonly tokenRevision = signal(0);
+
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
   }
@@ -17,11 +20,13 @@ export class JwtService {
   setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    this.tokenRevision.update(v => v + 1);
   }
 
   clearTokens(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    this.tokenRevision.update(v => v + 1);
   }
 
   decodeToken(token: string): TokenPayload | null {
