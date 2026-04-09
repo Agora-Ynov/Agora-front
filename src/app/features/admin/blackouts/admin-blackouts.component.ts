@@ -229,9 +229,7 @@ export class AdminBlackoutsComponent {
       blackouts: this.blackoutService
         .getAll()
         .pipe(catchError(() => of([] as BlackoutPeriodDto[]))),
-      resources: this.resourceService
-        .getAll()
-        .pipe(catchError(() => of([] as ResourceDto[]))),
+      resources: this.resourceService.getAll().pipe(catchError(() => of([] as ResourceDto[]))),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({

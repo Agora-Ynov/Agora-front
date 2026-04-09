@@ -104,7 +104,10 @@ export class MyReservationsComponent {
       ),
       this.reload$
     )
-      .pipe(switchMap(() => this.fetchReservationList()), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        switchMap(() => this.fetchReservationList()),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe();
   }
 

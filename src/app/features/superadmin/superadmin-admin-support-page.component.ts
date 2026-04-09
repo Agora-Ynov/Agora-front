@@ -41,7 +41,12 @@ export class SuperadminAdminSupportPageComponent {
 
   /** Déjà promus ADMIN_SUPPORT (pour désactiver les boutons). */
   private readonly adminSupportUserIds = computed(
-    () => new Set(this.users().map(u => u.id).filter((id): id is string => !!id))
+    () =>
+      new Set(
+        this.users()
+          .map(u => u.id)
+          .filter((id): id is string => !!id)
+      )
   );
 
   readonly filteredCouncilMembers = computed(() => {
@@ -97,10 +102,12 @@ export class SuperadminAdminSupportPageComponent {
           if (!council?.id) {
             return of<AdminGroupMemberResponseDto[] | null>(null);
           }
-          return this.adminGroups.listMembers(council.id, 'body', false, { transferCache: false }).pipe(
-            map(members => (members ?? []) as AdminGroupMemberResponseDto[]),
-            catchError(() => of<AdminGroupMemberResponseDto[] | null>(null))
-          );
+          return this.adminGroups
+            .listMembers(council.id, 'body', false, { transferCache: false })
+            .pipe(
+              map(members => (members ?? []) as AdminGroupMemberResponseDto[]),
+              catchError(() => of<AdminGroupMemberResponseDto[] | null>(null))
+            );
         }),
         takeUntilDestroyed(this.destroyRef)
       )

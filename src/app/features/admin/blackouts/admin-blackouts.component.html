@@ -70,8 +70,8 @@
           <h2>Impact des fermetures</h2>
           <p>
             Les plages definies bloquent les <strong>nouvelles</strong> reservations sur la ou les
-            ressources concernees (ou sur tout le parc si vous choisissez « toutes les ressources »).
-            Les reservations deja confirmees ne sont pas annulees automatiquement.
+            ressources concernees (ou sur tout le parc si vous choisissez « toutes les ressources
+            »). Les reservations deja confirmees ne sont pas annulees automatiquement.
           </p>
         </div>
       </div>
@@ -197,7 +197,10 @@
         <form class="modal-form" [formGroup]="form" (ngSubmit)="submitForm()">
           <label class="form-field">
             <span>Ressource</span>
-            <select formControlName="resourceId" title="Fermeture globale ou limitee a une ressource">
+            <select
+              formControlName="resourceId"
+              title="Fermeture globale ou limitee a une ressource"
+            >
               <option [ngValue]="null">
                 Toutes les ressources (fermeture globale sur la periode)
               </option>

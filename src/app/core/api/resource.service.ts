@@ -51,14 +51,8 @@ export class ResourceService {
           const merged = [...acc, ...chunk];
           const totalPages = response.totalPages ?? 0;
           const hasMore =
-            totalPages > 0
-              ? page + 1 < totalPages
-              : chunk.length >= ResourceService.LIST_PAGE_SIZE;
-          if (
-            !hasMore ||
-            page + 1 >= ResourceService.LIST_MAX_PAGES ||
-            chunk.length === 0
-          ) {
+            totalPages > 0 ? page + 1 < totalPages : chunk.length >= ResourceService.LIST_PAGE_SIZE;
+          if (!hasMore || page + 1 >= ResourceService.LIST_MAX_PAGES || chunk.length === 0) {
             return of(merged);
           }
           return this.loadResourcePages(page + 1, merged);

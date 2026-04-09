@@ -51,7 +51,7 @@ export class WaitlistPageComponent implements OnInit {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: rows => this.entries.set(rows ?? []),
-        error: () => this.error.set('Impossible de charger votre liste d\'attente.'),
+        error: () => this.error.set("Impossible de charger votre liste d'attente."),
       });
   }
 
@@ -73,7 +73,7 @@ export class WaitlistPageComponent implements OnInit {
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => this.reload(),
-        error: () => this.error.set("Inscription impossible (creneau ou droits)."),
+        error: () => this.error.set('Inscription impossible (creneau ou droits).'),
       });
   }
 

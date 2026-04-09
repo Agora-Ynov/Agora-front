@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:59295",
+      "url": "http://localhost:52909",
       "description": "Generated server url"
     }
   ],
@@ -2071,6 +2071,34 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Supprimer définitivement un utilisateur et ses données réservables",
+        "operationId": "purge",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           }
         },
         "security": [

@@ -314,8 +314,7 @@ export class AdminGroupsComponent {
     const name = (formValue.name ?? '').trim();
     const typeDraft = (formValue.groupTypeDraft ?? '').trim();
     const preset = this.resolvePresetFromTypeInput(typeDraft);
-    const apiName =
-      preset != null || !typeDraft ? name : `${name} (${typeDraft})`.slice(0, 200);
+    const apiName = preset != null || !typeDraft ? name : `${name} (${typeDraft})`.slice(0, 200);
     const groupType: AdminGroupFormType = preset ?? 'AUTRE';
 
     const payload = this.buildCreatePayload(apiName, groupType);
