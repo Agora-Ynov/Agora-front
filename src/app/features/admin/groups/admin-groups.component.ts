@@ -3,10 +3,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AdminGroupService } from '../../../core/api/admin-group.service';
+import { UpdateAdminGroupRequestDto } from '../../../core/api/model/updateAdminGroupRequestDto';
 import {
   AdminGroupDto,
   AdminGroupFormType,
   AdminGroupMemberDto,
+  AdminGroupDiscountAppliesTo,
+  AdminGroupDiscountType,
   CreateAdminGroupDto,
 } from '../../../core/api/models/admin-group.model';
 
@@ -15,6 +18,7 @@ type GroupIcon = 'crown' | 'service' | 'group';
 interface AdminGroupCardViewModel {
   id: string;
   name: string;
+  isPreset: boolean;
   badge: string;
   description: string;
   memberCount: number;
@@ -45,15 +49,44 @@ export class AdminGroupsComponent {
   readonly loading = signal(true);
   readonly loadingMembers = signal(false);
   readonly isCreateModalOpen = signal(false);
+  readonly isEditModalOpen = signal(false);
   readonly isCreating = signal(false);
+  readonly isSavingEdit = signal(false);
+  readonly memberBusy = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+  readonly memberUserIdDraft = signal('');
+  readonly editingGroup = signal<AdminGroupDto | null>(null);
 
   readonly createGroupForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(80)]],
     groupType: ['AUTRE' as AdminGroupFormType, [Validators.required]],
     description: ['', [Validators.maxLength(240)]],
   });
+
+  readonly editGroupForm = this.fb.group({
+    name: ['', [Validators.required, Validators.maxLength(80)]],
+    canViewImmobilier: [true],
+    canBookImmobilier: [true],
+    canViewMobilier: [false],
+    canBookMobilier: [false],
+    discountType: ['NONE' as AdminGroupDiscountType],
+    discountValue: [0],
+    discountAppliesTo: ['ALL' as AdminGroupDiscountAppliesTo],
+  });
+
+  readonly discountTypeOptions: Array<{ value: AdminGroupDiscountType; label: string }> = [
+    { value: 'NONE', label: 'Aucune remise' },
+    { value: 'PERCENTAGE', label: 'Pourcentage' },
+    { value: 'FIXED_AMOUNT', label: 'Montant fixe' },
+    { value: 'FULL_EXEMPT', label: 'Exoneration totale' },
+  ];
+
+  readonly discountAppliesOptions: Array<{ value: AdminGroupDiscountAppliesTo; label: string }> = [
+    { value: 'ALL', label: 'Toutes les ressources' },
+    { value: 'IMMOBILIER_ONLY', label: 'Immobilier uniquement' },
+    { value: 'MOBILIER_ONLY', label: 'Mobilier uniquement' },
+  ];
 
   readonly groupTypeOptions: Array<{ value: AdminGroupFormType; label: string }> = [
     { value: 'AUTRE', label: 'Autre' },
@@ -65,6 +98,7 @@ export class AdminGroupsComponent {
     this.groups().map(group => ({
       id: group.id,
       name: group.name,
+      isPreset: group.isPreset,
       badge: this.getBadge(group),
       description: this.getDescription(group),
       memberCount: group.memberCount,
@@ -86,6 +120,7 @@ export class AdminGroupsComponent {
 
     this.selectedGroup.set(group);
     this.groupMembers.set([]);
+    this.memberUserIdDraft.set('');
     this.loadingMembers.set(true);
 
     this.adminGroupService
@@ -100,6 +135,150 @@ export class AdminGroupsComponent {
   closeMembersModal(): void {
     this.selectedGroup.set(null);
     this.groupMembers.set([]);
+    this.memberUserIdDraft.set('');
+  }
+
+  addMemberToSelectedGroup(): void {
+    const group = this.selectedGroup();
+    const raw = this.memberUserIdDraft().trim();
+    if (!group?.id || !raw) {
+      this.errorMessage.set('Saisissez un identifiant utilisateur (UUID).');
+      return;
+    }
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRe.test(raw)) {
+      this.errorMessage.set('UUID utilisateur invalide.');
+      return;
+    }
+    this.errorMessage.set('');
+    this.memberBusy.set(true);
+    this.adminGroupService
+      .addMember(group.id, raw)
+      .pipe(finalize(() => this.memberBusy.set(false)))
+      .subscribe({
+        next: () => {
+          this.memberUserIdDraft.set('');
+          this.successMessage.set('Membre ajoute.');
+          this.openMembers(group.id);
+          this.loadGroups();
+        },
+        error: () => this.errorMessage.set("Impossible d'ajouter ce membre."),
+      });
+  }
+
+  removeMemberFromSelectedGroup(member: AdminGroupMemberDto): void {
+    const group = this.selectedGroup();
+    if (!group?.id || !member.userId) return;
+    if (!globalThis.confirm(`Retirer ${member.firstName} ${member.lastName} du groupe ?`)) {
+      return;
+    }
+    this.memberBusy.set(true);
+    this.adminGroupService
+      .removeMember(group.id, member.userId)
+      .pipe(finalize(() => this.memberBusy.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Membre retire.');
+          this.openMembers(group.id);
+          this.loadGroups();
+        },
+        error: () => this.errorMessage.set('Impossible de retirer ce membre.'),
+      });
+  }
+
+  openEditModal(group: AdminGroupDto): void {
+    if (group.isPreset) {
+      this.errorMessage.set('Les groupes systeme ne peuvent pas etre modifies.');
+      return;
+    }
+    this.editingGroup.set(group);
+    this.editGroupForm.patchValue({
+      name: group.name,
+      canViewImmobilier: group.canViewImmobilier ?? true,
+      canBookImmobilier: group.canBookImmobilier,
+      canViewMobilier: group.canViewMobilier ?? false,
+      canBookMobilier: group.canBookMobilier,
+      discountType: group.discountType,
+      discountValue: group.discountValue,
+      discountAppliesTo: group.discountAppliesTo ?? 'ALL',
+    });
+    this.errorMessage.set('');
+    this.isEditModalOpen.set(true);
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+    this.editingGroup.set(null);
+  }
+
+  submitEditGroup(): void {
+    if (this.editGroupForm.invalid) {
+      this.editGroupForm.markAllAsTouched();
+      return;
+    }
+    const g = this.editingGroup();
+    if (!g?.id) return;
+    const v = this.editGroupForm.getRawValue();
+    const body: UpdateAdminGroupRequestDto = {
+      name: (v.name ?? '').trim(),
+      canViewImmobilier: v.canViewImmobilier ?? undefined,
+      canBookImmobilier: v.canBookImmobilier ?? undefined,
+      canViewMobilier: v.canViewMobilier ?? undefined,
+      canBookMobilier: v.canBookMobilier ?? undefined,
+      discountType: v.discountType as UpdateAdminGroupRequestDto['discountType'],
+      discountValue: v.discountValue ?? undefined,
+      discountAppliesTo: v.discountAppliesTo as UpdateAdminGroupRequestDto['discountAppliesTo'],
+    };
+    this.isSavingEdit.set(true);
+    this.errorMessage.set('');
+    this.adminGroupService
+      .updateGroup(g.id, body)
+      .pipe(finalize(() => this.isSavingEdit.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Groupe mis a jour.');
+          this.closeEditModal();
+          this.loadGroups();
+        },
+        error: () => this.errorMessage.set('Impossible de mettre a jour le groupe.'),
+      });
+  }
+
+  openEditByCardId(groupId: string): void {
+    const g = this.groups().find(x => x.id === groupId);
+    if (g) {
+      this.openEditModal(g);
+    }
+  }
+
+  confirmDeleteByCardId(groupId: string): void {
+    const g = this.groups().find(x => x.id === groupId);
+    if (g) {
+      this.confirmDeleteGroup(g);
+    }
+  }
+
+  confirmDeleteGroup(group: AdminGroupDto): void {
+    if (group.isPreset) {
+      this.errorMessage.set('Les groupes systeme ne peuvent pas etre supprimes.');
+      return;
+    }
+    if (!globalThis.confirm(`Supprimer definitivement le groupe « ${group.name} » ?`)) {
+      return;
+    }
+    this.loading.set(true);
+    this.errorMessage.set('');
+    this.adminGroupService
+      .deleteGroup(group.id)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Groupe supprime.');
+          this.loadGroups();
+        },
+        error: () => this.errorMessage.set('Suppression impossible (membres restants ou droits).'),
+      });
   }
 
   openCreateModal(): void {
@@ -136,15 +315,19 @@ export class AdminGroupsComponent {
       .createGroup(payload)
       .pipe(finalize(() => this.isCreating.set(false)))
       .subscribe({
-        next: createdGroup => {
-          this.groups.set([createdGroup, ...this.groups()]);
+        next: () => {
           this.successMessage.set('Groupe cree avec succes.');
           this.closeCreateModal();
+          this.loadGroups();
         },
         error: () => {
           this.errorMessage.set('Impossible de creer le groupe.');
         },
       });
+  }
+
+  updateMemberUserIdDraft(value: string): void {
+    this.memberUserIdDraft.set(value);
   }
 
   memberRoleLabel(role: AdminGroupMemberDto['role']): string {

@@ -5,8 +5,15 @@
       <p>Tableau de bord de gestion - Administrateur</p>
     </section>
 
+    @if (loadError(); as err) {
+      <div class="admin-load-error" role="alert">{{ err }}</div>
+    }
+    @if (loading()) {
+      <p class="admin-loading">Chargement du tableau de bord...</p>
+    }
+
     <section class="admin-summary" aria-label="Indicateurs administrateur">
-      @for (card of statCards; track card.label) {
+      @for (card of statCards(); track card.label) {
         <article class="summary-card">
           <div class="summary-card__content">
             <p class="summary-card__label">{{ card.label }}</p>
@@ -325,7 +332,7 @@
         <h2>Reservations recentes</h2>
 
         <div class="reservation-list">
-          @for (reservation of recentReservations; track reservation.title + reservation.date) {
+          @for (reservation of recentReservations(); track reservation.id) {
             <div class="reservation-item">
               <div>
                 <strong>{{ reservation.title }}</strong>
@@ -377,29 +384,29 @@
         <div class="stats-block">
           <div class="stats-row">
             <span>Taux de validation</span>
-            <strong>{{ validationRate }}%</strong>
+            <strong>{{ validationRate() }}%</strong>
           </div>
 
           <div class="progress-track" aria-hidden="true">
-            <span class="progress-bar" [style.width.%]="validationRate"></span>
+            <span class="progress-bar" [style.width.%]="validationRate()"></span>
           </div>
 
           <div class="stats-list">
             <div class="stats-row">
               <span>Exonerations appliquees</span>
-              <strong>{{ appliedExemptions }}</strong>
+              <strong>{{ appliedExemptions() }}</strong>
             </div>
             <div class="stats-row">
               <span>Paiements en attente</span>
-              <strong class="stats-row__warning">{{ pendingPayments }}</strong>
+              <strong class="stats-row__warning">{{ pendingPayments() }}</strong>
             </div>
           </div>
 
           <div class="panel-card__separator"></div>
 
           <div class="revenue-block">
-            <span>Revenu total (ce mois)</span>
-            <strong>{{ totalRevenue }}</strong>
+            <span>Indicateur financier</span>
+            <strong>{{ totalRevenueLabel() }}</strong>
           </div>
         </div>
       </article>

@@ -1,0 +1,78 @@
+<section class="superadmin-page">
+  <header class="superadmin-page__hero">
+    <h1>Superadmin — comptes admin support</h1>
+    <p>
+      Liste des utilisateurs avec la promotion <strong>ADMIN_SUPPORT</strong>. Réservé au rôle
+      <strong>SUPERADMIN</strong>.
+    </p>
+  </header>
+
+  @if (error(); as err) {
+    <div class="superadmin-page__alert" role="alert">{{ err }}</div>
+  }
+
+  <section class="superadmin-panel">
+    <h2>Ajouter une promotion</h2>
+    <p class="superadmin-panel__hint">Saisir l’UUID utilisateur (depuis la base ou la fiche admin).</p>
+    <div class="superadmin-promote">
+      <input
+        type="text"
+        class="superadmin-input"
+        placeholder="UUID utilisateur"
+        [ngModel]="promoteUserId()"
+        (ngModelChange)="promoteUserId.set($event)"
+      />
+      <button
+        type="button"
+        class="superadmin-btn superadmin-btn--primary"
+        [disabled]="!promoteUserId().trim() || promoteBusy()"
+        (click)="promote()"
+      >
+        Promouvoir
+      </button>
+    </div>
+  </section>
+
+  <section class="superadmin-panel">
+    <div class="superadmin-panel__head">
+      <h2>Comptes admin support</h2>
+      <button type="button" class="superadmin-btn" (click)="reload()" [disabled]="loading()">
+        Actualiser
+      </button>
+    </div>
+
+    @if (loading()) {
+      <p>Chargement…</p>
+    } @else if (!users().length) {
+      <p class="superadmin-page__muted">Aucun compte admin support pour le moment.</p>
+    } @else {
+      <div class="superadmin-table">
+        <div class="superadmin-table__row superadmin-table__row--head">
+          <span>Nom</span>
+          <span>Email</span>
+          <span>Statut</span>
+          <span></span>
+        </div>
+        @for (u of users(); track u.id) {
+          <div class="superadmin-table__row">
+            <span>
+              <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+              <small class="superadmin-page__muted">{{ u.id }}</small>
+            </span>
+            <span>{{ u.email ?? '—' }}</span>
+            <span>{{ u.status }}</span>
+            <span class="superadmin-table__actions">
+              <button
+                type="button"
+                class="superadmin-btn superadmin-btn--danger"
+                (click)="revoke(u.id)"
+              >
+                Révoquer
+              </button>
+            </span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</section>

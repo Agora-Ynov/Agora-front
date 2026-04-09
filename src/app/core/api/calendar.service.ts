@@ -27,6 +27,8 @@ export class CalendarService {
     return this.http.get<CalendarResponseDto>(url, {
       params,
       withCredentials: true,
+      /** Évite le cache de transfert HTTP : grille bloquée sur d’anciennes données sans erreur visible. */
+      transferCache: false,
     });
   }
 }

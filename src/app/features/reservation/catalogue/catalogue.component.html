@@ -57,7 +57,7 @@
           [disabled]="!hasActiveFilters()"
           (click)="resetFilters()"
         >
-          Matériel
+          Réinitialiser les filtres
         </button>
       </div>
 
@@ -177,7 +177,8 @@
                   @if (isAuthenticated()) {
                     <a
                       class="catalogue-card__button catalogue-card__button--primary"
-                      [routerLink]="['/catalogue', resource.id, 'reserver']"
+                      [routerLink]="['/calendar']"
+                      [queryParams]="{ resourceId: resource.id }"
                     >
                       Réserver
                     </a>

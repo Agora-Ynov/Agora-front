@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
+  RESOURCE_ACCESSIBILITY_OPTIONS,
   ResourceDto,
   ResourceFormValue,
   ResourceType,
@@ -29,13 +30,16 @@ export class ResourceManagementComponent implements OnInit {
   readonly successMessage = signal('');
   readonly editingResourceId = signal<string | null>(null);
 
+  readonly accessibilityOptions = RESOURCE_ACCESSIBILITY_OPTIONS;
+
   readonly form = this.fb.group({
     resourceType: ['IMMOBILIER' as ResourceType, [Validators.required]],
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
     capacity: [null as number | null, [Validators.min(0)]],
     depositAmountEuros: [0 as number | null, [Validators.required, Validators.min(0)]],
-    accessibilityTagsText: [''],
+    rentalAmountEuros: [null as number | null, [Validators.min(0)]],
+    accessibilityTags: [[] as string[]],
     imageUrl: [''],
   });
 
@@ -73,7 +77,8 @@ export class ResourceManagementComponent implements OnInit {
       description: '',
       capacity: null,
       depositAmountEuros: 0,
-      accessibilityTagsText: '',
+      rentalAmountEuros: null,
+      accessibilityTags: [],
       imageUrl: '',
     });
     this.isModalOpen.set(true);
@@ -90,7 +95,8 @@ export class ResourceManagementComponent implements OnInit {
       description: formValue.description,
       capacity: formValue.capacity,
       depositAmountEuros: formValue.depositAmountEuros,
-      accessibilityTagsText: formValue.accessibilityTagsText,
+      rentalAmountEuros: formValue.rentalAmountEuros,
+      accessibilityTags: [...formValue.accessibilityTags],
       imageUrl: formValue.imageUrl ?? '',
     });
 
@@ -169,6 +175,10 @@ export class ResourceManagementComponent implements OnInit {
     return this.resourceService.fromCents(value);
   }
 
+  hasRentalPrice(cents: number | null | undefined): boolean {
+    return cents !== null && cents !== undefined;
+  }
+
   getCapacityLabel(resource: ResourceDto): string {
     if (resource.resourceType === 'IMMOBILIER') {
       return resource.capacity ? `${resource.capacity} pers.` : 'Non renseignee';
@@ -188,5 +198,23 @@ export class ResourceManagementComponent implements OnInit {
 
   get isEditing(): boolean {
     return !!this.editingResourceId();
+  }
+
+  isTagSelected(tagId: string): boolean {
+    const selected = this.form.controls.accessibilityTags.value ?? [];
+    return selected.includes(tagId);
+  }
+
+  toggleAccessibilityTag(tagId: string): void {
+    const control = this.form.controls.accessibilityTags;
+    const current = [...(control.value ?? [])];
+    const i = current.indexOf(tagId);
+    if (i >= 0) {
+      current.splice(i, 1);
+    } else {
+      current.push(tagId);
+    }
+    control.setValue(current);
+    control.markAsDirty();
   }
 }

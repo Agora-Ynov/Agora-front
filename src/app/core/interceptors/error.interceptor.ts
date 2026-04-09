@@ -24,7 +24,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 403:
-          router.navigate(['/unauthorized']);
+          // Laisser le formulaire de réservation afficher l'erreur (groupe / droits).
+          if (!req.url.includes('/api/reservations')) {
+            router.navigate(['/unauthorized']);
+          }
           break;
 
         case 409:

@@ -26,10 +26,25 @@ interface AuditEntryDto {
   bookingRef: string | null;
   resourceName: string | null;
   ipAddress: string;
+  /** Détails métiers (PJ, série, etc.) — pas d’IP réelle côté API pour l’instant. */
+  detailsSummary: string | null;
+}
+
+/** Réponse API (cahier + back paginé). */
+interface AdminAuditApiEntry {
+  id: string;
+  adminName: string;
+  targetName: string | null;
+  action: string;
+  details: Record<string, unknown>;
+  isImpersonation: boolean;
+  performedAt: string;
 }
 
 interface AuditResponse {
-  content: AuditEntryDto[];
+  content: AdminAuditApiEntry[];
+  totalElements?: number;
+  totalPages?: number;
 }
 
 interface AdminUserDto {
@@ -153,6 +168,7 @@ export class AdminAuditPageComponent {
         entry.targetName ?? '',
         entry.bookingRef ?? '',
         entry.resourceName ?? '',
+        entry.detailsSummary ?? '',
         entry.ipAddress,
       ]
         .join(' ')
@@ -164,13 +180,13 @@ export class AdminAuditPageComponent {
 
   constructor() {
     forkJoin({
-      audit: this.api.get<AuditResponse>('/api/admin/audit'),
+      audit: this.api.get<AuditResponse>('/api/admin/audit?page=0&size=100'),
       users: this.api.get<AdminUsersResponse>('/api/admin/users'),
     })
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: ({ audit, users }) => {
-          this.entries.set(audit.content);
+          this.entries.set((audit.content ?? []).map(e => this.mapApiAuditEntry(e)));
           this.suspendedUsers.set(users.content.filter(user => user.status === 'SUSPENDED').length);
           this.loading.set(false);
         },
@@ -180,6 +196,74 @@ export class AdminAuditPageComponent {
           this.loading.set(false);
         },
       });
+  }
+
+  private mapApiAuditEntry(e: AdminAuditApiEntry): AuditEntryDto {
+    const action = e.action ?? '';
+    let category: Exclude<AuditCategory, 'all'> = 'accounts';
+    if (/RESERVATION|BOOKING|SLOT|DOCUMENT|PJ|RESOURCE_CREATED|RESOURCE_UPDATED|RESOURCE_DEACTIVATED/i.test(action)) {
+      category = 'reservations';
+    } else if (/PAYMENT|DEPOSIT|CAUTION/i.test(action)) {
+      category = 'payments';
+    } else if (e.isImpersonation) {
+      category = 'impersonation';
+    } else if (/AFFILIATION|GROUP|MEMBER/i.test(action)) {
+      category = 'affiliations';
+    }
+
+    const details = e.details ?? {};
+    const resourceName =
+      typeof details['resourceName'] === 'string' ? (details['resourceName'] as string) : null;
+    const bookingRef =
+      typeof details['bookingRef'] === 'string' ? (details['bookingRef'] as string) : null;
+    const reservationId =
+      typeof details['reservationId'] === 'string' ? (details['reservationId'] as string) : null;
+    const ipRaw = details['ipAddress'];
+    const ipAddress = typeof ipRaw === 'string' ? ipRaw : '—';
+
+    const detailsSummary = this.buildDetailsSummary(details, reservationId);
+
+    return {
+      id: e.id,
+      category,
+      severity: e.isImpersonation ? 'orange' : 'info',
+      label: action,
+      actorRole: this.mapActorRole(action, e.isImpersonation),
+      title: action,
+      performedAt: e.performedAt,
+      actorName: e.adminName ?? '—',
+      targetName: e.targetName,
+      bookingRef: bookingRef ?? reservationId,
+      resourceName,
+      ipAddress,
+      detailsSummary,
+    };
+  }
+
+  private mapActorRole(action: string, isImpersonation: boolean): string {
+    if (isImpersonation) return 'Impersonation';
+    if (/^(RESERVATION_STATUS_ADMIN|ADMIN_)/.test(action)) return 'Administrateur';
+    if (/^RESOURCE_/.test(action)) return 'Administrateur';
+    if (/^RESERVATION_(CREATED|SERIES_|DOCUMENT)/.test(action)) return 'Utilisateur';
+    return 'Acteur';
+  }
+
+  private buildDetailsSummary(
+    details: Record<string, unknown>,
+    reservationId: string | null
+  ): string | null {
+    const parts: string[] = [];
+    if (reservationId) parts.push(`réservation ${reservationId}`);
+    const docId = details['reservationDocumentId'];
+    if (typeof docId === 'string') parts.push(`document ${docId}`);
+    const relay = details['relayChannel'];
+    if (typeof relay === 'string') parts.push(`canal ${relay}`);
+    const occ = details['occurrenceCount'];
+    if (typeof occ === 'string' || typeof occ === 'number') parts.push(`${occ} occurrence(s)`);
+    const freq = details['frequency'];
+    if (typeof freq === 'string') parts.push(freq);
+    if (parts.length === 0) return null;
+    return parts.join(' · ');
   }
 
   setSearchTerm(value: string): void {

@@ -89,6 +89,13 @@
         </div>
       </div>
 
+      <div class="deposit-block" *ngIf="hasRentalPrice(resource.rentalPriceCents)">
+        <span class="label">Tarif location</span>
+        <div>
+          <strong>{{ getPriceEuros(resource.rentalPriceCents) }}EUR / réservation</strong>
+        </div>
+      </div>
+
       <div class="features-block" *ngIf="getFeatureLabels(resource).length">
         <span class="label">Caracteristiques</span>
         <div class="feature-tags">
@@ -156,12 +163,19 @@
           <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
         </div>
 
-        <!--
-          Champs non présents dans ResourceRequest backend (à réactiver si l’API expose tarif, quantité, exonération) :
-          - quantity (MOBILIER)
-          - basePriceEuros
-          - depositExemptible
-        -->
+        <div class="form-section-title">Tarif de location</div>
+
+        <div class="form-group">
+          <label for="resourceRentalAmount">Montant (EUR) pour une réservation</label>
+          <input
+            id="resourceRentalAmount"
+            type="number"
+            step="0.01"
+            formControlName="rentalAmountEuros"
+            placeholder="Laisser vide si tarif à confirmer au secrétariat"
+          />
+          <small>0 = gratuit. Vide = le catalogue affichera « À confirmer » pour le tarif location.</small>
+        </div>
 
         <div class="form-section-title">Caution</div>
 
@@ -176,16 +190,19 @@
           <small>Laisser a 0 si aucune caution</small>
         </div>
 
-        <div class="form-group">
-          <label for="resourceAccessibilityTags">Caracteristiques</label>
-          <input
-            id="resourceAccessibilityTags"
-            type="text"
-            formControlName="accessibilityTagsText"
-            placeholder="PMR_ACCESS, PARKING, SOUND_SYSTEM"
-          />
-          <small>Utilise les tags API separes par des virgules.</small>
-        </div>
+        <fieldset class="form-group form-fieldset">
+          <legend>Équipements & accessibilité</legend>
+          <div class="accessibility-checkboxes">
+            <label class="checkbox-row" *ngFor="let opt of accessibilityOptions">
+              <input
+                type="checkbox"
+                [checked]="isTagSelected(opt.id)"
+                (change)="toggleAccessibilityTag(opt.id)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+        </fieldset>
 
         <div class="form-group">
           <label for="resourceImageUrl">Image URL</label>

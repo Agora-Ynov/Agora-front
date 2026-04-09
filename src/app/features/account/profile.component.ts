@@ -49,7 +49,16 @@ export class ProfileComponent {
     return user ? `${user.firstName} ${user.lastName}` : 'Utilisateur';
   });
 
-  readonly roleLabel = computed(() => this.mapRoleLabel(this.currentUser()?.role));
+  readonly roleSummary = computed(() => {
+    const user = this.currentUser();
+    if (!user) {
+      return this.mapRoleLabel(undefined);
+    }
+    if (user.membershipRoles.length === 0) {
+      return this.mapRoleLabel(user.role);
+    }
+    return user.membershipRoles.map(r => this.mapRoleLabel(r)).join(' · ');
+  });
   readonly accountTypeLabel = computed(() =>
     this.mapAccountTypeLabel(this.currentUser()?.accountType)
   );
@@ -73,6 +82,8 @@ export class ProfileComponent {
   readonly hasActiveExemption = computed(() => this.exemptions().some(item => item.active));
 
   readonly quickActions = computed<QuickAction[]>(() => {
+    const adminRoute = this.authService.getAdminEntryPath();
+    const adminLabel = this.authService.getAdminNavLabel();
     const actions: QuickAction[] = [
       {
         label: 'Nouvelle reservation',
@@ -93,8 +104,8 @@ export class ProfileComponent {
         icon: 'group',
       },
       {
-        label: 'Administration',
-        route: '/admin',
+        label: adminLabel,
+        route: adminRoute,
         variant: 'secondary',
         adminOnly: true,
       },
@@ -117,8 +128,11 @@ export class ProfileComponent {
 
   private mapRoleLabel(role?: UserRole): string {
     switch (role) {
+      case 'SUPERADMIN':
+        return 'Super administrateur';
       case 'SECRETARY_ADMIN':
       case 'DELEGATE_ADMIN':
+      case 'ADMIN_SUPPORT':
         return 'Administrateur';
       case 'GROUP_MANAGER':
         return 'Responsable de groupe';

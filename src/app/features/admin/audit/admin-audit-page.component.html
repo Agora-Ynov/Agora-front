@@ -319,6 +319,9 @@
                 @if (entry.resourceName) {
                   <span>{{ entry.resourceName }}</span>
                 }
+                @if (entry.detailsSummary) {
+                  <span class="audit-card__details">{{ entry.detailsSummary }}</span>
+                }
                 <span>IP: {{ entry.ipAddress }}</span>
               </div>
             </div>
@@ -339,10 +342,14 @@
       <div class="audit-footnote__content">
         <h2>A propos du journal d'audit (J7)</h2>
         <p>
-          Chaque action sur une <strong>réservation</strong> (création, validation, refus avec
-          motif, annulation, justificatifs, paiement), sur un <strong>compte</strong> (création,
-          suspension, activation) ou lors d'une <strong>impersonation</strong> est tracée en temps
-          réel avec l'identité de l'acteur, l'IP source et un horodatage précis.
+          Chaque action sur une <strong>réservation</strong> (création, série récurrente,
+          annulation de série, validation, refus avec motif, pièces jointes / relais simulé,
+          paiement), sur un <strong>compte</strong> ou lors d'une <strong>impersonation</strong> est
+          tracée avec l'identité de l'acteur et l'horodatage. L'accès à ce journal est réservé aux
+          rôles <strong>SECRETARY_ADMIN</strong>, <strong>ADMIN_SUPPORT</strong> et
+          <strong>SUPERADMIN</strong> (aligné sur l'API). Filtres côté API :
+          <code>adminUserId</code>, <code>targetUserId</code>, <code>impersonationOnly</code>,
+          <code>dateFrom</code>, <code>dateTo</code>.
         </p>
       </div>
     </section>

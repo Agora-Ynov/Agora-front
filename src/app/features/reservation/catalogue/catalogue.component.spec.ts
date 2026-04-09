@@ -92,14 +92,14 @@ describe('CatalogueComponent', () => {
       family: 'ROOM',
       typeLabel: 'Salle',
       depositAmount: 150,
-      pricePerBooking: 75,
+      pricePerBooking: 0,
     });
     expect(component.resources()[1]).toMatchObject({
       id: 'r005',
       family: 'EQUIPMENT',
       typeLabel: 'Materiel',
       depositAmount: 200,
-      pricePerBooking: 100,
+      pricePerBooking: 0,
     });
     expect(component.resources()[2]).toMatchObject({
       id: 'r999',
@@ -191,43 +191,48 @@ describe('CatalogueComponent', () => {
       mappedFallback.coverTheme
     );
     expect(mappedFallback.tags).toEqual(['12 places']);
-    expect(mappedFallback.pricePerBooking).toBe(42);
+    expect(mappedFallback.pricePerBooking).toBe(0);
   });
 
   it('should expose a readable error when mock loading fails', async () => {
-    await TestBed.configureTestingModule({
-      imports: [CatalogueComponent],
-      providers: [
-        provideHttpClient(),
-        provideRouter([]),
-        {
-          provide: ResourceService,
-          useValue: {
-            getAll: () =>
-              throwError(
-                () =>
-                  new HttpErrorResponse({
-                    status: 500,
-                    statusText: 'Server Error',
-                    error: 'boom',
-                  })
-              ),
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await TestBed.configureTestingModule({
+        imports: [CatalogueComponent],
+        providers: [
+          provideHttpClient(),
+          provideRouter([]),
+          {
+            provide: ResourceService,
+            useValue: {
+              getAll: () =>
+                throwError(
+                  () =>
+                    new HttpErrorResponse({
+                      status: 500,
+                      statusText: 'Server Error',
+                      error: 'boom',
+                    })
+                ),
+            },
           },
-        },
-        {
-          provide: AuthService,
-          useValue: mockAuthService,
-        },
-      ],
-    }).compileComponents();
+          {
+            provide: AuthService,
+            useValue: mockAuthService,
+          },
+        ],
+      }).compileComponents();
 
-    const fixture = TestBed.createComponent(CatalogueComponent);
-    const component = fixture.componentInstance;
+      const fixture = TestBed.createComponent(CatalogueComponent);
+      const component = fixture.componentInstance;
 
-    fixture.detectChanges();
+      fixture.detectChanges();
 
-    expect(component.loading()).toBe(false);
-    expect(component.errorMessage()).toContain('Http failure response');
-    expect(component.resources()).toEqual([]);
+      expect(component.loading()).toBe(false);
+      expect(component.errorMessage()).toContain('Http failure response');
+      expect(component.resources()).toEqual([]);
+    } finally {
+      consoleSpy.mockRestore();
+    }
   });
 });

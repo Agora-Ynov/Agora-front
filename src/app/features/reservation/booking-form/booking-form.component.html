@@ -14,7 +14,7 @@
       </section>
     } @else {
       <section class="booking-hero">
-        <h1>Reserver : {{ displayedName() }}</h1>
+        <h1>Reserver : {{ recapResourceName() }}</h1>
         <p>Remplissez le formulaire ci-dessous pour effectuer votre reservation</p>
       </section>
 
@@ -184,6 +184,12 @@
               </label>
             </div>
 
+            @if (reservationDateInPast()) {
+              <p class="booking-submit-hint booking-submit-hint--warning" role="alert">
+                La date choisie est dans le passe : corrigez le debut de reservation pour continuer.
+              </p>
+            }
+
             <label class="check-row">
               <input
                 type="checkbox"
@@ -197,14 +203,33 @@
             </label>
 
             @if (isRecurring()) {
-              <article class="info-box info-box--recurrence">
-                <strong>Reservation recurrente</strong>
-                <p>
-                  La configuration des recurrences (frequence, dates a exclure, nombre maximum
-                  d'occurrences) sera disponible a la prochaine etape. Chaque occurrence sera creee
-                  comme une reservation independante liee par un identifiant de groupe.
+              <div class="recurrence-fields">
+                <label class="field-group">
+                  <span>Frequence *</span>
+                  <select
+                    class="field-group__select"
+                    [value]="recurrenceFrequency()"
+                    (change)="updateRecurrenceFrequency($any($event.target).value)"
+                  >
+                    <option [value]="recurrenceFrequencyOptions.Weekly">Hebdomadaire</option>
+                    <option [value]="recurrenceFrequencyOptions.Biweekly">Toutes les deux semaines</option>
+                    <option [value]="recurrenceFrequencyOptions.Monthly">Mensuelle</option>
+                  </select>
+                </label>
+                <label class="field-group">
+                  <span>Dernier jour de la serie *</span>
+                  <input
+                    type="date"
+                    [value]="recurrenceEndDate()"
+                    (input)="updateRecurrenceEndDate($any($event.target).value)"
+                  />
+                </label>
+                <p class="panel-card__lead recurrence-hint">
+                  Meme horaire que ci-dessus, une reservation par occurrence jusqu'a cette date
+                  (incluse). Les exclusions ponctuelles seront proposees dans une evolution
+                  ulterieure.
                 </p>
-              </article>
+              </div>
             }
           </article>
 
@@ -212,10 +237,10 @@
             <h2>Informations complementaires</h2>
 
             <label class="field-group field-group--stacked">
-              <span>Commentaire ou precisions</span>
+              <span>Objet de la reservation * (visible cote gestion)</span>
               <textarea
                 rows="5"
-                placeholder="Decrivez votre evenement ou ajoutez des informations utiles..."
+                placeholder="Ex. Repetition generale du spectacle, pret materiel pour association..."
                 [value]="notes()"
                 (input)="updateNotes($any($event.target).value)"
               ></textarea>
@@ -248,14 +273,17 @@
                   </svg>
                 </span>
                 <span class="upload-zone__text">Cliquez pour selectionner des fichiers</span>
-                <span class="upload-zone__meta">PDF, JPG, PNG - Max 5 Mo par fichier</span>
+                <span class="upload-zone__meta"
+                  >PDF, images, Word / Excel — max 5 Mo par fichier (types autorises par
+                  l'API)</span
+                >
               </button>
               <input
                 #fileInput
                 hidden
                 type="file"
                 multiple
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
                 (change)="onFileSelection($event)"
               />
 
@@ -270,7 +298,9 @@
               }
 
               <small class="upload-caption">
-                Les metadonnees des fichiers sont conservees meme apres suppression (tracabilite)
+                Envoi automatique apres la creation de la reservation (un envoi par fichier). Pour
+                une serie recurrente, les pieces sont rattachees a la premiere occurrence ; le
+                stockage du contenu fichier est une evolution prevue cote serveur.
               </small>
             </div>
           </article>
@@ -287,13 +317,24 @@
             </span>
           </label>
 
+          @if (submitError()) {
+            <div class="booking-submit-error" role="alert">
+              {{ submitError() }}
+            </div>
+          }
+
           <button
             type="button"
             class="submit-button"
             [disabled]="!canSubmit()"
             [class.submit-button--disabled]="!canSubmit()"
+            (click)="confirmReservation()"
           >
-            Confirmer la reservation
+            @if (submitting()) {
+              Envoi en cours...
+            } @else {
+              Confirmer la reservation
+            }
           </button>
         </section>
 
@@ -305,7 +346,7 @@
 
                 <div class="summary-section">
                   <span>Ressource</span>
-                  <strong>{{ displayedName() }}</strong>
+                  <strong>{{ recapResourceName() }}</strong>
                 </div>
 
                 @if (option.id !== 'personal') {
@@ -335,32 +376,18 @@
                   </div>
                 }
 
+                <p class="summary-pricing-note">
+                  Les frais de location ne sont pas calculés en ligne : le montant sera indiqué lors de la
+                  validation par le secrétariat.
+                </p>
+
                 <div class="summary-divider"></div>
 
-                <div class="summary-line">
-                  <span>Tarif de base</span>
-                  <strong>{{ formatAmount(basePriceCents()) }}</strong>
-                </div>
-
-                @if (pricing.discountLabel && summaryDiscountCents() > 0) {
-                  <div class="summary-line summary-line--success">
-                    <span>{{ pricing.discountLabel }}</span>
-                    <strong>-{{ formatAmount(summaryDiscountCents()) }}</strong>
-                  </div>
-                }
-
                 <div class="summary-line" [class.summary-line--success]="pricing.isDepositExempt">
-                  <span>{{ pricing.isDepositExempt ? 'Caution exoneree' : 'Caution' }}</span>
+                  <span>{{ pricing.isDepositExempt ? 'Caution exoneree' : 'Caution (catalogue)' }}</span>
                   <strong [class.summary-line__crossed]="pricing.isDepositExempt">
                     {{ formatAmount(depositAmountCents()) }}
                   </strong>
-                </div>
-
-                <div class="summary-divider"></div>
-
-                <div class="summary-total">
-                  <span>Total</span>
-                  <strong>{{ formatAmount(summaryTotalCents()) }}</strong>
                 </div>
 
                 @if (activeExemptionLabel()) {

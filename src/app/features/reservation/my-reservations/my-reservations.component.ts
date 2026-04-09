@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { distinctUntilChanged, finalize, map } from 'rxjs';
 
 import { LocalTime } from '../../../core/api/model/localTime';
-import { ReservationListItemDto } from '../../../core/api/model/reservationListItemDto';
+import { ReservationSummaryResponseDto } from '../../../core/api/model/reservationSummaryResponseDto';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservationService } from '../reservation.service';
 
@@ -57,6 +57,7 @@ interface ReservationCard {
 })
 export class MyReservationsComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly reservationService = inject(ReservationService);
 
@@ -75,7 +76,13 @@ export class MyReservationsComponent {
   });
 
   constructor() {
-    this.loadReservations();
+    this.route.queryParamMap
+      .pipe(
+        map(q => q.toString()),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => this.loadReservations());
   }
 
   trackByReservationId(_index: number, reservation: ReservationCard): string {
@@ -211,6 +218,9 @@ export class MyReservationsComponent {
   }
 
   private loadReservations(): void {
+    const createdReservationId = this.route.snapshot.queryParamMap.get('created');
+    const recurringCountRaw = this.route.snapshot.queryParamMap.get('recurringCount');
+    const recurringCount = recurringCountRaw ? Number(recurringCountRaw) : 0;
     this.loading.set(true);
     this.errorMessage.set(null);
     this.feedbackMessage.set(null);
@@ -225,7 +235,18 @@ export class MyReservationsComponent {
         next: response => {
           const reservations = (response.content ?? []).map(item => this.mapReservation(item));
           this.reservations.set(reservations);
-          this.expandedReservationId.set(reservations[0]?.id ?? null);
+          const highlightId =
+            createdReservationId && reservations.some(r => r.id === createdReservationId)
+              ? createdReservationId
+              : (reservations[0]?.id ?? null);
+          this.expandedReservationId.set(highlightId);
+          if (createdReservationId) {
+            this.feedbackMessage.set(
+              recurringCount > 1
+                ? `Serie de ${recurringCount} reservations creee (meme horaire). La premiere occurrence est mise en avant ci-dessous.`
+                : 'Reservation creee et confirmee. Elle apparait ci-dessous.'
+            );
+          }
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse) => {
@@ -237,7 +258,7 @@ export class MyReservationsComponent {
       });
   }
 
-  private mapReservation(item: ReservationListItemDto): ReservationCard {
+  private mapReservation(item: ReservationSummaryResponseDto): ReservationCard {
     const depositEuros = Math.round((item.depositAmountCents ?? 0) / 100);
     const amountEuros = Math.round(
       Math.max((item.depositAmountFullCents ?? 0) - (item.depositAmountCents ?? 0), 0) / 100
@@ -304,19 +325,19 @@ export class MyReservationsComponent {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
-  private buildComment(item: ReservationListItemDto): string {
+  private buildComment(item: ReservationSummaryResponseDto): string {
     if (item.discountLabel) {
       return `Tarification appliquee : ${item.discountLabel}`;
     }
 
-    if (item.resourceType === ReservationListItemDto.ResourceTypeEnum.Immobilier) {
+    if (item.resourceType === ReservationSummaryResponseDto.ResourceTypeEnum.Immobilier) {
       return 'Reservation de salle en attente des prochaines etapes administratives.';
     }
 
     return 'Reservation de materiel en cours de traitement.';
   }
 
-  private buildTimeline(item: ReservationListItemDto): ReservationTimelineStep[] {
+  private buildTimeline(item: ReservationSummaryResponseDto): ReservationTimelineStep[] {
     const createdAtLabel = this.formatCreatedAt(item.createdAt ?? '');
     const depositSt = item.depositStatus as ReservationDepositStatus | undefined;
 
@@ -350,7 +371,10 @@ export class MyReservationsComponent {
       { label: 'Instruction en cours', date: 'Analyse de la demande', completed: false },
       {
         label: 'Paiement et caution',
-        date: depositSt === 'DEPOSIT_PENDING' ? 'En attente de validation' : 'A confirmer',
+        date:
+          depositSt === 'DEPOSIT_PENDING'
+            ? 'En attente de validation du dossier'
+            : 'Etapes a valider avec le secretariat (caution / reglement)',
         completed: false,
       },
     ];

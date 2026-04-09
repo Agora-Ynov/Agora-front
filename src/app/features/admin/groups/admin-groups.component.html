@@ -156,9 +156,27 @@
                 <strong>{{ group.memberCount }}</strong>
               </div>
 
-              <button type="button" class="group-card__button" (click)="openMembers(group.id)">
-                Gerer les membres
-              </button>
+              <div class="group-card__actions">
+                <button type="button" class="group-card__button" (click)="openMembers(group.id)">
+                  Gerer les membres
+                </button>
+                @if (!group.isPreset) {
+                  <button
+                    type="button"
+                    class="group-card__button group-card__button--secondary"
+                    (click)="openEditByCardId(group.id)"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    class="group-card__button group-card__button--danger"
+                    (click)="confirmDeleteByCardId(group.id)"
+                  >
+                    Supprimer
+                  </button>
+                }
+              </div>
             </div>
 
             <div class="group-card__section">
@@ -286,12 +304,33 @@
         <header class="members-modal__header">
           <div>
             <h3 id="group-members-title">{{ group.name }}</h3>
-            <p>Liste chargee via GET /api/admin/groups/{{ group.id }}/members</p>
+            <p>Membres du groupe — ajout et retrait via l'API admin</p>
           </div>
           <button type="button" class="members-modal__close" (click)="closeMembersModal()">
             X
           </button>
         </header>
+
+        <div class="members-modal__add">
+          <label class="members-modal__add-field">
+            <span>UUID utilisateur</span>
+            <input
+              type="text"
+              [value]="memberUserIdDraft()"
+              [disabled]="memberBusy()"
+              (input)="updateMemberUserIdDraft($any($event.target).value)"
+              placeholder="ex. 11111111-1111-1111-1111-111111111111"
+            />
+          </label>
+          <button
+            type="button"
+            class="members-modal__add-btn"
+            [disabled]="memberBusy()"
+            (click)="addMemberToSelectedGroup()"
+          >
+            Ajouter
+          </button>
+        </div>
 
         @if (loadingMembers()) {
           <p class="members-modal__empty">Chargement des membres...</p>
@@ -309,6 +348,14 @@
                 <div class="member-row__meta">
                   <span class="group-chip">{{ memberRoleLabel(member.role) }}</span>
                   <span>Depuis le {{ formatJoinedAt(member.joinedAt) }}</span>
+                  <button
+                    type="button"
+                    class="member-row__remove"
+                    [disabled]="memberBusy()"
+                    (click)="removeMemberFromSelectedGroup(member)"
+                  >
+                    Retirer
+                  </button>
                 </div>
               </article>
             }
@@ -371,12 +418,79 @@
           </label>
 
           <div class="create-group-note">
-            <strong>Mapping API :</strong> le type choisi preconfigure le body `POST
-            /api/admin/groups` avec les droits et remises prevus par les mocks.
+            <strong>API :</strong> creation via le client genere OpenAPI (`POST /api/admin/groups`).
           </div>
 
           <button type="submit" class="create-group-submit" [disabled]="isCreating()">
             {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (isEditModalOpen()) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeEditModal()"
+      ></button>
+      <section
+        class="create-group-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-group-title"
+      >
+        <header class="create-group-modal__header">
+          <h3 id="edit-group-title">Modifier le groupe</h3>
+          <button type="button" class="create-group-modal__close" (click)="closeEditModal()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <form class="create-group-form" [formGroup]="editGroupForm" (ngSubmit)="submitEditGroup()">
+          <label class="create-group-field">
+            <span>Nom du groupe *</span>
+            <input type="text" formControlName="name" />
+          </label>
+
+          <div class="create-group-field create-group-field--checks">
+            <label><input type="checkbox" formControlName="canViewImmobilier" /> Voir immobilier</label>
+            <label><input type="checkbox" formControlName="canBookImmobilier" /> Reserver immobilier</label>
+            <label><input type="checkbox" formControlName="canViewMobilier" /> Voir mobilier</label>
+            <label><input type="checkbox" formControlName="canBookMobilier" /> Reserver mobilier</label>
+          </div>
+
+          <label class="create-group-field">
+            <span>Type de remise *</span>
+            <select formControlName="discountType">
+              @for (opt of discountTypeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="create-group-field">
+            <span>Valeur remise</span>
+            <input type="number" formControlName="discountValue" min="0" step="1" />
+          </label>
+
+          <label class="create-group-field">
+            <span>Champ d'application *</span>
+            <select formControlName="discountAppliesTo">
+              @for (opt of discountAppliesOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          <button type="submit" class="create-group-submit" [disabled]="isSavingEdit()">
+            {{ isSavingEdit() ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
         </form>
       </section>

@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
-import { RessourcesService } from '../../../core/api/api/ressources.service';
+import { ResourceService } from '../../../core/api/resource.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ResourceDetailComponent } from './resource-detail.component';
 
@@ -22,13 +22,13 @@ describe('ResourceDetailComponent', () => {
           },
         },
         {
-          provide: RessourcesService,
+          provide: ResourceService,
           useValue: {
-            getResourceById: () =>
+            getById: () =>
               of({
                 id: 'r002',
                 name: 'Salle de reunion - Espace civic',
-                resourceType: 'IMMOBILIER',
+                resourceType: 'IMMOBILIER' as const,
                 capacity: 20,
                 description: 'Salle moderne equipee pour reunions.',
                 depositAmountCents: 5000,
@@ -61,7 +61,7 @@ describe('ResourceDetailComponent', () => {
       name: 'Salle de reunion',
       typeLabel: 'Salle',
       capacityLabel: '20 personnes',
-      priceLabel: '25EUR',
+      priceLabel: 'À confirmer',
       depositLabel: '50EUR',
     });
   });

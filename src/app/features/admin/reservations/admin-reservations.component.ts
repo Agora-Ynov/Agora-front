@@ -1,33 +1,45 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+import {
+  AdminPaymentsService,
+  AdminReservationsService,
+  AdminPatchPaymentRequestDto,
+  AdminPatchReservationStatusRequestDto,
+  ReservationSummaryResponseDto,
+  AdminPaymentHistoryEntryResponseDto,
+} from '../../../core/api';
 
-type AdminReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
-type AdminPaymentStatus = 'PAID' | 'TO_SETTLE' | 'EXEMPT_GROUP' | 'EXEMPT_SECRETARY' | 'REFUNDED';
-type ReservationFilter = 'ALL' | AdminReservationStatus;
+type ReservationStatus = ReservationSummaryResponseDto.StatusEnum;
+type DepositStatus = ReservationSummaryResponseDto.DepositStatusEnum;
 
-interface AuditEntry {
+/** Filtre d'affichage : on regroupe les deux statuts « en attente » côté UI. */
+type ReservationFilter = 'ALL' | 'PENDING_GROUP' | ReservationStatus;
+
+interface AdminPaymentAuditRow {
   label: string;
   meta: string;
 }
 
-interface AdminReservation {
+interface AdminReservationRow {
   id: string;
   resourceName: string;
   userName: string;
   userEmail: string | null;
   userPhone: string | null;
-  date: string;
+  dateLabel: string;
   startDateTimeLabel: string;
   endDateTimeLabel: string;
-  status: AdminReservationStatus;
-  paymentStatus: AdminPaymentStatus;
+  status: ReservationStatus;
+  depositStatus: DepositStatus;
   amountEuros: number;
   depositEuros: number;
   userComment: string;
   adminComment: string;
   createdAtLabel: string;
-  auditTrail: AuditEntry[];
+  discountLabel: string | null;
 }
 
 @Component({
@@ -37,169 +49,147 @@ interface AdminReservation {
   templateUrl: './admin-reservations.component.html',
   styleUrl: './admin-reservations.component.scss',
 })
-export class AdminReservationsComponent {
+export class AdminReservationsComponent implements OnInit {
+  private readonly adminReservations = inject(AdminReservationsService);
+  private readonly adminPayments = inject(AdminPaymentsService);
+
+  readonly loading = signal(false);
+  readonly loadError = signal<string | null>(null);
   readonly filter = signal<ReservationFilter>('ALL');
   readonly feedbackMessage = signal<string>('');
   readonly selectedReservationId = signal<string | null>(null);
   readonly rejectingReservationId = signal<string | null>(null);
-  readonly auditExpanded = signal<boolean>(false);
-  readonly paymentDraft = signal<AdminPaymentStatus>('PAID');
-  readonly adminCommentDraft = signal<string>('');
-  readonly rejectReason = signal<string>('');
+  readonly auditExpanded = signal(false);
+  readonly paymentDraft = signal<AdminPatchPaymentRequestDto.StatusEnum>(
+    AdminPatchPaymentRequestDto.StatusEnum.DepositPaid
+  );
+  readonly adminCommentDraft = signal('');
+  readonly rejectReason = signal('');
+  readonly paymentHistoryEntries = signal<AdminPaymentAuditRow[]>([]);
+  readonly paymentHistoryLoaded = signal(false);
 
-  readonly reservations = signal<AdminReservation[]>([
-    {
-      id: 'booking-1',
-      resourceName: 'Salle des Fetes',
-      userName: 'Sophie Bernard',
-      userEmail: 'user@example.fr',
-      userPhone: '06 12 34 56 78',
-      date: '15/04/2026',
-      startDateTimeLabel: '15 avril 2026 a 14:00',
-      endDateTimeLabel: '15 avril 2026 a 23:00',
-      status: 'CONFIRMED',
-      paymentStatus: 'PAID',
-      amountEuros: 350,
-      depositEuros: 200,
-      userComment: "Gala annuel de l'association",
-      adminComment: '',
-      createdAtLabel: 'Cree le 10 mars 2026 a 01:00',
-      auditTrail: [
-        { label: 'Reservation confirmee', meta: 'Secretariat - 11/03/2026 09:20' },
-        { label: 'Paiement enregistre', meta: 'Guichet mairie - 12/03/2026 14:35' },
-      ],
-    },
-    {
-      id: 'booking-2',
-      resourceName: 'Salle de Reunion',
-      userName: 'Pierre Durand',
-      userEmail: 'pierre.durand@email.fr',
-      userPhone: '06 88 22 14 10',
-      date: '30/03/2026',
-      startDateTimeLabel: '30 mars 2026 a 09:00',
-      endDateTimeLabel: '30 mars 2026 a 17:00',
-      status: 'PENDING',
-      paymentStatus: 'TO_SETTLE',
-      amountEuros: 80,
-      depositEuros: 50,
-      userComment: 'Reunion preparatoire annuelle',
-      adminComment: '',
-      createdAtLabel: 'Cree le 22 mars 2026 a 11:15',
-      auditTrail: [{ label: 'Demande recue', meta: 'Portail citoyen - 22/03/2026 11:15' }],
-    },
-    {
-      id: 'booking-3',
-      resourceName: 'Barnums (x5)',
-      userName: 'Marie Laurent',
-      userEmail: 'marie.l@email.fr',
-      userPhone: '07 11 22 33 44',
-      date: '01/05/2026',
-      startDateTimeLabel: '01 mai 2026 a 08:00',
-      endDateTimeLabel: '01 mai 2026 a 20:00',
-      status: 'CONFIRMED',
-      paymentStatus: 'EXEMPT_GROUP',
-      amountEuros: 0,
-      depositEuros: 0,
-      userComment: 'Installation pour l evenement associatif',
-      adminComment: 'Exoneration groupe appliquee.',
-      createdAtLabel: 'Cree le 18 mars 2026 a 16:10',
-      auditTrail: [{ label: 'Exoneration appliquee', meta: 'Groupe Association - 18/03/2026' }],
-    },
-    {
-      id: 'booking-4',
-      resourceName: 'Salle Associative',
-      userName: 'Robert Petit',
-      userEmail: null,
-      userPhone: null,
-      date: '20/04/2026',
-      startDateTimeLabel: '20 avril 2026 a 10:00',
-      endDateTimeLabel: '20 avril 2026 a 18:00',
-      status: 'PENDING',
-      paymentStatus: 'EXEMPT_SECRETARY',
-      amountEuros: 45,
-      depositEuros: 0,
-      userComment: 'Repetition hebdomadaire',
-      adminComment: 'Verifier la disponibilite definitive.',
-      createdAtLabel: 'Cree le 12 mars 2026 a 08:40',
-      auditTrail: [{ label: 'Exoneration secretaire', meta: 'Secretariat - 12/03/2026' }],
-    },
-    {
-      id: 'booking-5',
-      resourceName: 'Sono portable',
-      userName: 'Thomas Girard',
-      userEmail: 'thomas.girard@email.fr',
-      userPhone: '06 55 42 21 11',
-      date: '08/04/2026',
-      startDateTimeLabel: '08 avril 2026 a 13:00',
-      endDateTimeLabel: '08 avril 2026 a 19:00',
-      status: 'CANCELLED',
-      paymentStatus: 'REFUNDED',
-      amountEuros: 90,
-      depositEuros: 50,
-      userComment: 'Animation de quartier',
-      adminComment: 'Reservation annulee et remboursee.',
-      createdAtLabel: 'Cree le 01 mars 2026 a 12:20',
-      auditTrail: [{ label: 'Remboursement effectue', meta: 'Secretariat - 05/03/2026' }],
-    },
-  ]);
+  readonly reservations = signal<AdminReservationRow[]>([]);
 
   readonly filteredReservations = computed(() => {
     const currentFilter = this.filter();
-
-    return this.reservations().filter(reservation => {
-      return currentFilter === 'ALL' || reservation.status === currentFilter;
+    return this.reservations().filter(r => {
+      if (currentFilter === 'ALL') return true;
+      if (currentFilter === 'PENDING_GROUP') {
+        return (
+          r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
+          r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
+        );
+      }
+      return r.status === currentFilter;
     });
   });
 
   readonly stats = computed(() => {
-    const reservations = this.reservations();
-
-    return {
-      pending: reservations.filter(reservation => reservation.status === 'PENDING').length,
-      confirmed: reservations.filter(reservation => reservation.status === 'CONFIRMED').length,
-      paymentsPending: reservations.filter(reservation => reservation.paymentStatus === 'TO_SETTLE')
-        .length,
-      exemptions: reservations.filter(reservation =>
-        ['EXEMPT_GROUP', 'EXEMPT_SECRETARY'].includes(reservation.paymentStatus)
-      ).length,
-    };
+    const list = this.reservations();
+    const pending = list.filter(
+      r =>
+        r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
+        r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
+    ).length;
+    const confirmed = list.filter(
+      r => r.status === ReservationSummaryResponseDto.StatusEnum.Confirmed
+    ).length;
+    const paymentsPending = list.filter(
+      r => r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.DepositPending
+    ).length;
+    const exemptions = list.filter(
+      r =>
+        r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.Exempt ||
+        r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.Waived
+    ).length;
+    return { pending, confirmed, paymentsPending, exemptions };
   });
 
-  readonly tabs = computed(() => [
-    { id: 'ALL' as ReservationFilter, label: 'Toutes', count: this.reservations().length },
-    { id: 'PENDING' as ReservationFilter, label: 'En attente', count: this.stats().pending },
-    { id: 'CONFIRMED' as ReservationFilter, label: 'Confirmees', count: this.stats().confirmed },
-    {
-      id: 'CANCELLED' as ReservationFilter,
-      label: 'Annulees',
-      count: this.reservations().filter(reservation => reservation.status === 'CANCELLED').length,
-    },
-    {
-      id: 'COMPLETED' as ReservationFilter,
-      label: 'Terminees',
-      count: this.reservations().filter(reservation => reservation.status === 'COMPLETED').length,
-    },
-  ]);
+  readonly tabs = computed(() => {
+    const list = this.reservations();
+    const pendingGroup = list.filter(
+      r =>
+        r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
+        r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
+    ).length;
+    return [
+      { id: 'ALL' as ReservationFilter, label: 'Toutes', count: list.length },
+      { id: 'PENDING_GROUP' as ReservationFilter, label: 'En attente', count: pendingGroup },
+      {
+        id: ReservationSummaryResponseDto.StatusEnum.Confirmed,
+        label: 'Confirmees',
+        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Confirmed)
+          .length,
+      },
+      {
+        id: ReservationSummaryResponseDto.StatusEnum.Cancelled,
+        label: 'Annulees',
+        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Cancelled)
+          .length,
+      },
+      {
+        id: ReservationSummaryResponseDto.StatusEnum.Rejected,
+        label: 'Refusees',
+        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Rejected)
+          .length,
+      },
+    ];
+  });
 
   readonly selectedReservation = computed(() => {
-    const reservationId = this.selectedReservationId();
-    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
+    const id = this.selectedReservationId();
+    return this.reservations().find(r => r.id === id) ?? null;
   });
 
   readonly rejectingReservation = computed(() => {
-    const reservationId = this.rejectingReservationId();
-    return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
+    const id = this.rejectingReservationId();
+    return this.reservations().find(r => r.id === id) ?? null;
   });
 
-  setFilter(filter: ReservationFilter): void {
-    this.filter.set(filter);
+  ngOnInit(): void {
+    this.reloadList();
   }
 
-  openReservationDetails(reservation: AdminReservation): void {
-    this.selectedReservationId.set(reservation.id);
+  setFilter(f: ReservationFilter): void {
+    this.filter.set(f);
+  }
+
+  reloadList(): void {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.adminReservations
+      .list2(undefined, undefined, undefined, undefined, 0, 500, 'body', false, {
+        transferCache: false,
+      })
+      .pipe(
+        finalize(() => this.loading.set(false)),
+        catchError(() => {
+          this.loadError.set('Impossible de charger les reservations.');
+          return of({ content: [] });
+        })
+      )
+      .subscribe(page => {
+        const rows = (page.content ?? []).map(d => this.mapDto(d));
+        this.reservations.set(rows);
+      });
+  }
+
+  openReservationDetails(row: AdminReservationRow): void {
+    this.selectedReservationId.set(row.id);
     this.auditExpanded.set(false);
-    this.paymentDraft.set(reservation.paymentStatus);
-    this.adminCommentDraft.set(reservation.adminComment);
+    this.paymentDraft.set(this.depositToPaymentPatchEnum(row.depositStatus));
+    this.adminCommentDraft.set('');
+    this.paymentHistoryLoaded.set(false);
+    this.paymentHistoryEntries.set([]);
+    this.adminPayments
+      .history(row.id, undefined, false, { transferCache: false })
+      .pipe(
+        catchError(() => of([] as AdminPaymentHistoryEntryResponseDto[])),
+        finalize(() => this.paymentHistoryLoaded.set(true))
+      )
+      .subscribe(entries => {
+        this.paymentHistoryEntries.set(entries.map(e => this.mapHistoryEntry(e)));
+      });
   }
 
   closeReservationDetails(): void {
@@ -207,8 +197,8 @@ export class AdminReservationsComponent {
     this.auditExpanded.set(false);
   }
 
-  openRejectModal(reservation: AdminReservation): void {
-    this.rejectingReservationId.set(reservation.id);
+  openRejectModal(row: AdminReservationRow): void {
+    this.rejectingReservationId.set(row.id);
     this.rejectReason.set('');
   }
 
@@ -217,116 +207,219 @@ export class AdminReservationsComponent {
     this.rejectReason.set('');
   }
 
+  canConfirm(row: AdminReservationRow): boolean {
+    return (
+      row.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
+      row.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
+    );
+  }
+
   confirmReservation(reservationId: string): void {
-    this.updateReservation(reservationId, { status: 'CONFIRMED' });
-    this.feedbackMessage.set('Reservation confirmee avec succes.');
+    const body: AdminPatchReservationStatusRequestDto = {
+      status: AdminPatchReservationStatusRequestDto.StatusEnum.Confirmed,
+    };
+    this.adminReservations.patchStatus(reservationId, body, undefined, false, { transferCache: false }).subscribe({
+      next: () => {
+        this.feedbackMessage.set('Reservation confirmee.');
+        this.reloadList();
+      },
+      error: () => this.feedbackMessage.set('Echec de la confirmation.'),
+    });
   }
 
   saveReservationDetails(): void {
-    const reservation = this.selectedReservation();
-    if (!reservation) {
-      return;
-    }
+    const row = this.selectedReservation();
+    if (!row) return;
 
-    this.updateReservation(reservation.id, {
-      paymentStatus: this.paymentDraft(),
-      adminComment: this.adminCommentDraft().trim(),
+    const paymentBody: AdminPatchPaymentRequestDto = {
+      status: this.paymentDraft(),
+      comment: this.adminCommentDraft().trim() || undefined,
+    };
+
+    this.adminPayments.patch(row.id, paymentBody, undefined, false, { transferCache: false }).subscribe({
+      next: () => {
+        this.feedbackMessage.set('Paiement / commentaire mis a jour.');
+        this.closeReservationDetails();
+        this.reloadList();
+      },
+      error: () => this.feedbackMessage.set('Echec de la mise a jour du paiement.'),
     });
-
-    this.feedbackMessage.set('Reservation mise a jour avec succes.');
-    this.closeReservationDetails();
   }
 
   saveAdminComment(): void {
-    const reservation = this.selectedReservation();
-    if (!reservation) {
-      return;
-    }
-
-    this.updateReservation(reservation.id, {
-      adminComment: this.adminCommentDraft().trim(),
-    });
-
-    this.feedbackMessage.set('Commentaire interne ajoute.');
+    this.saveReservationDetails();
   }
 
   sendReminder(): void {
-    const reservation = this.selectedReservation();
-    if (!reservation) {
-      return;
-    }
-
-    this.feedbackMessage.set(`Rappel envoye pour ${reservation.id}.`);
+    this.feedbackMessage.set('Rappel : fonctionnalite non exposee par l’API pour l’instant.');
   }
 
   toggleAudit(): void {
-    this.auditExpanded.update(value => !value);
+    this.auditExpanded.update(v => !v);
   }
 
   rejectReservation(): void {
-    const reservation = this.rejectingReservation();
+    const row = this.rejectingReservation();
     const reason = this.rejectReason().trim();
+    if (!row || !reason) return;
 
-    if (!reservation || !reason) {
-      return;
-    }
-
-    this.updateReservation(reservation.id, {
-      status: 'CANCELLED',
-      paymentStatus: reservation.depositEuros > 0 ? 'REFUNDED' : reservation.paymentStatus,
-      adminComment: reason,
+    const body: AdminPatchReservationStatusRequestDto = {
+      status: AdminPatchReservationStatusRequestDto.StatusEnum.Rejected,
+      comment: reason,
+    };
+    this.adminReservations.patchStatus(row.id, body, undefined, false, { transferCache: false }).subscribe({
+      next: () => {
+        this.feedbackMessage.set('Reservation refusee.');
+        this.closeRejectModal();
+        this.reloadList();
+      },
+      error: () => this.feedbackMessage.set('Echec du refus.'),
     });
-
-    this.feedbackMessage.set(`Reservation ${reservation.id} refusee avec succes.`);
-    this.closeRejectModal();
   }
 
-  paymentLabel(paymentStatus: AdminPaymentStatus): string {
-    switch (paymentStatus) {
-      case 'PAID':
-        return 'Reglee';
-      case 'TO_SETTLE':
-        return 'A regler';
-      case 'EXEMPT_GROUP':
-        return 'Dispensee (exo.)';
-      case 'EXEMPT_SECRETARY':
-        return 'Dispensee (secretaire)';
-      case 'REFUNDED':
-      default:
-        return 'Remboursee';
-    }
+  paymentDepositLabel(status: ReservationSummaryResponseDto.DepositStatusEnum): string {
+    return this.paymentLabel(this.depositToPaymentPatchEnum(status));
   }
 
-  statusLabel(status: AdminReservationStatus): string {
+  paymentLabel(status: AdminPatchPaymentRequestDto.StatusEnum): string {
     switch (status) {
-      case 'CONFIRMED':
-        return 'Confirmee';
-      case 'PENDING':
-        return 'En attente';
-      case 'COMPLETED':
-        return 'Terminee';
-      case 'CANCELLED':
+      case AdminPatchPaymentRequestDto.StatusEnum.DepositPaid:
+        return 'Caution reglee';
+      case AdminPatchPaymentRequestDto.StatusEnum.DepositPending:
+        return 'Caution en attente';
+      case AdminPatchPaymentRequestDto.StatusEnum.Exempt:
+        return 'Exonere';
+      case AdminPatchPaymentRequestDto.StatusEnum.Waived:
+        return 'Dispense';
+      case AdminPatchPaymentRequestDto.StatusEnum.Refunded:
       default:
-        return 'Annulee';
+        return 'Rembourse';
     }
   }
 
-  paymentStatusOptions(): AdminPaymentStatus[] {
-    return ['PAID', 'TO_SETTLE', 'EXEMPT_GROUP', 'EXEMPT_SECRETARY', 'REFUNDED'];
+  statusLabel(status: ReservationStatus): string {
+    switch (status) {
+      case ReservationSummaryResponseDto.StatusEnum.Confirmed:
+        return 'Confirmee';
+      case ReservationSummaryResponseDto.StatusEnum.PendingValidation:
+        return 'En validation';
+      case ReservationSummaryResponseDto.StatusEnum.PendingDocument:
+        return 'Document attendu';
+      case ReservationSummaryResponseDto.StatusEnum.Cancelled:
+        return 'Annulee';
+      case ReservationSummaryResponseDto.StatusEnum.Rejected:
+      default:
+        return 'Refusee';
+    }
   }
 
-  trackByReservationId(_index: number, reservation: AdminReservation): string {
-    return reservation.id;
+  statusRowPending(row: AdminReservationRow): boolean {
+    return this.canConfirm(row);
   }
 
-  private updateReservation(
-    reservationId: string,
-    changes: Partial<Pick<AdminReservation, 'status' | 'paymentStatus' | 'adminComment'>>
-  ): void {
-    this.reservations.update(reservations =>
-      reservations.map(reservation =>
-        reservation.id === reservationId ? { ...reservation, ...changes } : reservation
-      )
+  paymentStatusOptions(): AdminPatchPaymentRequestDto.StatusEnum[] {
+    return [
+      AdminPatchPaymentRequestDto.StatusEnum.DepositPending,
+      AdminPatchPaymentRequestDto.StatusEnum.DepositPaid,
+      AdminPatchPaymentRequestDto.StatusEnum.Exempt,
+      AdminPatchPaymentRequestDto.StatusEnum.Waived,
+      AdminPatchPaymentRequestDto.StatusEnum.Refunded,
+    ];
+  }
+
+  trackByReservationId(_index: number, row: AdminReservationRow): string {
+    return row.id;
+  }
+
+  private mapDto(d: ReservationSummaryResponseDto): AdminReservationRow {
+    const id = d.id ?? '';
+    const dateRaw = d.date ?? '';
+    const dateLabel = this.formatFrenchDate(dateRaw);
+    const start = d.slotStart ? this.formatTime(d.slotStart) : '—';
+    const end = d.slotEnd ? this.formatTime(d.slotEnd) : '—';
+    const status = d.status ?? ReservationSummaryResponseDto.StatusEnum.PendingValidation;
+    const depositStatus =
+      d.depositStatus ?? ReservationSummaryResponseDto.DepositStatusEnum.DepositPending;
+    const fullCents = d.depositAmountFullCents ?? 0;
+    const depCents = d.depositAmountCents ?? 0;
+    return {
+      id,
+      resourceName: d.resourceName ?? '—',
+      userName: '—',
+      userEmail: null,
+      userPhone: null,
+      dateLabel,
+      startDateTimeLabel: `${dateLabel} a ${start}`,
+      endDateTimeLabel: `${dateLabel} a ${end}`,
+      status,
+      depositStatus,
+      amountEuros: Math.round(fullCents) / 100,
+      depositEuros: Math.round(depCents) / 100,
+      userComment: '',
+      adminComment: '',
+      createdAtLabel: d.createdAt ? this.formatCreatedAt(d.createdAt) : '',
+      discountLabel: d.discountLabel ?? null,
+    };
+  }
+
+  private formatTime(t: { hour?: number; minute?: number; second?: number; nano?: number }): string {
+    const h = t.hour ?? 0;
+    const m = t.minute ?? 0;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  private formatFrenchDate(isoDate: string): string {
+    if (!isoDate) return '—';
+    const d = new Date(isoDate + 'T12:00:00');
+    if (Number.isNaN(d.getTime())) return isoDate;
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(d);
+  }
+
+  private formatCreatedAt(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return (
+      'Cree le ' +
+      new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(d)
     );
+  }
+
+  /** Expose pour le template (alignement statut caution / statut PATCH paiement). */
+  depositToPaymentPatchEnum(
+    d: ReservationSummaryResponseDto.DepositStatusEnum
+  ): AdminPatchPaymentRequestDto.StatusEnum {
+    switch (d) {
+      case ReservationSummaryResponseDto.DepositStatusEnum.DepositPaid:
+        return AdminPatchPaymentRequestDto.StatusEnum.DepositPaid;
+      case ReservationSummaryResponseDto.DepositStatusEnum.Exempt:
+        return AdminPatchPaymentRequestDto.StatusEnum.Exempt;
+      case ReservationSummaryResponseDto.DepositStatusEnum.Waived:
+        return AdminPatchPaymentRequestDto.StatusEnum.Waived;
+      case ReservationSummaryResponseDto.DepositStatusEnum.Refunded:
+        return AdminPatchPaymentRequestDto.StatusEnum.Refunded;
+      case ReservationSummaryResponseDto.DepositStatusEnum.DepositPending:
+      default:
+        return AdminPatchPaymentRequestDto.StatusEnum.DepositPending;
+    }
+  }
+
+  private mapHistoryEntry(e: AdminPaymentHistoryEntryResponseDto): AdminPaymentAuditRow {
+    const status = e.status ?? '';
+    const when = e.updatedAt ? this.formatCreatedAt(e.updatedAt) : '';
+    const by = e.updatedByName ?? '';
+    return {
+      label: `Paiement : ${status}`,
+      meta: [by, when].filter(Boolean).join(' — '),
+    };
   }
 }

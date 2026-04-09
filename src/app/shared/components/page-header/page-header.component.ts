@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -12,6 +12,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class HeaderComponent {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   currentUser = this.authService.currentUser;
   readonly isSessionActive = this.authService.isSessionActive;
@@ -33,8 +34,29 @@ export class HeaderComponent {
     this.isMenuOpen.set(false);
   }
 
+  readonly showAdminNav = computed(() => this.authService.canSeeAdminNavigation());
+  readonly adminNavLink = computed(() => this.authService.getAdminEntryPath());
+  readonly adminNavLabel = computed(() => this.authService.getAdminNavLabel());
+
+  readonly isImpersonating = computed(() => this.authService.isImpersonating());
+  readonly impersonationAdminEmail = computed(() => this.authService.getImpersonatedByEmail());
+
+  isSuperadmin(): boolean {
+    return this.authService.hasRole('SUPERADMIN');
+  }
+
   logout(): void {
     this.closeMenu();
     this.authService.logout();
+  }
+
+  exitImpersonation(): void {
+    this.closeMenu();
+    this.authService.endImpersonation().subscribe({
+      next: () => this.router.navigateByUrl(this.authService.getAdminEntryPath()),
+      error: () => {
+        /* session incohérente : retour login géré ailleurs si besoin */
+      },
+    });
   }
 }

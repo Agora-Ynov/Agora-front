@@ -1,4 +1,13 @@
 <section class="user-admin-page">
+  @if (feedback(); as msg) {
+    <div class="user-admin-feedback" role="status">
+      <span>{{ msg }}</span>
+      <button type="button" class="user-admin-feedback__close" (click)="dismissFeedback()">
+        Fermer
+      </button>
+    </div>
+  }
+
   <main class="user-admin-main">
     <section class="user-admin-hero">
       <div>
@@ -46,19 +55,19 @@
 
     <section class="user-admin-stats">
       <article class="stat-card">
-        <strong>{{ totalCount() }}</strong>
+        <strong>{{ statTotal() }}</strong>
         <span>Total</span>
       </article>
       <article class="stat-card stat-card--blue">
-        <strong>{{ autonomousCount() }}</strong>
+        <strong>{{ statAutonomous() }}</strong>
         <span>Autonomes</span>
       </article>
       <article class="stat-card stat-card--orange">
-        <strong>{{ tutoredCount() }}</strong>
+        <strong>{{ statTutored() }}</strong>
         <span>Sous tutelle</span>
       </article>
       <article class="stat-card stat-card--red">
-        <strong>{{ suspendedCount() }}</strong>
+        <strong>{{ statSuspended() }}</strong>
         <span>Suspendus</span>
       </article>
     </section>
@@ -114,7 +123,7 @@
         <ul>
           <li><strong>Activation autonome :</strong> associer un email - lien Brevo 72h</li>
           <li><strong>Fiche imprimable :</strong> remise en main propre au guichet</li>
-          <li><strong>Suspension / reactivation :</strong> gestion des acces</li>
+          <li><strong>Suspension / reactivation :</strong> disponibles sur la fiche utilisateur</li>
         </ul>
       </div>
     </section>
@@ -126,7 +135,7 @@
         [class.user-filter-pill--active]="filter() === 'ALL'"
         (click)="setFilter('ALL')"
       >
-        Tous ({{ totalCount() }})
+        Tous ({{ statTotal() }})
       </button>
       <button
         type="button"
@@ -134,7 +143,7 @@
         [class.user-filter-pill--active]="filter() === 'AUTONOMOUS'"
         (click)="setFilter('AUTONOMOUS')"
       >
-        Autonomes ({{ autonomousCount() }})
+        Autonomes ({{ statAutonomous() }})
       </button>
       <button
         type="button"
@@ -142,7 +151,7 @@
         [class.user-filter-pill--active]="filter() === 'TUTORED'"
         (click)="setFilter('TUTORED')"
       >
-        Tutelle ({{ tutoredCount() }})
+        Tutelle ({{ statTutored() }})
       </button>
       <button
         type="button"
@@ -150,7 +159,7 @@
         [class.user-filter-pill--active]="filter() === 'SUSPENDED'"
         (click)="setFilter('SUSPENDED')"
       >
-        Suspendus ({{ suspendedCount() }})
+        Suspendus ({{ statSuspended() }})
       </button>
     </section>
 
@@ -198,26 +207,26 @@
               <div>
                 <span
                   class="table-pill"
-                  [class.table-pill--dark]="user.accountType === 'AUTONOMOUS'"
-                  [class.table-pill--light]="user.accountType === 'TUTORED'"
+                  [class.table-pill--dark]="rowAccountType(user) === 'AUTONOMOUS'"
+                  [class.table-pill--light]="rowAccountType(user) === 'TUTORED'"
                 >
-                  {{ getTypeLabel(user.accountType) }}
+                  {{ getTypeLabel(rowAccountType(user)) }}
                 </span>
               </div>
 
               <div>
                 <span
                   class="table-pill"
-                  [class.table-pill--green]="user.status === 'ACTIVE'"
-                  [class.table-pill--yellow]="user.status === 'PENDING_VALIDATION'"
-                  [class.table-pill--red]="user.status === 'SUSPENDED'"
+                  [class.table-pill--green]="rowStatus(user) === 'ACTIVE'"
+                  [class.table-pill--yellow]="rowStatus(user) === 'PENDING_VALIDATION'"
+                  [class.table-pill--red]="rowStatus(user) === 'SUSPENDED'"
                 >
-                  {{ getStatusLabel(user.status) }}
+                  {{ getStatusLabel(rowStatus(user)) }}
                 </span>
               </div>
 
               <div>
-                @if (user.exemptions.length) {
+                @if (user.exemptions?.length) {
                   <span class="table-pill table-pill--outline">{{ getExemptionLabel(user) }}</span>
                 } @else {
                   <span class="user-row__muted">Aucune</span>
@@ -240,26 +249,38 @@
                     <circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.8" />
                   </svg>
                 </button>
-                <button type="button" class="icon-action" title="Editer">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M4 19.5H8.2L18.3 9.4L14.1 5.2L4 15.3V19.5Z"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M12.9 6.4L17.1 10.6"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                </button>
+                @if (rowAccountType(user) === 'TUTORED') {
+                  <button
+                    type="button"
+                    class="icon-action"
+                    title="Editer la fiche tutelle"
+                    (click)="openEditTutored(user)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M4 19.5H8.2L18.3 9.4L14.1 5.2L4 15.3V19.5Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M12.9 6.4L17.1 10.6"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </button>
+                }
                 <button
                   type="button"
                   class="icon-action icon-action--orange"
-                  title="Agir pour le compte"
+                  [attr.title]="
+                    canImpersonate(user)
+                      ? 'Agir pour le compte (impersonation)'
+                      : 'Impersonation : compte tutelle actif uniquement'
+                  "
+                  [disabled]="!canImpersonate(user)"
                   (click)="openActingModal(user)"
                 >
                   <svg viewBox="0 0 24 24" fill="none">
@@ -271,11 +292,12 @@
                     />
                   </svg>
                 </button>
-                @if (user.accountType === 'TUTORED') {
+                @if (rowAccountType(user) === 'TUTORED') {
                   <button
                     type="button"
                     class="icon-action icon-action--green"
                     title="Envoyer activation"
+                    (click)="resendActivation(user)"
                   >
                     <svg viewBox="0 0 24 24" fill="none">
                       <rect
@@ -323,61 +345,6 @@
                     </svg>
                   </button>
                 }
-                @if (user.status === 'SUSPENDED') {
-                  <button
-                    type="button"
-                    class="icon-action icon-action--green"
-                    title="Reactiver"
-                    (click)="openReactivateModal(user)"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
-                      <path
-                        d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                      />
-                      <path
-                        d="M17 8V14"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                      />
-                      <path
-                        d="M14 11H20"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                  </button>
-                } @else {
-                  <button
-                    type="button"
-                    class="icon-action icon-action--red"
-                    title="Suspendre"
-                    (click)="openSuspendModal(user)"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <rect
-                        x="6.5"
-                        y="10"
-                        width="11"
-                        height="8.5"
-                        rx="1.8"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                      />
-                      <path
-                        d="M9 10V7.9C9 6.3 10.3 5 11.9 5H12.1C13.7 5 15 6.3 15 7.9V10"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                  </button>
-                }
               </div>
             </article>
           }
@@ -415,37 +382,9 @@
         </header>
 
         <div class="create-modal__body">
-          <section class="create-modal__account">
-            <div>
-              <strong>Type de compte</strong>
-              @if (createAccountType() === 'AUTONOMOUS') {
-                <p>Compte autonome - l'utilisateur se connecte avec email + mot de passe</p>
-              } @else {
-                <p>Compte sous tutelle - creation sans email ni mot de passe</p>
-              }
-            </div>
-
-            <div class="account-switch">
-              <span [class.account-switch__label--active]="createAccountType() === 'TUTORED'"
-                >Tutelle</span
-              >
-              <button
-                type="button"
-                class="account-switch__track"
-                [class.account-switch__track--autonomous]="createAccountType() === 'AUTONOMOUS'"
-                (click)="
-                  setCreateAccountType(
-                    createAccountType() === 'AUTONOMOUS' ? 'TUTORED' : 'AUTONOMOUS'
-                  )
-                "
-              >
-                <span class="account-switch__thumb"></span>
-              </button>
-              <span [class.account-switch__label--active]="createAccountType() === 'AUTONOMOUS'"
-                >Autonome</span
-              >
-            </div>
-          </section>
+          <p class="create-modal__intro">
+            Creation reservee au type <strong>tutelle</strong> (<code>POST /api/admin/users/tutored</code>). Pour un compte autonome, utilisez la page <a routerLink="/register">Inscription</a>.
+          </p>
 
           <div class="create-modal__grid">
             <label class="modal-field">
@@ -468,21 +407,6 @@
           </div>
 
           <label class="modal-field">
-            <span>
-              Email *
-              @if (createAccountType() === 'AUTONOMOUS') {
-                (requis pour compte autonome)
-              }
-            </span>
-            <input
-              type="email"
-              [value]="createEmail()"
-              [disabled]="createAccountType() === 'TUTORED'"
-              (input)="updateCreateEmail($any($event.target).value)"
-            />
-          </label>
-
-          <label class="modal-field">
             <span>Telephone</span>
             <input
               type="tel"
@@ -491,45 +415,25 @@
             />
           </label>
 
-          <section class="modal-exemptions">
-            <h3>Exonerations</h3>
+          <label class="modal-field">
+            <span>Annee de naissance (optionnel)</span>
+            <input
+              type="number"
+              min="1900"
+              max="2100"
+              [value]="createBirthYear() ?? ''"
+              (input)="updateCreateBirthYear($any($event.target).value)"
+            />
+          </label>
 
-            <label class="exemption-option">
-              <div>
-                <strong>Association</strong>
-                <p>ASSOCIATION - pour les associations loi 1901</p>
-              </div>
-              <input
-                type="checkbox"
-                [checked]="createAssociation()"
-                (change)="toggleCreateAssociation($any($event.target).checked)"
-              />
-            </label>
-
-            <label class="exemption-option">
-              <div>
-                <strong>Critere social</strong>
-                <p>SOCIAL - selon criteres de la collectivite</p>
-              </div>
-              <input
-                type="checkbox"
-                [checked]="createSocial()"
-                (change)="toggleCreateSocial($any($event.target).checked)"
-              />
-            </label>
-
-            <label class="exemption-option">
-              <div>
-                <strong>Mandat electif</strong>
-                <p>MANDATE - pour les elus municipaux</p>
-              </div>
-              <input
-                type="checkbox"
-                [checked]="createMandate()"
-                (change)="toggleCreateMandate($any($event.target).checked)"
-              />
-            </label>
-          </section>
+          <label class="modal-field">
+            <span>Notes administrateur (optionnel)</span>
+            <textarea
+              rows="2"
+              [value]="createNotesAdmin()"
+              (input)="updateCreateNotesAdmin($any($event.target).value)"
+            ></textarea>
+          </label>
         </div>
 
         <footer class="create-modal__footer">
@@ -568,19 +472,19 @@
             <div class="detail-modal__badges">
               <span
                 class="table-pill"
-                [class.table-pill--dark]="user.accountType === 'AUTONOMOUS'"
-                [class.table-pill--light]="user.accountType === 'TUTORED'"
+                [class.table-pill--dark]="rowAccountType(user) === 'AUTONOMOUS'"
+                [class.table-pill--light]="rowAccountType(user) === 'TUTORED'"
               >
-                {{ getTypeLabel(user.accountType) }}
+                {{ getTypeLabel(rowAccountType(user)) }}
               </span>
               <span class="table-pill table-pill--light">Utilisateur</span>
               <span
                 class="table-pill"
-                [class.table-pill--green]="user.status === 'ACTIVE'"
-                [class.table-pill--yellow]="user.status === 'PENDING_VALIDATION'"
-                [class.table-pill--red]="user.status === 'SUSPENDED'"
+                [class.table-pill--green]="rowStatus(user) === 'ACTIVE'"
+                [class.table-pill--yellow]="rowStatus(user) === 'PENDING_VALIDATION'"
+                [class.table-pill--red]="rowStatus(user) === 'SUSPENDED'"
               >
-                {{ getStatusLabel(user.status) }}
+                {{ getStatusLabel(rowStatus(user)) }}
               </span>
             </div>
           </div>
@@ -625,10 +529,36 @@
             </div>
           </div>
 
+          @if (rowAccountType(user) === 'TUTORED') {
+            <div class="detail-modal__section detail-modal__section--activate">
+              <span class="detail-modal__label">Activation autonome</span>
+              <p class="detail-modal__hint">
+                Associe un e-mail : le citoyen recevra un lien pour activer un acces autonome.
+              </p>
+              <label class="modal-field">
+                <span>E-mail *</span>
+                <input
+                  type="email"
+                  [value]="activateEmailDraft()"
+                  (input)="updateActivateEmail($any($event.target).value)"
+                  placeholder="nom.prenom@exemple.fr"
+                />
+              </label>
+              <button
+                type="button"
+                class="detail-modal__action"
+                [disabled]="detailBusy()"
+                (click)="submitActivateAutonomous()"
+              >
+                Lancer l'activation autonome
+              </button>
+            </div>
+          }
+
           <div class="detail-modal__section">
             <span class="detail-modal__label">Exonerations</span>
             <div class="detail-modal__chips">
-              @if (user.exemptions.length) {
+              @if (user.exemptions?.length) {
                 @for (exemption of user.exemptions; track exemption) {
                   <span class="table-pill table-pill--outline">{{ exemption }}</span>
                 }
@@ -642,8 +572,39 @@
             <span>Compte cree le {{ formatCreatedAt(user.createdAt) }}</span>
           </div>
 
+          <div class="detail-modal__section detail-modal__section--admin-actions">
+            <span class="detail-modal__label">Administration</span>
+            <div class="detail-modal__admin-actions">
+              @if (rowStatus(user) === 'ACTIVE') {
+                <button
+                  type="button"
+                  class="detail-modal__action detail-modal__action--danger"
+                  [disabled]="detailBusy()"
+                  (click)="suspendUser(user)"
+                >
+                  Suspendre le compte
+                </button>
+              }
+              @if (rowStatus(user) === 'SUSPENDED') {
+                <button
+                  type="button"
+                  class="detail-modal__action"
+                  [disabled]="detailBusy()"
+                  (click)="reactivateUser(user)"
+                >
+                  Reactiver le compte
+                </button>
+              }
+            </div>
+          </div>
+
           <footer class="detail-modal__footer">
-            <button type="button" class="detail-modal__action">
+            <button
+              type="button"
+              class="detail-modal__action"
+              [disabled]="impersonateBusy() || !canImpersonate(user)"
+              (click)="startImpersonationFromDetail()"
+            >
               <span class="detail-modal__action-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none">
                   <path
@@ -716,104 +677,28 @@
           <section class="acting-modal__summary">
             <p><strong>Administrateur :</strong> {{ adminDisplayName() }}</p>
             <p><strong>Utilisateur cible :</strong> {{ getUserLabel(user) }}</p>
-            <p><strong>Type :</strong> {{ getAccountTypeSentence(user.accountType) }}</p>
+            <p><strong>Type :</strong> {{ getAccountTypeSentence(rowAccountType(user)) }}</p>
           </section>
 
           <footer class="acting-modal__footer">
-            <button type="button" class="acting-modal__confirm" (click)="confirmActingModal()">
-              Confirmer - Creer une reservation
-            </button>
-            <button type="button" class="acting-modal__cancel" (click)="closeActingModal()">
-              Annuler
-            </button>
-          </footer>
-        </div>
-      </section>
-    </div>
-  }
-
-  @if (suspendedUser(); as user) {
-    <div
-      class="suspend-modal-backdrop"
-      role="button"
-      tabindex="0"
-      aria-label="Fermer le modal de suspension"
-      (click)="$event.target === $event.currentTarget && closeSuspendModal()"
-      (keydown.enter)="closeSuspendModal()"
-      (keydown.space)="closeSuspendModal()"
-    >
-      <section
-        class="suspend-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="suspend-user-modal-title"
-      >
-        <header class="suspend-modal__header">
-          <div class="suspend-modal__title">
-            <span class="suspend-modal__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
-                <path
-                  d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M18 8V14"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M15 11H21"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </span>
-            <h2 id="suspend-user-modal-title">Suspendre le compte</h2>
-          </div>
-
-          <button
-            type="button"
-            class="suspend-modal__close"
-            aria-label="Fermer"
-            (click)="closeSuspendModal()"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </header>
-
-        <div class="suspend-modal__body">
-          <section class="suspend-modal__warning">
-            <p>
-              Vous allez suspendre le compte de <strong>{{ getUserLabel(user) }}</strong
-              >. L'utilisateur ne pourra plus se connecter ni effectuer de reservations. Cette
-              action est reversible et sera enregistree dans l'audit.
-            </p>
-          </section>
-
-          <label class="suspend-modal__field">
-            <span>Raison de la suspension *</span>
-            <textarea
-              [value]="suspensionReason()"
-              (input)="updateSuspensionReason($any($event.target).value)"
-              placeholder="Ex: 3 reservations non honorees, comportement inapproprie..."
-            ></textarea>
-          </label>
-
-          <footer class="suspend-modal__footer">
             <button
               type="button"
-              class="suspend-modal__confirm"
-              [disabled]="!canConfirmSuspension()"
-              (click)="confirmSuspension()"
+              class="acting-modal__confirm"
+              [disabled]="impersonateBusy()"
+              (click)="confirmActingModal()"
             >
-              Confirmer la suspension
+              @if (impersonateBusy()) {
+                Connexion en cours…
+              } @else {
+                Confirmer l'impersonation
+              }
             </button>
-            <button type="button" class="suspend-modal__cancel" (click)="closeSuspendModal()">
+            <button
+              type="button"
+              class="acting-modal__cancel"
+              [disabled]="impersonateBusy()"
+              (click)="closeActingModal()"
+            >
               Annuler
             </button>
           </footer>
@@ -822,78 +707,95 @@
     </div>
   }
 
-  @if (reactivatedUser(); as user) {
+  @if (isEditModalOpen() && editingUser(); as eu) {
     <div
-      class="reactivate-modal-backdrop"
+      class="create-modal-backdrop"
       role="button"
       tabindex="0"
-      aria-label="Fermer le modal de reactivation"
-      (click)="$event.target === $event.currentTarget && closeReactivateModal()"
-      (keydown.enter)="closeReactivateModal()"
-      (keydown.space)="closeReactivateModal()"
+      aria-label="Fermer l edition tutelle"
+      (click)="$event.target === $event.currentTarget && closeEditModal()"
+      (keydown.enter)="closeEditModal()"
+      (keydown.space)="closeEditModal()"
     >
       <section
-        class="reactivate-modal"
+        class="create-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="reactivate-user-modal-title"
+        aria-labelledby="edit-tutored-modal-title"
       >
-        <header class="reactivate-modal__header">
-          <div class="reactivate-modal__title">
-            <span class="reactivate-modal__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8" />
-                <path
-                  d="M4.8 18C5.8 15.7 7.5 14.4 9 14.4C10.5 14.4 12.2 15.7 13.2 18"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M18 8V14"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M15 11H21"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </span>
-            <h2 id="reactivate-user-modal-title">Reactiver le compte</h2>
-          </div>
-
+        <header class="create-modal__header">
+          <h2 id="edit-tutored-modal-title">Modifier — {{ getUserLabel(eu) }}</h2>
           <button
             type="button"
-            class="reactivate-modal__close"
+            class="create-modal__close"
             aria-label="Fermer"
-            (click)="closeReactivateModal()"
+            (click)="closeEditModal()"
           >
             <span aria-hidden="true">&times;</span>
           </button>
         </header>
 
-        <div class="reactivate-modal__body">
-          <section class="reactivate-modal__warning">
-            <p>
-              Etes-vous sur de vouloir reactiver le compte de
-              <strong>{{ getUserLabel(user) }}</strong> ? L'utilisateur pourra de nouveau se
-              connecter et effectuer des reservations.
-            </p>
-          </section>
-
-          <footer class="reactivate-modal__footer">
-            <button type="button" class="reactivate-modal__confirm" (click)="confirmReactivation()">
-              Confirmer la reactivation
-            </button>
-            <button type="button" class="reactivate-modal__cancel" (click)="closeReactivateModal()">
-              Annuler
-            </button>
-          </footer>
+        <div class="create-modal__body">
+          <div class="create-modal__grid">
+            <label class="modal-field">
+              <span>Prenom *</span>
+              <input
+                type="text"
+                [value]="editFirstName()"
+                (input)="updateEditFirstName($any($event.target).value)"
+              />
+            </label>
+            <label class="modal-field">
+              <span>Nom *</span>
+              <input
+                type="text"
+                [value]="editLastName()"
+                (input)="updateEditLastName($any($event.target).value)"
+              />
+            </label>
+          </div>
+          <label class="modal-field">
+            <span>Telephone</span>
+            <input
+              type="tel"
+              [value]="editPhone()"
+              (input)="updateEditPhone($any($event.target).value)"
+            />
+          </label>
+          <label class="modal-field">
+            <span>Annee de naissance (optionnel)</span>
+            <input
+              type="number"
+              min="1900"
+              max="2100"
+              [value]="editBirthYear() ?? ''"
+              (input)="updateEditBirthYear($any($event.target).value)"
+            />
+          </label>
+          <label class="modal-field">
+            <span>Notes administrateur (optionnel)</span>
+            <textarea
+              rows="2"
+              [value]="editNotesAdmin()"
+              (input)="updateEditNotesAdmin($any($event.target).value)"
+            ></textarea>
+          </label>
         </div>
+
+        <footer class="create-modal__footer">
+          <button
+            type="button"
+            class="create-modal__submit"
+            [disabled]="editBusy()"
+            (click)="submitEditTutored()"
+          >
+            @if (editBusy()) {
+              Enregistrement…
+            } @else {
+              Enregistrer
+            }
+          </button>
+        </footer>
       </section>
     </div>
   }

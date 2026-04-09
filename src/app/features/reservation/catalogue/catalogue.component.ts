@@ -1,15 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, isDevMode, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { distinctUntilChanged, finalize, map, of, switchMap } from 'rxjs';
 
-import { ResourceDto as OpenApiResourceDto } from '../../../core/api/model/resourceDto';
+import { GroupsService } from '../../../core/api/groups.service';
 import { ResourceService } from '../../../core/api/resource.service';
 import { ResourceDto } from '../../../core/api/models/resource.model';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ReservationPricingGroup, resolveResourcePricing } from './resource-pricing.utils';
+import { mapUserGroupsApiToPricing } from './group-api.mapper';
+import {
+  describeRentalPriceLabel,
+  ReservationPricingGroup,
+  resolveResourcePricing,
+} from './resource-pricing.utils';
 import {
   getFeatureLabel,
   getResourceCoverTheme,
@@ -58,8 +63,8 @@ interface CatalogueResource {
   overlayBadges: CoverOverlayBadge[];
   pricePerBooking: number;
   depositAmount: number;
-  /** Données brutes alignées OpenAPI (référence pour prix / détail). */
-  source: OpenApiResourceDto;
+  /** Données normalisées (ResourceService / contrat API). */
+  source: ResourceDto;
 }
 
 @Component({
@@ -72,6 +77,8 @@ interface CatalogueResource {
 export class CatalogueComponent {
   private readonly resourceService = inject(ResourceService);
   private readonly authService = inject(AuthService);
+  private readonly groupsService = inject(GroupsService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly familyFilter = signal<ResourceFamilyFilter>('ALL');
   readonly selectedFeatures = signal<FeatureFilter[]>([]);
@@ -80,7 +87,7 @@ export class CatalogueComponent {
   );
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
-  /** Remises groupées : pas encore d’endpoint backend (ex-JSON mock) — tableau vide pour l’instant. */
+  /** Groupes de l’utilisateur connecté (`GET /api/groups`). */
   readonly userGroups = signal<ReservationPricingGroup[]>([]);
 
   private static readonly OVERLAY_FEATURE_ORDER: FeatureFilter[] = [
@@ -125,6 +132,15 @@ export class CatalogueComponent {
   readonly isAuthenticated = this.authService.isSessionActive;
 
   constructor() {
+    toObservable(this.authService.currentUser)
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap(user => (user ? this.groupsService.getMyGroups() : of([]))),
+        map(rows => mapUserGroupsApiToPricing(rows)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(groups => this.userGroups.set(groups));
+
     this.resourceService
       .getAll()
       .pipe(
@@ -136,28 +152,9 @@ export class CatalogueComponent {
           const filtered = rows.filter(
             (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
           );
-          if (isDevMode()) {
-            console.debug(
-              '[Agora][Catalogue] rows recus',
-              rows.length,
-              '→ apres filtre',
-              filtered.length
-            );
-            if (rows.length > 0 && filtered.length === 0) {
-              console.warn('[Agora][Catalogue] TOUS les rows ont ete filtres (id vide ?)', rows);
-            }
-          }
           this.resources.set(filtered.map(resource => this.mapResource(resource)));
         },
         error: (error: HttpErrorResponse) => {
-          if (isDevMode()) {
-            console.error(
-              '[Agora][Catalogue] erreur chargement ressources',
-              error.status,
-              error.message,
-              error
-            );
-          }
           const message =
             error.status === 0
               ? "Impossible de joindre l'API (backend arrete ou mauvais port sur l'hote). Docker : verifier BACKEND_PORT dans .env (souvent 8080) et que le proxy (proxy.conf.js) utilise le meme port."
@@ -197,14 +194,12 @@ export class CatalogueComponent {
 
   getPriceLabel(resource: CatalogueResource): string {
     const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());
-    return pricing.finalPriceCents === 0
-      ? 'Gratuit'
-      : this.formatPrice(pricing.finalPriceCents / 100);
+    return describeRentalPriceLabel(pricing, euros => this.formatPrice(euros));
   }
 
   showPriceSuffix(resource: CatalogueResource): boolean {
     const pricing = resolveResourcePricing(resource.source, this.currentUser(), this.userGroups());
-    return pricing.finalPriceCents > 0;
+    return pricing.rentalPriceKnown && pricing.finalPriceCents > 0;
   }
 
   getDepositLabel(resource: CatalogueResource): string {
@@ -216,7 +211,6 @@ export class CatalogueComponent {
   }
 
   private mapResource(resource: ResourceDto): CatalogueResource {
-    const api = resource as unknown as OpenApiResourceDto;
     const id = String(resource.id);
     const description = resource.description?.trim() || 'Description indisponible.';
     const accessibilityTags = resource.accessibilityTags ?? [];
@@ -230,21 +224,21 @@ export class CatalogueComponent {
       name: resource.name ?? 'Ressource',
       description,
       family,
-      typeLabel: getResourceTypeLabel(api.resourceType),
+      typeLabel: getResourceTypeLabel(resource.resourceType),
       coverTheme: getResourceCoverTheme(id),
       imageUrl,
-      tags: getResourceTags(api),
+      tags: getResourceTags(resource),
       features: accessibilityTags,
-      overlayBadges: CatalogueComponent.buildOverlayBadges(family, api, accessibilityTags),
-      pricePerBooking: getResourcePrice(api),
+      overlayBadges: CatalogueComponent.buildOverlayBadges(family, resource, accessibilityTags),
+      pricePerBooking: getResourcePrice(resource),
       depositAmount: Math.round(depositAmountCents / 100),
-      source: api,
+      source: resource,
     };
   }
 
   private static buildOverlayBadges(
     family: 'ROOM' | 'EQUIPMENT',
-    resource: OpenApiResourceDto,
+    resource: ResourceDto,
     accessibilityTags: string[]
   ): CoverOverlayBadge[] {
     const badges: CoverOverlayBadge[] = [];

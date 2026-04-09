@@ -1,5 +1,5 @@
-import { ResourceDto } from '../../../core/api/model/resourceDto';
-import { UserProfile } from '../../../core/auth/auth.model';
+import { ResourceDto } from '../../../core/api/models/resource.model';
+import { UserProfile, UserRole } from '../../../core/auth/auth.model';
 import { getResourcePrice } from './resource-presentation.utils';
 
 export interface ReservationPricingGroup {
@@ -34,10 +34,21 @@ export interface ResolvedResourcePricing {
   isDepositExempt: boolean;
   discountLabel: string | null;
   summaryName: string;
+  /** True lorsque le backend expose un tarif de location exploitable (champ dédié à venir). */
+  rentalPriceKnown: boolean;
 }
 
 export function isAdministrativeReservationUser(user: UserProfile | null): boolean {
-  return !!user && (user.role === 'SECRETARY_ADMIN' || user.role === 'DELEGATE_ADMIN');
+  if (!user) {
+    return false;
+  }
+  const roles = new Set<UserRole>([...user.membershipRoles, user.role]);
+  return (
+    roles.has('SECRETARY_ADMIN') ||
+    roles.has('DELEGATE_ADMIN') ||
+    roles.has('SUPERADMIN') ||
+    roles.has('ADMIN_SUPPORT')
+  );
 }
 
 export function canGroupBookResource(
@@ -45,6 +56,31 @@ export function canGroupBookResource(
   resource: ResourceDto
 ): boolean {
   return resource.resourceType === 'IMMOBILIER' ? group.canBookImmobilier : group.canBookMobilier;
+}
+
+function isRentalPriceKnown(resource: ResourceDto): boolean {
+  const c = resource.rentalPriceCents;
+  return c != null && typeof c === 'number' && !Number.isNaN(c);
+}
+
+/**
+ * Libellé du tarif de location (hors caution). Tant que `rentalPriceCents` est absent,
+ * affiche « À confirmer » (sauf libellés d’exonération déjà connus).
+ */
+export function describeRentalPriceLabel(
+  pricing: ResolvedResourcePricing,
+  formatKnownNonZeroEuros: (euros: number) => string
+): string {
+  if (!pricing.rentalPriceKnown) {
+    if (pricing.discountLabel === 'Exoneration mandat electif') {
+      return 'Exonéré (mandat)';
+    }
+    return 'À confirmer';
+  }
+  if (pricing.finalPriceCents === 0) {
+    return 'Gratuit';
+  }
+  return formatKnownNonZeroEuros(pricing.finalPriceCents / 100);
 }
 
 export function buildReservationActorOptions(
@@ -57,7 +93,7 @@ export function buildReservationActorOptions(
     {
       id: 'personal',
       title: 'A titre personnel',
-      subtitle: `Tarif plein - ${formatPriceCents(basePriceCents)}`,
+      subtitle: 'Frais de location : selon validation du secretariat',
       priceCents: basePriceCents,
       discountLabel: null,
       discountBadge: null,
@@ -94,6 +130,7 @@ export function resolveResourcePricing(
   user: UserProfile | null,
   groups: ReservationPricingGroup[]
 ): ResolvedResourcePricing {
+  const rentalPriceKnown = isRentalPriceKnown(resource);
   const basePriceCents = getResourcePrice(resource) * 100;
   const depositAmountCents = resource.depositAmountCents ?? 0;
 
@@ -106,6 +143,7 @@ export function resolveResourcePricing(
       isDepositExempt: false,
       discountLabel: null,
       summaryName: 'A titre personnel',
+      rentalPriceKnown,
     };
   }
 
@@ -121,6 +159,7 @@ export function resolveResourcePricing(
       isDepositExempt: false,
       discountLabel: null,
       summaryName: `${user.firstName} ${user.lastName}`,
+      rentalPriceKnown,
     };
   }
 
@@ -132,6 +171,7 @@ export function resolveResourcePricing(
     isDepositExempt: bestOption.isDepositExempt,
     discountLabel: bestOption.discountLabel,
     summaryName: bestOption.summaryName,
+    rentalPriceKnown,
   };
 }
 

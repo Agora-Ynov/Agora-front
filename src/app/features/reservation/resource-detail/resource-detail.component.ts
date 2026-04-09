@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { map, of, switchMap } from 'rxjs';
+import { distinctUntilChanged, map, of, switchMap } from 'rxjs';
 
-import { RessourcesService } from '../../../core/api/api/ressources.service';
-import { ResourceDto } from '../../../core/api/model/resourceDto';
+import { GroupsService } from '../../../core/api/groups.service';
+import { ResourceDto } from '../../../core/api/models/resource.model';
+import { ResourceService } from '../../../core/api/resource.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { mapUserGroupsApiToPricing } from '../catalogue/group-api.mapper';
 import {
+  describeRentalPriceLabel,
   ReservationPricingGroup,
   resolveResourcePricing,
 } from '../catalogue/resource-pricing.utils';
@@ -27,6 +30,7 @@ interface ResourceDetailViewModel {
   description: string;
   typeLabel: string;
   coverTheme: ResourceCoverTheme;
+  imageUrl: string | null;
   capacityLabel: string;
   priceLabel: string;
   priceHint: string;
@@ -46,13 +50,15 @@ interface ResourceDetailViewModel {
 })
 export class ResourceDetailComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly ressourcesService = inject(RessourcesService);
+  private readonly resourceService = inject(ResourceService);
   private readonly authService = inject(AuthService);
+  private readonly groupsService = inject(GroupsService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly resource = signal<ResourceDto | null>(null);
-  /** Tarification groupée : pas encore fournie par l’API (ex-mock JSON). */
+  /** Groupes utilisateur (`GET /api/groups`). */
   readonly userGroups = signal<ReservationPricingGroup[]>([]);
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isSessionActive;
@@ -69,8 +75,7 @@ export class ResourceDetailComponent {
       resource.capacity && resource.capacity > 0
         ? `${resource.capacity} personnes`
         : 'Lot complet disponible';
-    const priceLabel =
-      pricing.finalPriceCents === 0 ? 'Gratuit' : `${pricing.finalPriceCents / 100}EUR`;
+    const priceLabel = describeRentalPriceLabel(pricing, euros => `${euros}EUR`);
     const priceHint = this.isAuthenticated()
       ? pricing.discountLabel
         ? `${pricing.discountLabel} applique automatiquement a votre profil.`
@@ -81,12 +86,14 @@ export class ResourceDetailComponent {
       ? 'Cette caution est prise en charge par votre exoneration actuelle.'
       : 'Cette caution est remboursable apres restitution. Elle peut etre exoneree selon votre situation ou votre groupe.';
 
+    const desc = (resource.description ?? '').trim();
     return {
       id: resourceId,
       name: getResourceDisplayName(resource),
-      description: resource.description ?? 'Description indisponible.',
+      description: desc || 'Aucune description renseignee pour cette ressource.',
       typeLabel: getResourceTypeLabel(resource.resourceType),
       coverTheme: getResourceCoverTheme(resourceId),
+      imageUrl: resource.imageUrl?.trim() ? resource.imageUrl.trim() : null,
       capacityLabel,
       priceLabel,
       priceHint,
@@ -99,6 +106,15 @@ export class ResourceDetailComponent {
   });
 
   constructor() {
+    toObservable(this.authService.currentUser)
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap(user => (user ? this.groupsService.getMyGroups() : of([]))),
+        map(rows => mapUserGroupsApiToPricing(rows)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(groups => this.userGroups.set(groups));
+
     this.route.paramMap
       .pipe(
         takeUntilDestroyed(),
@@ -112,9 +128,7 @@ export class ResourceDetailComponent {
             return of(null);
           }
 
-          return this.ressourcesService.getResourceById(resourceId, 'body', false, {
-            transferCache: false,
-          });
+          return this.resourceService.getById(resourceId);
         })
       )
       .subscribe({

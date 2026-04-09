@@ -6,6 +6,11 @@
 
 .page-header {
   margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 
   h1 {
     margin: 0 0 8px;
@@ -17,6 +22,27 @@
     margin: 0;
     color: #475569;
   }
+}
+
+.page-header__reload {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.page-loading {
+  color: #475569;
+  margin: 0 0 16px;
 }
 
 .stats-grid {
@@ -68,6 +94,12 @@
   border: 1px solid #a7f3d0;
   background: #ecfdf5;
   color: #047857;
+}
+
+.feedback-box--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .filter-tabs {
@@ -197,7 +229,8 @@
   border: 1px solid transparent;
 }
 
-.status-pill--pending {
+.status-pill--pending_validation,
+.status-pill--pending_document {
   background: #fff3bf;
   color: #a16207;
 }
@@ -212,18 +245,18 @@
   color: #dc2626;
 }
 
-.status-pill--completed {
-  background: #e2e8f0;
-  color: #334155;
+.status-pill--rejected {
+  background: #ffe4e6;
+  color: #be123c;
 }
 
-.payment-pill--paid {
+.payment-pill--deposit_paid {
   background: #dcfce7;
   border-color: #22c55e;
   color: #047857;
 }
 
-.payment-pill--alert {
+.payment-pill--deposit_pending {
   background: #fff7ed;
   border-color: #f97316;
   color: #ea580c;
@@ -235,7 +268,7 @@
   color: #2563eb;
 }
 
-.payment-pill--exempt-admin {
+.payment-pill--waived {
   background: #faf5ff;
   border-color: #c026d3;
   color: #c026d3;

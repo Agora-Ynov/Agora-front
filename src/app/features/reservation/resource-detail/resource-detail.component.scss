@@ -183,6 +183,27 @@
   top: 6.9rem;
 }
 
+.resource-detail-photo {
+  width: 100%;
+  min-height: 30rem;
+  max-height: 38rem;
+  object-fit: cover;
+  border-radius: 2rem;
+  display: block;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+  background: #e2e8f0;
+}
+
+.resource-detail-calendar-link {
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .resource-detail-cover {
   min-height: 30rem;
   border-radius: 2rem;

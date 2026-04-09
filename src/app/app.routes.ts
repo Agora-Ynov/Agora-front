@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './core/guards/admin.guard';
 import { authGuard } from './core/guards/auth.guard';
+import { superadminGuard } from './core/guards/superadmin.guard';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,13 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+  },
+  {
+    path: 'auth/activate',
+    loadComponent: () =>
+      import('./features/auth/activate-account/activate-account.component').then(
+        m => m.ActivateAccountComponent
+      ),
   },
   {
     path: 'catalogue',
@@ -50,6 +58,7 @@ export const routes: Routes = [
   {
     path: 'admin/resources',
     canActivate: [adminGuard],
+    data: { allowDelegate: true },
     loadComponent: () =>
       import('./features/admin/resources/resource-management.component').then(
         m => m.ResourceManagementComponent
@@ -121,6 +130,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/dashboard/admin-dashboard.component').then(
         m => m.AdminDashboardComponent
+      ),
+  },
+  {
+    path: 'superadmin/admin-support',
+    canActivate: [superadminGuard],
+    loadComponent: () =>
+      import('./features/superadmin/superadmin-admin-support-page.component').then(
+        m => m.SuperadminAdminSupportPageComponent
       ),
   },
   {

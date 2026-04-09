@@ -1,0 +1,138 @@
+.superadmin-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.superadmin-page__hero {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted, #64748b);
+    line-height: 1.5;
+  }
+}
+
+.superadmin-page__alert {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  margin-bottom: 1.25rem;
+}
+
+.superadmin-page__muted {
+  color: var(--text-muted, #64748b);
+  display: block;
+}
+
+.superadmin-panel {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+  }
+}
+
+.superadmin-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.superadmin-panel__hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #64748b);
+}
+
+.superadmin-promote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.superadmin-input {
+  flex: 1;
+  min-width: 240px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-subtle, #cbd5e1);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.superadmin-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, #cbd5e1);
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.superadmin-btn--primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.superadmin-btn--danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+  font-size: 0.85rem;
+}
+
+.superadmin-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.superadmin-table__row {
+  display: grid;
+  grid-template-columns: 1.4fr 1.2fr 0.7fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border-subtle, #f1f5f9);
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.superadmin-table__row--head {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #64748b);
+  border-bottom-width: 2px;
+}
+
+.superadmin-table__actions {
+  text-align: right;
+}

@@ -1,3 +1,17 @@
+@if (isImpersonating()) {
+  <div class="impersonation-banner" role="status">
+    <span>
+      Vous agissez pour le compte d'un usager
+      @if (impersonationAdminEmail(); as adminMail) {
+        <span class="impersonation-banner__meta">(impersonation : {{ adminMail }})</span>
+      }
+    </span>
+    <button type="button" class="impersonation-banner__exit" (click)="exitImpersonation()">
+      Reprendre la session administrateur
+    </button>
+  </div>
+}
+
 <header class="app-header">
   <div class="header-container">
     <div class="header-bar">
@@ -105,6 +119,54 @@
           </span>
           <span>Catalogue</span>
         </a>
+
+        @if (showAdminNav()) {
+          <a
+            [routerLink]="adminNavLink()"
+            routerLinkActive="active-link"
+            class="nav-link"
+            (click)="closeMenu()"
+          >
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="5"
+                  y="5"
+                  width="14"
+                  height="14"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path d="M9 12H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M9 9H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span>{{ adminNavLabel() }}</span>
+          </a>
+        }
+        @if (isSuperadmin()) {
+          <a
+            routerLink="/superadmin/admin-support"
+            routerLinkActive="active-link"
+            class="nav-link"
+            (click)="closeMenu()"
+          >
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8" />
+                <path
+                  d="M12 8V12L15 14"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span>Superadmin</span>
+          </a>
+        }
 
         <a
           routerLink="/calendar"

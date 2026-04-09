@@ -4,7 +4,14 @@
       <h1>Gestion des reservations</h1>
       <p>Validez, refusez et gerez toutes les reservations</p>
     </div>
+    <button type="button" class="page-header__reload" (click)="reloadList()" [disabled]="loading()">
+      Actualiser
+    </button>
   </div>
+
+  @if (loadError(); as err) {
+    <div class="feedback-box feedback-box--error" role="alert">{{ err }}</div>
+  }
 
   <section class="stats-grid">
     <article class="stat-card">
@@ -16,20 +23,22 @@
       <span>Confirmees</span>
     </article>
     <article class="stat-card">
-      <strong class="stat-card__value stat-card__value--alert">{{
-        stats().paymentsPending
-      }}</strong>
-      <span>Paiement en attente</span>
+      <strong class="stat-card__value stat-card__value--alert">{{ stats().paymentsPending }}</strong>
+      <span>Caution en attente</span>
     </article>
     <article class="stat-card">
       <strong class="stat-card__value stat-card__value--info">{{ stats().exemptions }}</strong>
-      <span>Exonerations</span>
+      <span>Exo. / dispenses</span>
     </article>
   </section>
 
   <div class="feedback-box" *ngIf="feedbackMessage()">
     {{ feedbackMessage() }}
   </div>
+
+  @if (loading()) {
+    <p class="page-loading">Chargement des reservations...</p>
+  }
 
   <section class="filter-tabs" aria-label="Filtres des reservations">
     @for (tab of tabs(); track tab.id) {
@@ -40,7 +49,7 @@
         (click)="setFilter(tab.id)"
       >
         <span>{{ tab.label }}</span>
-        @if (tab.id === 'PENDING' && tab.count > 0) {
+        @if (tab.id === 'PENDING_GROUP' && tab.count > 0) {
           <span class="filter-tab__badge">{{ tab.count }}</span>
         }
       </button>
@@ -56,33 +65,30 @@
       <div class="reservations-table__head">
         <span>ID</span>
         <span>Ressource</span>
-        <span>Utilisateur</span>
+        <span>Reserveur</span>
         <span>Date</span>
         <span>Statut</span>
-        <span>Paiement</span>
+        <span>Caution</span>
         <span>Montant</span>
         <span>Actions</span>
       </div>
 
-      @for (
-        reservation of filteredReservations();
-        track trackByReservationId($index, reservation)
-      ) {
+      @for (reservation of filteredReservations(); track trackByReservationId($index, reservation)) {
         <article
           class="reservations-row"
-          [class.reservations-row--pending]="reservation.status === 'PENDING'"
+          [class.reservations-row--pending]="statusRowPending(reservation)"
         >
-          <div class="cell cell--id">{{ reservation.id }}</div>
+          <div class="cell cell--id">{{ reservation.id.slice(0, 8) }}…</div>
           <div class="cell cell--resource">{{ reservation.resourceName }}</div>
           <div class="cell cell--user">
             <strong>{{ reservation.userName }}</strong>
-            <span>{{ reservation.userEmail || '-' }}</span>
+            <span>{{ reservation.userEmail || '—' }}</span>
           </div>
-          <div class="cell">{{ reservation.date }}</div>
+          <div class="cell">{{ reservation.dateLabel }}</div>
           <div class="cell">
             <span
               class="status-pill"
-              [class]="'status-pill status-pill--' + reservation.status.toLowerCase()"
+              [ngClass]="'status-pill--' + (reservation.status | lowercase)"
             >
               {{ statusLabel(reservation.status) }}
             </span>
@@ -90,19 +96,15 @@
           <div class="cell">
             <span
               class="payment-pill"
-              [class.payment-pill--paid]="reservation.paymentStatus === 'PAID'"
-              [class.payment-pill--alert]="reservation.paymentStatus === 'TO_SETTLE'"
-              [class.payment-pill--exempt]="reservation.paymentStatus === 'EXEMPT_GROUP'"
-              [class.payment-pill--exempt-admin]="reservation.paymentStatus === 'EXEMPT_SECRETARY'"
-              [class.payment-pill--refunded]="reservation.paymentStatus === 'REFUNDED'"
+              [ngClass]="'payment-pill--' + (reservation.depositStatus | lowercase)"
             >
-              {{ paymentLabel(reservation.paymentStatus) }}
+              {{ paymentDepositLabel(reservation.depositStatus) }}
             </span>
           </div>
           <div class="cell cell--amount">
-            <strong>{{ reservation.amountEuros }}EUR</strong>
+            <strong>{{ reservation.amountEuros }} EUR</strong>
             @if (reservation.depositEuros > 0) {
-              <span>+{{ reservation.depositEuros }}EUR caution</span>
+              <span>dont {{ reservation.depositEuros }} EUR caution</span>
             }
           </div>
           <div class="cell cell--actions">
@@ -122,7 +124,7 @@
                 <circle cx="12" cy="12" r="2.75" stroke="currentColor" stroke-width="1.8" />
               </svg>
             </button>
-            @if (reservation.status === 'PENDING') {
+            @if (canConfirm(reservation)) {
               <button
                 type="button"
                 class="icon-btn icon-btn--success"
@@ -148,18 +150,8 @@
                 aria-label="Refuser"
               >
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M8 8L16 16"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M16 8L8 16"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
+                  <path d="M8 8L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  <path d="M16 8L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
               </button>
             }
@@ -180,7 +172,7 @@
         <header class="modal-header">
           <div>
             <h3 id="reservation-details-title">Gestion de la reservation</h3>
-            <p>ID Reservation</p>
+            <p>ID reservation</p>
             <strong>{{ reservation.id }}</strong>
           </div>
 
@@ -189,7 +181,7 @@
               <p>Statut</p>
               <span
                 class="status-pill"
-                [class]="'status-pill status-pill--' + reservation.status.toLowerCase()"
+                [ngClass]="'status-pill--' + (reservation.status | lowercase)"
               >
                 {{ statusLabel(reservation.status) }}
               </span>
@@ -204,10 +196,9 @@
             <strong>{{ reservation.resourceName }}</strong>
           </div>
           <div class="detail-card">
-            <span>Utilisateur</span>
+            <span>Reserveur</span>
             <strong>{{ reservation.userName }}</strong>
-            <small>{{ reservation.userEmail || '-' }}</small>
-            <small>{{ reservation.userPhone || '-' }}</small>
+            <small>Detail citoyen non inclus dans la liste admin</small>
           </div>
           <div class="detail-card">
             <span>Date de debut</span>
@@ -219,33 +210,36 @@
           </div>
         </div>
 
+        @if (reservation.discountLabel) {
+          <div class="modal-section">
+            <span class="field-label">Remise</span>
+            <div class="readonly-box">{{ reservation.discountLabel }}</div>
+          </div>
+        }
+
         <section class="modal-section">
-          <h4>Paiement</h4>
+          <h4>Caution / paiement</h4>
           <div class="payment-summary">
             <div>
-              <span>Montant total</span>
-              <strong>{{ reservation.amountEuros }}EUR</strong>
+              <span>Montant total (est.)</span>
+              <strong>{{ reservation.amountEuros }} EUR</strong>
             </div>
             <div>
               <span>Caution</span>
-              <strong>{{ reservation.depositEuros }}EUR</strong>
+              <strong>{{ reservation.depositEuros }} EUR</strong>
             </div>
             <div>
               <span>Statut</span>
               <strong
                 class="payment-pill"
-                [class.payment-pill--paid]="paymentDraft() === 'PAID'"
-                [class.payment-pill--alert]="paymentDraft() === 'TO_SETTLE'"
-                [class.payment-pill--exempt]="paymentDraft() === 'EXEMPT_GROUP'"
-                [class.payment-pill--exempt-admin]="paymentDraft() === 'EXEMPT_SECRETARY'"
-                [class.payment-pill--refunded]="paymentDraft() === 'REFUNDED'"
+                [ngClass]="'payment-pill--' + (paymentDraft() | lowercase)"
               >
                 {{ paymentLabel(paymentDraft()) }}
               </strong>
             </div>
           </div>
 
-          <label class="field-label" for="paymentStatus">Modifier le statut de paiement</label>
+          <label class="field-label" for="paymentStatus">Modifier le statut de caution</label>
           <select
             id="paymentStatus"
             class="field-control"
@@ -259,53 +253,50 @@
         </section>
 
         <section class="modal-section">
-          <div class="field-label">Commentaire utilisateur</div>
-          <div class="readonly-box">{{ reservation.userComment }}</div>
-        </section>
-
-        <section class="modal-section">
-          <label class="field-label" for="adminComment">Commentaire administrateur</label>
+          <label class="field-label" for="adminComment">Commentaire (trace cote paiement)</label>
           <textarea
             id="adminComment"
             class="field-control field-control--textarea"
             [ngModel]="adminCommentDraft()"
             (ngModelChange)="adminCommentDraft.set($event)"
-            placeholder="Ajouter un commentaire interne (non visible par l'utilisateur)..."
+            placeholder="Optionnel — visible dans l historique des paiements"
           ></textarea>
 
           <button type="button" class="secondary-action" (click)="saveAdminComment()">
-            Ajouter le commentaire
+            Enregistrer commentaire + statut
           </button>
         </section>
 
         <section class="modal-section">
           <button type="button" class="audit-button" (click)="toggleAudit()">
-            <span>Journal d'audit de cette reservation</span>
+            <span>Historique des paiements</span>
             <span>{{ auditExpanded() ? 'v' : '>' }}</span>
           </button>
 
           @if (auditExpanded()) {
-            <div class="audit-list">
-              @for (entry of reservation.auditTrail; track entry.label + entry.meta) {
-                <div class="audit-item">
-                  <strong>{{ entry.label }}</strong>
-                  <span>{{ entry.meta }}</span>
-                </div>
-              }
-            </div>
+            @if (!paymentHistoryLoaded()) {
+              <p class="audit-loading">Chargement...</p>
+            } @else if (!paymentHistoryEntries().length) {
+              <p class="audit-empty">Aucune entree pour l instant.</p>
+            } @else {
+              <div class="audit-list">
+                @for (entry of paymentHistoryEntries(); track entry.label + entry.meta) {
+                  <div class="audit-item">
+                    <strong>{{ entry.label }}</strong>
+                    <span>{{ entry.meta }}</span>
+                  </div>
+                }
+              </div>
+            }
           }
         </section>
 
         <div class="modal-actions">
-          <button
-            type="button"
-            class="secondary-action secondary-action--wide"
-            (click)="sendReminder()"
-          >
-            Envoyer un rappel
+          <button type="button" class="secondary-action secondary-action--wide" (click)="sendReminder()">
+            Rappel (non API)
           </button>
           <button type="button" class="primary-action" (click)="saveReservationDetails()">
-            Enregistrer
+            Enregistrer le paiement
           </button>
         </div>
 
@@ -314,7 +305,7 @@
     </div>
   }
 
-  @if (rejectingReservation(); as reservation) {
+  @if (rejectingReservation(); as reservationReject) {
     <div class="modal-backdrop">
       <section
         class="modal-card modal-card--reject"
@@ -327,18 +318,8 @@
             <span class="danger-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-                <path
-                  d="M8 8L16 16"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M16 8L8 16"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
+                <path d="M8 8L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M16 8L8 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
               </svg>
             </span>
             <h3 id="reject-reservation-title">Refuser la reservation</h3>
@@ -347,17 +328,17 @@
         </header>
 
         <div class="warning-box">
-          Vous allez refuser la reservation <strong>{{ reservation.id }}</strong
-          >. Un email sera envoye a l'utilisateur avec la raison du refus.
+          Vous allez refuser la reservation <strong>{{ reservationReject.id }}</strong
+          >. Indiquez un motif (enregistre cote serveur).
         </div>
 
-        <label class="field-label" for="rejectReason">Raison du refus *</label>
+        <label class="field-label" for="rejectReason">Motif *</label>
         <textarea
           id="rejectReason"
           class="field-control field-control--textarea"
           [ngModel]="rejectReason()"
           (ngModelChange)="rejectReason.set($event)"
-          placeholder="Ex: La salle n'est pas disponible a cette date, conflit avec un autre evenement..."
+          placeholder="Ex.: conflit de planning, documents incomplets..."
         ></textarea>
 
         <div class="modal-actions modal-actions--split">
@@ -369,9 +350,7 @@
           >
             Confirmer le refus
           </button>
-          <button type="button" class="secondary-action" (click)="closeRejectModal()">
-            Annuler
-          </button>
+          <button type="button" class="secondary-action" (click)="closeRejectModal()">Annuler</button>
         </div>
       </section>
     </div>
