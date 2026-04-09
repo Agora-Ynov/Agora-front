@@ -10,6 +10,7 @@ import {
   ResourceType,
 } from '../../../core/api/models/resource.model';
 import { ResourceService } from '../../../core/api/resource.service';
+import { normalizeCentsInput } from '../../../core/api/resource-cents.util';
 
 @Component({
   selector: 'app-resource-management',
@@ -228,7 +229,35 @@ export class ResourceManagementComponent implements OnInit {
     if (resource.resourceType === 'IMMOBILIER') {
       return resource.capacity ? `${resource.capacity} pers.` : 'Non renseignee';
     }
-    return 'Materiel';
+    return resource.capacity ? `${resource.capacity} unites` : '—';
+  }
+
+  /** Tarif catalogue (sans calcul groupe), même logique que la fiche publique. */
+  getCatalogRentalLabel(resource: ResourceDto): string {
+    const c = normalizeCentsInput(resource.rentalPriceCents);
+    if (c == null) {
+      return 'Non renseigné';
+    }
+    if (c === 0) {
+      return 'Gratuit';
+    }
+    return `${this.getPriceEuros(c)} EUR / réservation`;
+  }
+
+  /** Pastille compacte (style maquette). */
+  getRentalPillText(resource: ResourceDto): string {
+    const c = normalizeCentsInput(resource.rentalPriceCents);
+    if (c == null) {
+      return 'Tarif N/D';
+    }
+    if (c === 0) {
+      return 'Gratuit';
+    }
+    return `${this.getPriceEuros(c)} € / résa.`;
+  }
+
+  isRentalUnset(resource: ResourceDto): boolean {
+    return normalizeCentsInput(resource.rentalPriceCents) == null;
   }
 
   getFeatureLabels(resource: ResourceDto): string[] {

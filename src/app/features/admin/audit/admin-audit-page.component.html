@@ -21,6 +21,16 @@
           </p>
         </div>
       </div>
+
+      <div class="audit-hero__actions">
+        <button type="button" class="audit-hero__refresh" (click)="refreshAudit()" [disabled]="loading()">
+          @if (loading()) {
+            <span>Mise à jour…</span>
+          } @else {
+            <span>Actualiser le journal</span>
+          }
+        </button>
+      </div>
     </section>
 
     <section class="audit-stats">
@@ -70,9 +80,13 @@
       </div>
 
       <div class="audit-booking-banner__chips">
-        @for (bookingRef of bookingRefs(); track bookingRef) {
-          <button type="button" class="audit-booking-chip" (click)="focusBooking(bookingRef)">
-            <span>{{ formatBookingRef(bookingRef) }}</span>
+        @for (link of reservationQuickLinks(); track link.reservationId) {
+          <button
+            type="button"
+            class="audit-booking-chip"
+            (click)="openReservationTimeline(link.reservationId, link.label)"
+          >
+            <span>{{ link.label }}</span>
             <span aria-hidden="true">→</span>
           </button>
         }
@@ -96,7 +110,8 @@
           type="search"
           [value]="searchTerm()"
           (input)="setSearchTerm($any($event.target).value)"
-          placeholder="Rechercher : action, utilisateur, réservation, ressource, motif..."
+          (keydown.enter)="$event.preventDefault(); onSearchSubmit()"
+          placeholder="Rechercher : action, personne, référence réservation… (Entrée ouvre le journal si trouvé)"
         />
       </label>
 
@@ -108,6 +123,8 @@
         </select>
       </label>
     </section>
+
+    <div #auditDataAnchor class="audit-data-anchor" aria-hidden="true"></div>
 
     <section class="audit-tabs" aria-label="Filtres journal d'audit">
       @for (tab of tabs(); track tab.id) {
@@ -300,13 +317,24 @@
               </span>
             </div>
 
-            <div class="audit-card" [class]="cardClass(entry.severity)">
+            <div
+              class="audit-card"
+              [class]="cardClass(entry.severity)"
+              [class.audit-card--open]="expandedEntryId() === entry.id"
+              role="button"
+              tabindex="0"
+              (click)="toggleExpanded(entry.id)"
+              (keydown.enter)="toggleExpanded(entry.id)"
+              (keydown.space)="$event.preventDefault(); toggleExpanded(entry.id)"
+            >
               <div class="audit-card__top">
                 <div class="audit-card__chips">
                   <span class="audit-card__chip audit-card__chip--primary">{{ entry.label }}</span>
                   <span class="audit-card__chip audit-card__chip--role">{{ entry.actorRole }}</span>
                 </div>
-                <span class="audit-card__arrow" aria-hidden="true">›</span>
+                <span class="audit-card__arrow" aria-hidden="true">{{
+                  expandedEntryId() === entry.id ? '⌄' : '›'
+                }}</span>
               </div>
 
               <h2>{{ entry.title }}</h2>
@@ -317,8 +345,8 @@
                 @if (entry.targetName) {
                   <span>→ {{ entry.targetName }}</span>
                 }
-                @if (entry.bookingRef) {
-                  <span class="audit-card__booking">#{{ entry.bookingRef }}</span>
+                @if (entry.bookingLabel) {
+                  <span class="audit-card__booking">#{{ entry.bookingLabel }}</span>
                 }
                 @if (entry.resourceName) {
                   <span>{{ entry.resourceName }}</span>
@@ -328,6 +356,31 @@
                 }
                 <span>IP: {{ entry.ipAddress }}</span>
               </div>
+
+              @if (entry.reservationId) {
+                <button
+                  type="button"
+                  class="audit-card__timeline-btn"
+                  (click)="
+                    $event.stopPropagation();
+                    openReservationTimeline(entry.reservationId!, entry.bookingLabel ?? undefined)
+                  "
+                >
+                  Ouvrir le journal complet
+                </button>
+              }
+
+              @if (expandedEntryId() === entry.id) {
+                <div class="audit-card__expanded">
+                  <p class="audit-card__expanded-title">Détails (données API)</p>
+                  <dl class="audit-card__dl">
+                    @for (row of detailRows(entry.details); track row.key) {
+                      <dt>{{ row.key }}</dt>
+                      <dd>{{ row.value }}</dd>
+                    }
+                  </dl>
+                </div>
+              }
             </div>
           </article>
         }
@@ -371,4 +424,57 @@
       }
     }
   </main>
+
+  @if (timelineModal(); as tm) {
+    <div
+      class="audit-modal-backdrop"
+      role="presentation"
+      tabindex="-1"
+      (click)="closeTimelineModal()"
+      (keydown.escape)="closeTimelineModal()"
+    >
+      <section
+        class="audit-timeline-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="audit-timeline-title"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+      >
+        <header class="audit-timeline-modal__header">
+          <div>
+            <h2 id="audit-timeline-title">Journal de la réservation</h2>
+            <p class="audit-timeline-modal__ref">{{ tm.displayLabel }}</p>
+          </div>
+          <button type="button" class="audit-timeline-modal__close" (click)="closeTimelineModal()">
+            Fermer
+          </button>
+        </header>
+
+        @if (tm.loading) {
+          <p class="audit-timeline-modal__status">Chargement…</p>
+        } @else if (tm.error) {
+          <p class="audit-timeline-modal__status audit-timeline-modal__status--error">{{ tm.error }}</p>
+        } @else if (!tm.entries.length) {
+          <p class="audit-timeline-modal__status">Aucun événement pour cette réservation.</p>
+        } @else {
+          <p class="audit-timeline-modal__count">
+            {{ tm.entries.length }} événement(s)
+            @if (tm.totalElements > tm.entries.length) {
+              (affichage limité à 100 événements)
+            }
+          </p>
+          <ul class="audit-timeline-modal__list">
+            @for (e of tm.entries; track e.id) {
+              <li class="audit-timeline-modal__item">
+                <span class="audit-timeline-modal__date">{{ formatDate(e.performedAt) }}</span>
+                <span class="audit-timeline-modal__action">{{ e.title }}</span>
+                <span class="audit-timeline-modal__actor">{{ e.actorName }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  }
 </section>

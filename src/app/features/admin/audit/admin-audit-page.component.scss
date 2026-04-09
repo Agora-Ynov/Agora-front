@@ -9,9 +9,10 @@
 }
 
 .audit-main {
-  max-width: 1540px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 28px 2.5rem;
+  padding: 0.75rem 20px 1.75rem;
+  font-size: 0.9rem;
 }
 
 .audit-hero {
@@ -20,6 +21,38 @@
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.8rem;
+  flex-wrap: wrap;
+}
+
+.audit-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audit-hero__refresh {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #312e81;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+
+  &:hover:not(:disabled) {
+    background: #e0e7ff;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.audit-data-anchor {
+  height: 0;
+  scroll-margin-top: 1rem;
 }
 
 .audit-hero__title-row {
@@ -55,22 +88,22 @@
 
 .audit-hero__copy h1 {
   margin: 0;
-  font-size: clamp(2rem, 3vw, 2.6rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .audit-hero__copy p {
-  margin: 0.55rem 0 0;
+  margin: 0.35rem 0 0;
   color: #4d6484;
-  font-size: 1rem;
+  font-size: 0.88rem;
 }
 
 .audit-stats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.95rem;
-  margin-bottom: 0.65rem;
+  gap: 0.55rem;
+  margin-bottom: 0.45rem;
 }
 
 .audit-stats-hint {
@@ -140,17 +173,17 @@
 .audit-stat-card {
   display: grid;
   place-items: center;
-  gap: 0.45rem;
-  min-height: 6.9rem;
-  padding: 1rem;
+  gap: 0.2rem;
+  min-height: 4.1rem;
+  padding: 0.55rem 0.65rem;
   border: 1px solid #dfe4ea;
-  border-radius: 1.35rem;
+  border-radius: 0.75rem;
   background: #fff;
 }
 
 .audit-stat-card__value {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.35rem;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -178,11 +211,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.85rem 1rem;
-  margin-bottom: 1.8rem;
-  padding: 1.15rem 1.3rem;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid #b9d5ff;
-  border-radius: 1.25rem;
+  border-radius: 0.75rem;
   background: #eef5ff;
   color: #1d4ed8;
 }
@@ -190,8 +223,8 @@
 .audit-booking-banner__label {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.02rem;
+  gap: 0.45rem;
+  font-size: 0.88rem;
 }
 
 .audit-booking-banner__chips {
@@ -203,34 +236,35 @@
 .audit-booking-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  min-height: 2.2rem;
-  padding: 0 0.95rem;
+  gap: 0.35rem;
+  min-height: 1.75rem;
+  padding: 0 0.6rem;
   border: 1px solid #3b82f6;
-  border-radius: 0.85rem;
+  border-radius: 0.5rem;
   background: #fff;
   color: #1d4ed8;
   font: inherit;
+  font-size: 0.82rem;
   cursor: pointer;
 }
 
 .audit-search-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 240px;
-  gap: 0.9rem;
-  padding: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 0.65rem;
+  padding: 0.75rem;
   border: 1px solid #dfe4ea;
-  border-radius: 1.35rem;
+  border-radius: 0.85rem;
   background: #fff;
 }
 
 .audit-search {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  min-height: 2.9rem;
-  padding: 0 1rem;
-  border-radius: 0.9rem;
+  gap: 0.55rem;
+  min-height: 2.25rem;
+  padding: 0 0.65rem;
+  border-radius: 0.55rem;
   background: #f4f6fb;
   color: #93a1b5;
 }
@@ -248,32 +282,32 @@
 .audit-select {
   display: flex;
   align-items: center;
-  min-height: 2.9rem;
-  padding: 0 1rem;
+  min-height: 2.25rem;
+  padding: 0 0.65rem;
   border: 1px solid #e3e8ef;
-  border-radius: 0.9rem;
+  border-radius: 0.55rem;
   background: #fff;
 }
 
 .audit-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 2rem;
+  gap: 0.45rem;
+  margin-top: 1rem;
 }
 
 .audit-tab {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  min-height: 2.9rem;
-  padding: 0 1rem;
+  gap: 0.35rem;
+  min-height: 2.1rem;
+  padding: 0 0.65rem;
   border: 1px solid #dfe4ea;
   border-radius: 999px;
   background: #fff;
   color: #24344f;
   font: inherit;
-  font-size: 0.96rem;
+  font-size: 0.84rem;
   cursor: pointer;
 }
 
@@ -301,14 +335,14 @@
 
 .audit-list {
   display: grid;
-  gap: 1.35rem;
-  margin-top: 1.35rem;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
 }
 
 .audit-entry {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 1rem;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 0.65rem;
   align-items: start;
 }
 
@@ -317,9 +351,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-top: 0.3rem;
+  width: 32px;
+  height: 32px;
+  margin-top: 0.15rem;
   border-radius: 999px;
   background: #fff;
   border: 2px solid currentColor;
@@ -329,9 +363,9 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: 44px;
+  top: 32px;
   width: 2px;
-  height: calc(100% + 18px);
+  height: calc(100% + 12px);
   background: #e5e7eb;
   transform: translateX(-50%);
 }
@@ -362,10 +396,16 @@
 }
 
 .audit-card {
-  padding: 1.1rem 1.35rem 1.2rem;
-  border-radius: 1.2rem;
+  padding: 0.55rem 0.75rem 0.65rem;
+  border-radius: 0.7rem;
   border: 1px solid #dfe4ea;
   background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.audit-card:focus-visible {
+  box-shadow: 0 0 0 2px #93c5fd;
 }
 
 .audit-card--warning {
@@ -404,16 +444,16 @@
 .audit-card__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.35rem;
 }
 
 .audit-card__chip {
   display: inline-flex;
   align-items: center;
-  min-height: 1.75rem;
-  padding: 0 0.75rem;
+  min-height: 1.35rem;
+  padding: 0 0.45rem;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
 }
 
 .audit-card__chip--primary {
@@ -428,9 +468,9 @@
 }
 
 .audit-card h2 {
-  margin: 0.7rem 0 0;
-  font-size: 1rem;
-  font-weight: 500;
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
   color: #f97316;
 }
 
@@ -450,9 +490,10 @@
 .audit-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem 1rem;
-  margin-top: 0.7rem;
+  gap: 0.35rem 0.65rem;
+  margin-top: 0.4rem;
   color: #6b7d95;
+  font-size: 0.8rem;
 }
 
 .audit-card__booking {
@@ -464,8 +505,166 @@
 
 .audit-card__arrow {
   color: #93a1b5;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   line-height: 1;
+}
+
+.audit-card__timeline-btn {
+  margin-top: 0.45rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid #3b82f6;
+  background: #fff;
+  color: #1d4ed8;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.audit-card__timeline-btn:hover {
+  background: #eff6ff;
+}
+
+.audit-card__expanded {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgb(0 0 0 / 0.08);
+}
+
+.audit-card__expanded-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.audit-card__dl {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+  gap: 0.2rem 0.65rem;
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.audit-card__dl dt {
+  margin: 0;
+  color: #64748b;
+  word-break: break-word;
+}
+
+.audit-card__dl dd {
+  margin: 0;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.audit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgb(15 23 42 / 0.45);
+}
+
+.audit-timeline-modal {
+  width: min(560px, 100%);
+  max-height: min(85vh, 640px);
+  margin-block: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1.15rem 1.25rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.2);
+}
+
+.audit-timeline-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.audit-timeline-modal__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.audit-timeline-modal__ref {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.audit-timeline-modal__close {
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.45rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.audit-timeline-modal__status {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.audit-timeline-modal__status--error {
+  color: #b91c1c;
+}
+
+.audit-timeline-modal__count {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.audit-timeline-modal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.audit-timeline-modal__item {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid rgb(226 232 240 / 0.9);
+  font-size: 0.8rem;
+}
+
+.audit-timeline-modal__date {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.audit-timeline-modal__action {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.audit-timeline-modal__actor {
+  font-size: 0.75rem;
+  color: #475569;
 }
 
 .audit-empty {

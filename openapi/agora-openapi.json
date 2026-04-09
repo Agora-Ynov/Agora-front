@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:52909",
+      "url": "http://localhost:65368",
       "description": "Generated server url"
     }
   ],
@@ -2023,6 +2023,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2186,14 +2194,17 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
-              "enum": [
-                "PENDING_VALIDATION",
-                "CONFIRMED",
-                "CANCELLED",
-                "REJECTED",
-                "PENDING_DOCUMENT"
-              ]
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PENDING_VALIDATION",
+                  "CONFIRMED",
+                  "CANCELLED",
+                  "REJECTED",
+                  "PENDING_DOCUMENT"
+                ]
+              }
             }
           },
           {
@@ -2251,6 +2262,31 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PagedResponseReservationSummaryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/reservations/stats": {
+      "get": {
+        "tags": [
+          "Admin Reservations"
+        ],
+        "operationId": "stats",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReservationListStatsResponseDto"
                 }
               }
             }
@@ -2550,6 +2586,15 @@
               "type": "string",
               "format": "date"
             }
+          },
+          {
+            "name": "reservationId",
+            "in": "query",
+            "description": "Filtrer les entrées dont le détail JSON contient ce reservationId (timeline)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2598,6 +2643,37 @@
             "bearerAuth": []
           }
         ]
+      }
+    },
+    "/api/superadmin/secretary-admin/{userId}": {
+      "delete": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Retirer le rôle SECRETARY_ADMIN (interdit pour le dernier compte actif)",
+        "operationId": "revokeSecretaryAdmin",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rôle retiré"
+          },
+          "403": {
+            "description": "Accès réservé au SUPERADMIN"
+          },
+          "409": {
+            "description": "Dernier secrétaire ou compte inadapté"
+          }
+        }
       }
     },
     "/api/superadmin/admin-support/{userId}": {
@@ -2893,6 +2969,9 @@
           "memberCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "councilPowers": {
+            "type": "boolean"
           }
         }
       },
@@ -3125,6 +3204,12 @@
           "recurringGroupId": {
             "type": "string",
             "format": "uuid"
+          },
+          "bookingReference": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
           }
         }
       },
@@ -3338,6 +3423,12 @@
           "recurringGroupId": {
             "type": "string",
             "format": "uuid"
+          },
+          "bookingReference": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
           }
         }
       },
@@ -4218,6 +4309,39 @@
             "format": "int64"
           },
           "totalGroups": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AdminReservationListStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingGroup": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "confirmed": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cancelled": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "rejected": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "depositPending": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "exemptOrWaived": {
             "type": "integer",
             "format": "int64"
           }

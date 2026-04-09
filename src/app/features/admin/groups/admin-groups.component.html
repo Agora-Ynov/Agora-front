@@ -312,16 +312,38 @@
         </header>
 
         <div class="members-modal__add">
-          <label class="members-modal__add-field">
-            <span>UUID utilisateur</span>
-            <input
-              type="text"
-              [value]="memberUserIdDraft()"
-              [disabled]="memberBusy()"
-              (input)="updateMemberUserIdDraft($any($event.target).value)"
-              placeholder="ex. 11111111-1111-1111-1111-111111111111"
-            />
-          </label>
+          <div class="members-modal__add-field members-modal__add-field--grow">
+            <label class="members-modal__search-label">
+              <span>Rechercher un utilisateur</span>
+              <input
+                type="search"
+                [value]="memberSearchInput()"
+                [disabled]="memberBusy()"
+                (input)="onMemberSearchInput($any($event.target).value)"
+                placeholder="Nom, prénom ou e-mail (API admin/users?q=…)"
+                autocomplete="off"
+              />
+            </label>
+            @if (userSearchLoading()) {
+              <span class="members-modal__search-hint">Recherche…</span>
+            }
+            @if (userSuggestions().length) {
+              <ul class="user-suggest" role="listbox">
+                @for (u of userSuggestions(); track u.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="user-suggest__row"
+                      (click)="pickUserForGroup(u)"
+                    >
+                      <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+                      <span class="user-suggest__email">{{ u.email || 'Sans e-mail' }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
           <button
             type="button"
             class="members-modal__add-btn"
@@ -401,21 +423,45 @@
 
           <label class="create-group-field">
             <span>Type de groupe *</span>
-            <input
-              type="text"
-              formControlName="groupTypeDraft"
-              list="admin-group-type-suggestions"
-              placeholder="Ex: Service municipal, Association, ou un libelle personnalise"
-              autocomplete="off"
-            />
-            <datalist id="admin-group-type-suggestions">
-              @for (s of groupTypeSuggestions(); track s) {
-                <option [value]="s"></option>
+            <div class="group-type-combo">
+              <div class="group-type-combo__row">
+                <input
+                  type="text"
+                  formControlName="groupTypeDraft"
+                  placeholder="Ex: Service municipal, Association, ou un libelle personnalise"
+                  autocomplete="off"
+                  (focus)="groupTypePickerOpen.set(true)"
+                  (input)="onGroupTypeDraftInput($any($event.target).value)"
+                />
+                <button
+                  type="button"
+                  class="group-type-combo__toggle"
+                  (click)="toggleGroupTypePicker(); $event.preventDefault()"
+                >
+                  Liste
+                </button>
+              </div>
+              @if (groupTypePickerOpen()) {
+                <ul class="group-type-combo__list" role="listbox">
+                  @for (s of visibleGroupTypeSuggestions(); track s) {
+                    <li
+                      role="option"
+                      [attr.aria-selected]="
+                        (createGroupForm.get('groupTypeDraft')?.value ?? '').toString().trim() === s
+                      "
+                    >
+                      <button type="button" class="group-type-combo__opt" (click)="pickGroupTypeSuggestion(s)">
+                        {{ s }}
+                      </button>
+                    </li>
+                  }
+                </ul>
               }
-            </datalist>
+            </div>
             <small class="create-group-field__hint">
-              Profils rapides : droits et remises selon Service, Association ou Autre. Tout autre
-              libelle cree un groupe « Autre » et l’ajoute au nom affiche.
+              Profils rapides : Service municipal, Association ou Autre (insensible à la casse). Tout
+              autre libellé crée un groupe « Autre » ; les types affichés existants sont proposés sans
+              doublon.
             </small>
           </label>
 

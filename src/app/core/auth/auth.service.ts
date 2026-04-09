@@ -169,17 +169,17 @@ export class AuthService {
 
   getAdminEntryPath(): string {
     if (this.canAccessFullAdminSpa()) {
-      return '/admin';
+      return '/';
     }
     if (this.canAccessDelegateResourceConsole()) {
       return '/admin/resources';
     }
-    return '/admin';
+    return '/';
   }
 
   getAdminNavLabel(): string {
     if (this.canAccessFullAdminSpa()) {
-      return 'Administration';
+      return 'Tableau de bord';
     }
     if (this.canAccessDelegateResourceConsole()) {
       return 'Gestion des ressources';

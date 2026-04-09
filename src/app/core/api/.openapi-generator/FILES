@@ -36,6 +36,7 @@ model/adminPatchPaymentRequestDto.ts
 model/adminPatchReservationStatusRequestDto.ts
 model/adminPaymentHistoryEntryResponseDto.ts
 model/adminPaymentRowResponseDto.ts
+model/adminReservationListStatsResponseDto.ts
 model/adminSupportRequestDto.ts
 model/adminSupportUserDto.ts
 model/adminUserDetailResponseDto.ts

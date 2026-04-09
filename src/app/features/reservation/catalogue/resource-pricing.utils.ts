@@ -1,4 +1,5 @@
 import { ResourceDto } from '../../../core/api/models/resource.model';
+import { normalizeCentsInput } from '../../../core/api/resource-cents.util';
 import { UserProfile, UserRole } from '../../../core/auth/auth.model';
 import { getResourcePrice } from './resource-presentation.utils';
 
@@ -59,8 +60,7 @@ export function canGroupBookResource(
 }
 
 function isRentalPriceKnown(resource: ResourceDto): boolean {
-  const c = resource.rentalPriceCents;
-  return c != null && typeof c === 'number' && !Number.isNaN(c);
+  return normalizeCentsInput(resource.rentalPriceCents) != null;
 }
 
 /**

@@ -71,10 +71,17 @@ export class ResourceDetailComponent {
 
     const pricing = resolveResourcePricing(resource, this.currentUser(), this.userGroups());
     const resourceId = String(resource.id ?? '');
-    const capacityLabel =
-      resource.capacity && resource.capacity > 0
-        ? `${resource.capacity} personnes`
-        : 'Lot complet disponible';
+    const capacityLabel = (() => {
+      if (resource.resourceType === 'MOBILIER') {
+        return resource.capacity != null && resource.capacity > 0
+          ? `${resource.capacity} unites`
+          : '—';
+      }
+      if (resource.capacity != null && resource.capacity > 0) {
+        return `${resource.capacity} personnes`;
+      }
+      return 'Non renseignee';
+    })();
     const priceLabel = describeRentalPriceLabel(pricing, euros => `${euros}EUR`);
     const priceHint = this.isAuthenticated()
       ? pricing.discountLabel

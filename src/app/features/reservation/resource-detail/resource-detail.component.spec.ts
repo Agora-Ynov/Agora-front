@@ -43,7 +43,7 @@ describe('ResourceDetailComponent', () => {
             currentUser: signal(null).asReadonly(),
             isSessionActive: computed(() => false),
             isAuthenticated: () => false,
-            logout: jasmine.createSpy('logout'),
+            logout: jest.fn(),
           },
         },
       ],
@@ -57,7 +57,7 @@ describe('ResourceDetailComponent', () => {
     expect(component.loading()).toBe(false);
     expect(component.errorMessage()).toBeNull();
     expect(component.resourceDetail()).toEqual(
-      jasmine.objectContaining({
+      expect.objectContaining({
         id: 'r002',
         name: 'Salle de reunion',
         typeLabel: 'Salle',

@@ -72,28 +72,6 @@
       </article>
     </section>
 
-    <section class="search-card">
-      <label class="search-input">
-        <span class="search-input__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
-            <path
-              d="M16 16L20 20"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
-        </span>
-        <input
-          type="search"
-          [value]="searchTerm()"
-          (input)="setSearchTerm($any($event.target).value)"
-          placeholder="Rechercher par nom, email ou identifiant interne (ex. PERT-1948-001)..."
-        />
-      </label>
-    </section>
-
     <section class="admin-note-card">
       <div class="admin-note-card__heading">
         <span class="admin-note-card__icon" aria-hidden="true">
@@ -125,6 +103,46 @@
           <li><strong>Fiche imprimable :</strong> remise en main propre au guichet</li>
           <li><strong>Suspension / reactivation :</strong> disponibles sur la fiche utilisateur</li>
         </ul>
+      </div>
+    </section>
+
+    <section class="search-card search-card--with-suggest">
+      <div class="search-suggest-wrap">
+        <label class="search-input">
+          <span class="search-input__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8" />
+              <path
+                d="M16 16L20 20"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+          <input
+            type="search"
+            [value]="searchTerm()"
+            (input)="setSearchTerm($any($event.target).value)"
+            (focus)="onSearchFocus()"
+            placeholder="Rechercher par nom, e-mail ou identifiant interne (ex. PERT-1948-001) — suggestions API"
+            autocomplete="off"
+          />
+        </label>
+        @if (searchSuggestLoading()) {
+          <p class="search-suggest-hint">Suggestions…</p>
+        } @else if (searchSuggestions().length) {
+          <ul class="search-suggest-list" role="listbox">
+            @for (u of searchSuggestions(); track u.id) {
+              <li role="option" [attr.aria-selected]="false">
+                <button type="button" class="search-suggest-row" (click)="pickSearchSuggestion(u)">
+                  <span class="search-suggest-row__name">{{ getUserLabel(u) }}</span>
+                  <span class="search-suggest-row__sub">{{ u.email || u.internalRef || '—' }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
       </div>
     </section>
 
@@ -307,8 +325,8 @@
                   <button
                     type="button"
                     class="icon-action icon-action--green"
-                    title="Envoyer activation"
-                    (click)="resendActivation(user)"
+                    title="Envoyer activation (confirmation)"
+                    (click)="openResendActivationModal(user)"
                   >
                     <svg viewBox="0 0 24 24" fill="none">
                       <rect
@@ -867,6 +885,63 @@
             }
           </button>
         </footer>
+      </section>
+    </div>
+  }
+
+  @if (resendActivationTarget(); as ru) {
+    <div
+      class="resend-activation-backdrop"
+      role="button"
+      tabindex="0"
+      aria-label="Fermer"
+      (click)="$event.target === $event.currentTarget && closeResendActivationModal()"
+      (keydown.enter)="closeResendActivationModal()"
+    >
+      <section
+        class="resend-activation-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="resend-activation-title"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+      >
+        <h2 id="resend-activation-title">Renvoyer l’e-mail d’activation tutorée</h2>
+        <p class="resend-activation-modal__intro">
+          Vous allez demander un <strong>nouveau lien d’activation</strong> pour le compte suivant.
+        </p>
+        <p><strong>{{ getUserLabel(ru) }}</strong></p>
+        <p>
+          E-mail utilisé pour l’envoi : <strong>{{ ru.email?.trim() ? ru.email : '— aucun —' }}</strong>
+        </p>
+        <ul class="resend-activation-modal__bullets">
+          <li>Le lien généré a une durée de vie limitée (souvent 72 h, selon configuration).</li>
+          <li>L’envoi passe par la messagerie configurée sur le serveur (ex. Brevo).</li>
+          <li>L’action est enregistrée dans le journal d’audit.</li>
+        </ul>
+        @if (!ru.email?.trim()) {
+          <p class="resend-activation-modal__error">
+            Sans adresse e-mail, le serveur ne peut pas envoyer l’activation — utilisez d’abord
+            l’activation autonome sur la fiche utilisateur.
+          </p>
+        }
+        <div class="resend-activation-modal__actions">
+          <button type="button" class="resend-activation-modal__btn" (click)="closeResendActivationModal()">
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="resend-activation-modal__btn resend-activation-modal__btn--primary"
+            [disabled]="resendActivationBusy() || !ru.email?.trim()"
+            (click)="confirmResendActivation()"
+          >
+            @if (resendActivationBusy()) {
+              Envoi…
+            } @else {
+              Confirmer l’envoi
+            }
+          </button>
+        </div>
       </section>
     </div>
   }

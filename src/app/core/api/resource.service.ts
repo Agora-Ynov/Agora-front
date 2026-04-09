@@ -15,6 +15,8 @@ import {
   UpdateResourceDto,
 } from './models/resource.model';
 
+import { normalizeCentsInput } from './resource-cents.util';
+
 const ACCESSIBILITY_LABELS: Record<string, string> = Object.fromEntries(
   RESOURCE_ACCESSIBILITY_OPTIONS.map(o => [o.id, o.label])
 );
@@ -185,17 +187,12 @@ export class ResourceService {
   private fromOpenApiResource(resource: OpenApiResourceDto): ResourceDto {
     const raw = resource as unknown as Record<string, unknown>;
     const depositAmountCents =
-      resource.depositAmountCents ??
-      (typeof raw['deposit_amount_cents'] === 'number'
-        ? (raw['deposit_amount_cents'] as number)
-        : undefined);
+      normalizeCentsInput(resource.depositAmountCents) ??
+      normalizeCentsInput(raw['deposit_amount_cents']);
     const rentalPriceCents =
-      resource.rentalPriceCents ??
-      (typeof raw['rental_price_cents'] === 'number'
-        ? (raw['rental_price_cents'] as number)
-        : typeof raw['rentalPriceCents'] === 'number'
-          ? (raw['rentalPriceCents'] as number)
-          : null);
+      normalizeCentsInput(resource.rentalPriceCents) ??
+      normalizeCentsInput(raw['rental_price_cents']) ??
+      normalizeCentsInput(raw['rentalPriceCents']);
     const name =
       resource.name ?? (typeof raw['name'] === 'string' ? (raw['name'] as string) : undefined);
     const isActive =
@@ -227,7 +224,7 @@ export class ResourceService {
       resourceType: (resource.resourceType ?? 'IMMOBILIER') as ResourceDto['resourceType'],
       capacity: resource.capacity ?? null,
       description: description ?? null,
-      depositAmountCents,
+      depositAmountCents: depositAmountCents ?? 0,
       rentalPriceCents: rentalPriceCents ?? null,
       imageUrl: imageUrl ?? null,
       accessibilityTags: tags,

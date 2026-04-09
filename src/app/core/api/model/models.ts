@@ -11,6 +11,7 @@ export * from './adminPatchPaymentRequestDto';
 export * from './adminPatchReservationStatusRequestDto';
 export * from './adminPaymentHistoryEntryResponseDto';
 export * from './adminPaymentRowResponseDto';
+export * from './adminReservationListStatsResponseDto';
 export * from './adminSupportRequestDto';
 export * from './adminSupportUserDto';
 export * from './adminUserDetailResponseDto';

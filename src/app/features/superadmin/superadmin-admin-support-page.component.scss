@@ -1,14 +1,16 @@
 .superadmin-page {
-  max-width: 960px;
+  width: 100%;
+  max-width: min(96vw, 1400px);
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 2rem clamp(16px, 2vw, 32px) 4rem;
+  font-size: 1.05rem;
 }
 
 .superadmin-page__hero {
   margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.95rem;
     margin: 0 0 0.5rem;
   }
 
@@ -47,7 +49,7 @@
 
   h2 {
     margin: 0 0 0.75rem;
-    font-size: 1.1rem;
+    font-size: 1.22rem;
   }
 }
 
@@ -67,6 +69,23 @@
   margin: 0 0 1rem;
   font-size: 0.9rem;
   color: var(--text-muted, #64748b);
+}
+
+.superadmin-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.superadmin-search--grow {
+  flex: 1;
+  min-width: min(100%, 280px);
+}
+
+.superadmin-search-row__btn {
+  flex-shrink: 0;
 }
 
 .superadmin-search {
@@ -94,10 +113,11 @@
 .superadmin-input {
   flex: 1;
   min-width: 240px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid var(--border-subtle, #cbd5e1);
   border-radius: 8px;
   font: inherit;
+  font-size: 1.05rem;
 }
 
 .superadmin-btn {
@@ -118,6 +138,12 @@
   background: #2563eb;
   color: #fff;
   border-color: #1d4ed8;
+}
+
+.superadmin-btn--promote {
+  padding: 0.32rem 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .superadmin-btn--danger {
@@ -155,13 +181,72 @@
 }
 
 .superadmin-table__row--head {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted, #64748b);
   border-bottom-width: 2px;
 }
 
+.superadmin-table__name {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
 .superadmin-table__actions {
   text-align: right;
+}
+
+.superadmin-inline-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.superadmin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgb(15 23 42 / 0.45);
+}
+
+.superadmin-revoke-modal {
+  width: min(440px, 100%);
+  margin-block: auto;
+  padding: 1.25rem 1.35rem;
+  border-radius: 14px;
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.2);
+}
+
+.superadmin-revoke-modal h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.superadmin-revoke-modal__intro {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-muted, #475569);
+}
+
+.superadmin-revoke-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle, #f1f5f9);
 }

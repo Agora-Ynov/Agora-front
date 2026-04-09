@@ -20,6 +20,17 @@ type DepositStatus = ReservationSummaryResponseDto.DepositStatusEnum;
 /** Filtre d'affichage : on regroupe les deux statuts « en attente » côté UI. */
 type ReservationFilter = 'ALL' | 'PENDING_GROUP' | ReservationStatus;
 
+/** GET /api/admin/reservations/stats — compteurs sur toute la base. */
+interface AdminReservationListStatsResponse {
+  total: number;
+  pendingGroup: number;
+  confirmed: number;
+  cancelled: number;
+  rejected: number;
+  depositPending: number;
+  exemptOrWaived: number;
+}
+
 interface AdminPaymentAuditRow {
   label: string;
   meta: string;
@@ -27,6 +38,8 @@ interface AdminPaymentAuditRow {
 
 interface AdminReservationRow {
   id: string;
+  /** Référence lisible (ex. Résa · 846c5618), dérivée de l’UUID côté API */
+  displayReference: string;
   resourceName: string;
   userName: string;
   userEmail: string | null;
@@ -78,68 +91,41 @@ export class AdminReservationsComponent implements OnInit {
   readonly resTotalElements = signal(0);
   readonly resPageSizeOptions = [10, 25, 50, 100] as const;
 
-  readonly filteredReservations = computed(() => {
-    const currentFilter = this.filter();
-    return this.reservations().filter(r => {
-      if (currentFilter === 'ALL') return true;
-      if (currentFilter === 'PENDING_GROUP') {
-        return (
-          r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
-          r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
-        );
-      }
-      return r.status === currentFilter;
-    });
-  });
+  readonly listStats = signal<AdminReservationListStatsResponse | null>(null);
 
   readonly stats = computed(() => {
-    const list = this.reservations();
-    const pending = list.filter(
-      r =>
-        r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
-        r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
-    ).length;
-    const confirmed = list.filter(
-      r => r.status === ReservationSummaryResponseDto.StatusEnum.Confirmed
-    ).length;
-    const paymentsPending = list.filter(
-      r => r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.DepositPending
-    ).length;
-    const exemptions = list.filter(
-      r =>
-        r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.Exempt ||
-        r.depositStatus === ReservationSummaryResponseDto.DepositStatusEnum.Waived
-    ).length;
-    return { pending, confirmed, paymentsPending, exemptions };
+    const s = this.listStats();
+    if (!s) {
+      return { pending: 0, confirmed: 0, paymentsPending: 0, exemptions: 0 };
+    }
+    return {
+      pending: s.pendingGroup,
+      confirmed: s.confirmed,
+      paymentsPending: s.depositPending,
+      exemptions: s.exemptOrWaived,
+    };
   });
 
   readonly tabs = computed(() => {
-    const list = this.reservations();
-    const pendingGroup = list.filter(
-      r =>
-        r.status === ReservationSummaryResponseDto.StatusEnum.PendingValidation ||
-        r.status === ReservationSummaryResponseDto.StatusEnum.PendingDocument
-    ).length;
+    const s = this.listStats();
+    const z = 0;
     return [
-      { id: 'ALL' as ReservationFilter, label: 'Toutes', count: list.length },
-      { id: 'PENDING_GROUP' as ReservationFilter, label: 'En attente', count: pendingGroup },
+      { id: 'ALL' as ReservationFilter, label: 'Toutes', count: s?.total ?? z },
+      { id: 'PENDING_GROUP' as ReservationFilter, label: 'En attente', count: s?.pendingGroup ?? z },
       {
         id: ReservationSummaryResponseDto.StatusEnum.Confirmed,
         label: 'Confirmees',
-        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Confirmed)
-          .length,
+        count: s?.confirmed ?? z,
       },
       {
         id: ReservationSummaryResponseDto.StatusEnum.Cancelled,
         label: 'Annulees',
-        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Cancelled)
-          .length,
+        count: s?.cancelled ?? z,
       },
       {
         id: ReservationSummaryResponseDto.StatusEnum.Rejected,
         label: 'Refusees',
-        count: list.filter(r => r.status === ReservationSummaryResponseDto.StatusEnum.Rejected)
-          .length,
+        count: s?.rejected ?? z,
       },
     ];
   });
@@ -160,16 +146,35 @@ export class AdminReservationsComponent implements OnInit {
 
   setFilter(f: ReservationFilter): void {
     this.filter.set(f);
+    this.resPage.set(0);
+    this.reloadList();
+  }
+
+  reloadStats(): void {
+    this.api
+      .getJson<AdminReservationListStatsResponse>('/api/admin/reservations/stats')
+      .pipe(catchError(() => of(null)))
+      .subscribe(s => this.listStats.set(s));
   }
 
   reloadList(): void {
     this.loading.set(true);
     this.loadError.set(null);
+    const f = this.filter();
+    const query: Record<string, string | number | string[]> = {
+      page: this.resPage(),
+      size: this.resPageSize(),
+    };
+    if (f === 'PENDING_GROUP') {
+      query['status'] = [
+        ReservationSummaryResponseDto.StatusEnum.PendingValidation,
+        ReservationSummaryResponseDto.StatusEnum.PendingDocument,
+      ];
+    } else if (f !== 'ALL') {
+      query['status'] = [f];
+    }
     this.api
-      .getJson<PagedResponseReservationSummaryResponseDto>('/api/admin/reservations', {
-        page: this.resPage(),
-        size: this.resPageSize(),
-      })
+      .getJson<PagedResponseReservationSummaryResponseDto>('/api/admin/reservations', query)
       .pipe(
         finalize(() => this.loading.set(false)),
         catchError(() => {
@@ -184,6 +189,7 @@ export class AdminReservationsComponent implements OnInit {
         const te = page.totalElements ?? 0;
         this.resTotalPages.set(tp > 0 ? tp : te > 0 ? 1 : 0);
         this.resTotalElements.set(te);
+        this.reloadStats();
         if (tp > 0 && this.resPage() >= tp) {
           this.resPage.set(tp - 1);
           this.reloadList();
@@ -228,7 +234,8 @@ export class AdminReservationsComponent implements OnInit {
         catchError(() => of([] as AdminPaymentHistoryEntryResponseDto[])),
         finalize(() => this.paymentHistoryLoaded.set(true))
       )
-      .subscribe(entries => {
+      .subscribe(raw => {
+        const entries = this.normalizePaymentHistoryPayload(raw);
         this.paymentHistoryEntries.set(entries.map(e => this.mapHistoryEntry(e)));
       });
   }
@@ -389,11 +396,13 @@ export class AdminReservationsComponent implements OnInit {
       d.depositStatus ?? ReservationSummaryResponseDto.DepositStatusEnum.DepositPending;
     const fullCents = d.depositAmountFullCents ?? 0;
     const depCents = d.depositAmountCents ?? 0;
+    const bookingRef = (d.bookingReference ?? '').trim();
     return {
       id,
+      displayReference: bookingRef || this.formatReservationReference(id),
       resourceName: d.resourceName ?? '—',
-      userName: '—',
-      userEmail: null,
+      userName: (d.userName ?? '').trim() || '—',
+      userEmail: d.userEmail ?? null,
       userPhone: null,
       dateLabel,
       startDateTimeLabel: `${dateLabel} a ${start}`,
@@ -466,12 +475,42 @@ export class AdminReservationsComponent implements OnInit {
   }
 
   private mapHistoryEntry(e: AdminPaymentHistoryEntryResponseDto): AdminPaymentAuditRow {
-    const status = e.status ?? '';
+    const st = e.status;
+    const labelFr = st
+      ? this.paymentLabel(st as unknown as AdminPatchPaymentRequestDto.StatusEnum)
+      : 'Événement';
     const when = e.updatedAt ? this.formatCreatedAt(e.updatedAt) : '';
     const by = e.updatedByName ?? '';
+    const note = e.comment?.trim();
     return {
-      label: `Paiement : ${status}`,
-      meta: [by, when].filter(Boolean).join(' — '),
+      label: labelFr,
+      meta: [by, when, note].filter(Boolean).join(' — '),
     };
+  }
+
+  private formatReservationReference(id: string): string {
+    const u = id?.trim() ?? '';
+    if (u.length < 8) {
+      return '—';
+    }
+    return `Résa · ${u.slice(0, 8)}`;
+  }
+
+  /** L’API renvoie en principe un tableau ; on accepte aussi un corps paginé ou invalide sans planter. */
+  private normalizePaymentHistoryPayload(
+    raw: unknown
+  ): AdminPaymentHistoryEntryResponseDto[] {
+    if (Array.isArray(raw)) {
+      return raw as AdminPaymentHistoryEntryResponseDto[];
+    }
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'content' in raw &&
+      Array.isArray((raw as { content: unknown }).content)
+    ) {
+      return (raw as { content: AdminPaymentHistoryEntryResponseDto[] }).content;
+    }
+    return [];
   }
 }

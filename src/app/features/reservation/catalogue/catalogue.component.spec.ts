@@ -56,7 +56,7 @@ const mockAuthService = {
   currentUser: signal(null).asReadonly(),
   isSessionActive: computed(() => false),
   isAuthenticated: () => false,
-  logout: jasmine.createSpy('logout'),
+  logout: jest.fn(),
 };
 
 describe('CatalogueComponent', () => {
@@ -88,7 +88,7 @@ describe('CatalogueComponent', () => {
     expect(component.errorMessage()).toBeNull();
     expect(component.resources().length).toBe(3);
     expect(component.resources()[0]).toEqual(
-      jasmine.objectContaining({
+      expect.objectContaining({
         id: 'r001',
         family: 'ROOM',
         typeLabel: 'Salle',
@@ -97,7 +97,7 @@ describe('CatalogueComponent', () => {
       })
     );
     expect(component.resources()[1]).toEqual(
-      jasmine.objectContaining({
+      expect.objectContaining({
         id: 'r005',
         family: 'EQUIPMENT',
         typeLabel: 'Materiel',
@@ -106,7 +106,7 @@ describe('CatalogueComponent', () => {
       })
     );
     expect(component.resources()[2]).toEqual(
-      jasmine.objectContaining({
+      expect.objectContaining({
         id: 'r999',
         family: 'EQUIPMENT',
       })
@@ -201,7 +201,7 @@ describe('CatalogueComponent', () => {
   });
 
   it('should expose a readable error when mock loading fails', async () => {
-    spyOn(console, 'error').and.stub();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],

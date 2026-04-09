@@ -1,4 +1,5 @@
 import { ResourceDto } from '../../../core/api/models/resource.model';
+import { normalizeCentsInput } from '../../../core/api/resource-cents.util';
 
 export type ResourceCoverTheme =
   | 'hall'
@@ -79,8 +80,8 @@ export function getResourceCoverTheme(resourceId: string): ResourceCoverTheme {
 
 /** Tarif de location en euros (hors remises groupe) ; 0 si inconnu ou gratuit selon `rentalPriceCents`. */
 export function getResourcePrice(resource: ResourceDto): number {
-  const c = resource.rentalPriceCents;
-  if (c == null || Number.isNaN(c)) {
+  const c = normalizeCentsInput(resource.rentalPriceCents);
+  if (c == null) {
     return 0;
   }
   return c / 100;

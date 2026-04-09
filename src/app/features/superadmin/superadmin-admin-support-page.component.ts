@@ -1,15 +1,34 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { catchError, map, of, switchMap } from 'rxjs';
-import { AdminGroupsService } from '../../core/api';
+import {
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
+import { AdminGroupService } from '../../core/api/admin-group.service';
 import { ApiService } from '../../core/api/api.service';
 import type {
   AdminSupportUserDto,
   PromoteAdminSupportRequestDto,
 } from '../../core/api-types/admin-api.model';
-import type { AdminGroupMemberResponseDto } from '../../core/api/model/adminGroupMemberResponseDto';
+import type { AdminUserRowDto } from '../../core/api/model/adminUserRowDto';
+import type { AdminUsersListResponse } from '../../core/api/model/adminUsersListResponse';
+import type { AdminGroupMemberDto } from '../../core/api/models/admin-group.model';
 
 /** Aligné sur le seed back (`SeedConstants.GROUP_COUNCIL`). */
 const COUNCIL_MUNICIPAL_GROUP_NAME = 'Conseillers municipaux';
@@ -21,13 +40,14 @@ const COUNCIL_MUNICIPAL_GROUP_NAME = 'Conseillers municipaux';
   templateUrl: './superadmin-admin-support-page.component.html',
   styleUrl: './superadmin-admin-support-page.component.scss',
 })
-export class SuperadminAdminSupportPageComponent {
+export class SuperadminAdminSupportPageComponent implements OnDestroy {
   /** Exposé au template (libellé exact du groupe en base). */
   readonly councilGroupLabel = COUNCIL_MUNICIPAL_GROUP_NAME;
 
   private readonly api = inject(ApiService);
-  private readonly adminGroups = inject(AdminGroupsService);
+  private readonly adminGroups = inject(AdminGroupService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly userLookupDebounced = new Subject<string>();
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -36,8 +56,17 @@ export class SuperadminAdminSupportPageComponent {
 
   readonly councilLoading = signal(true);
   readonly councilLoadError = signal<string | null>(null);
-  readonly councilMembers = signal<AdminGroupMemberResponseDto[]>([]);
+  readonly councilMembers = signal<AdminGroupMemberDto[]>([]);
   readonly memberSearch = signal('');
+
+  /** Recherche globale secrétariat (nom / prénom / email). */
+  readonly userLookupQuery = signal('');
+  readonly userLookupLoading = signal(false);
+  readonly userLookupError = signal<string | null>(null);
+  readonly userLookupHits = signal<AdminUserRowDto[]>([]);
+
+  readonly revokeTarget = signal<AdminSupportUserDto | null>(null);
+  readonly revokeBusy = signal(false);
 
   /** Déjà promus ADMIN_SUPPORT (pour désactiver les boutons). */
   private readonly adminSupportUserIds = computed(
@@ -61,14 +90,70 @@ export class SuperadminAdminSupportPageComponent {
     }
     return rows.map(m => ({
       member: m,
-      userId: m.userId as string,
-      isAlreadySupport: promoted.has(m.userId as string),
+      userId: m.userId,
+      isAlreadySupport: promoted.has(m.userId),
+    }));
+  });
+
+  readonly filteredLookupUsers = computed(() => {
+    const promoted = this.adminSupportUserIds();
+    return this.userLookupHits().map(u => ({
+      user: u,
+      userId: String(u.id ?? ''),
+      isAlreadySupport: promoted.has(String(u.id ?? '')),
     }));
   });
 
   constructor() {
+    effect(() => {
+      if (typeof document === 'undefined') {
+        return;
+      }
+      document.body.style.overflow = this.revokeTarget() != null ? 'hidden' : '';
+    });
+
     this.reload();
     this.loadCouncilMembers();
+
+    this.userLookupDebounced
+      .pipe(
+        debounceTime(380),
+        distinctUntilChanged(),
+        switchMap(q => this.fetchLookupUsers(q)),
+        takeUntilDestroyed()
+      )
+      .subscribe(rows => this.userLookupHits.set(rows));
+  }
+
+  ngOnDestroy(): void {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
+  onUserLookupModelChange(value: string): void {
+    this.userLookupQuery.set(value);
+    this.userLookupDebounced.next(value);
+  }
+
+  private fetchLookupUsers(raw: string) {
+    const q = raw.trim();
+    if (q.length < 2) {
+      this.userLookupError.set(null);
+      return of<AdminUserRowDto[]>([]);
+    }
+    this.userLookupLoading.set(true);
+    this.userLookupError.set(null);
+    return this.api
+      .getJson<AdminUsersListResponse>('/api/admin/users', { page: 0, size: 100, q })
+      .pipe(
+        map(res => res.content ?? []),
+        finalize(() => this.userLookupLoading.set(false)),
+        catchError(() => {
+          this.userLookupError.set('Recherche utilisateurs impossible.');
+          return of<AdminUserRowDto[]>([]);
+        })
+      );
   }
 
   reload(): void {
@@ -93,21 +178,19 @@ export class SuperadminAdminSupportPageComponent {
     this.councilLoading.set(true);
     this.councilLoadError.set(null);
     this.adminGroups
-      .list4('body', false, { transferCache: false })
+      .getGroups()
       .pipe(
         switchMap(groups => {
           const council = (groups ?? []).find(
             g => (g.name ?? '').trim() === COUNCIL_MUNICIPAL_GROUP_NAME
           );
           if (!council?.id) {
-            return of<AdminGroupMemberResponseDto[] | null>(null);
+            return of<AdminGroupMemberDto[] | null>(null);
           }
-          return this.adminGroups
-            .listMembers(council.id, 'body', false, { transferCache: false })
-            .pipe(
-              map(members => (members ?? []) as AdminGroupMemberResponseDto[]),
-              catchError(() => of<AdminGroupMemberResponseDto[] | null>(null))
-            );
+          return this.adminGroups.getGroupMembers(council.id).pipe(
+            map(members => members ?? []),
+            catchError(() => of<AdminGroupMemberDto[] | null>(null))
+          );
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -116,7 +199,7 @@ export class SuperadminAdminSupportPageComponent {
           this.councilLoading.set(false);
           if (members === null) {
             this.councilLoadError.set(
-              `Groupe « ${COUNCIL_MUNICIPAL_GROUP_NAME} » introuvable ou membres inaccessibles (droits / serveur).`
+              `Groupe « ${COUNCIL_MUNICIPAL_GROUP_NAME} » introuvable ou impossible de charger ses membres (droits serveur).`
             );
             this.councilMembers.set([]);
             return;
@@ -125,7 +208,9 @@ export class SuperadminAdminSupportPageComponent {
         },
         error: () => {
           this.councilLoading.set(false);
-          this.councilLoadError.set('Impossible de charger les groupes (API admin).');
+          this.councilLoadError.set(
+            'Impossible de charger la liste des groupes administratifs. Vérifiez votre session ou le proxy API.'
+          );
           this.councilMembers.set([]);
         },
       });
@@ -157,12 +242,60 @@ export class SuperadminAdminSupportPageComponent {
     });
   }
 
-  revoke(userId: string): void {
-    if (!confirm('Révoquer les droits admin support pour cet utilisateur ?')) return;
-    this.error.set(null);
-    this.api.delete<void>(`/api/superadmin/admin-support/${userId}`).subscribe({
-      next: () => this.reload(),
-      error: () => this.error.set('Révocation impossible.'),
+  openRevokeFromLookupRow(row: {
+    user: AdminUserRowDto;
+    userId: string;
+    isAlreadySupport: boolean;
+  }): void {
+    const u = row.user;
+    this.revokeTarget.set({
+      id: row.userId,
+      firstName: u.firstName ?? '',
+      lastName: u.lastName ?? '',
+      email: u.email ?? null,
+      status: String(u.status ?? ''),
     });
+  }
+
+  openRevokeFromCouncilRow(row: {
+    member: AdminGroupMemberDto;
+    userId: string;
+    isAlreadySupport: boolean;
+  }): void {
+    const m = row.member;
+    this.revokeTarget.set({
+      id: row.userId,
+      firstName: m.firstName ?? '',
+      lastName: m.lastName ?? '',
+      email: m.email ?? null,
+      status: '',
+    });
+  }
+
+  closeRevokeModal(): void {
+    this.revokeTarget.set(null);
+  }
+
+  confirmRevoke(): void {
+    const u = this.revokeTarget();
+    const id = u?.id?.trim();
+    if (!id) {
+      return;
+    }
+    this.error.set(null);
+    this.revokeBusy.set(true);
+    this.api
+      .delete<void>(`/api/superadmin/admin-support/${id}`)
+      .pipe(finalize(() => this.revokeBusy.set(false)))
+      .subscribe({
+        next: () => {
+          this.closeRevokeModal();
+          this.reload();
+        },
+        error: () => {
+          this.error.set('Révocation impossible.');
+          this.closeRevokeModal();
+        },
+      });
   }
 }

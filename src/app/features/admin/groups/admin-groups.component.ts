@@ -1,8 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import {
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 import { AdminGroupService } from '../../../core/api/admin-group.service';
+import { AdminUsersListResponse } from '../../../core/api';
+import { ApiService } from '../../../core/api/api.service';
+import { AdminUserRowDto } from '../../../core/api/model/adminUserRowDto';
 import { UpdateAdminGroupRequestDto } from '../../../core/api/model/updateAdminGroupRequestDto';
 import {
   AdminGroupDto,
@@ -37,6 +50,9 @@ interface AdminGroupCardViewModel {
 export class AdminGroupsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly adminGroupService = inject(AdminGroupService);
+  private readonly api = inject(ApiService);
+  private readonly userSearchTrigger = new Subject<string>();
+
   private readonly frenchDateFormatter = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'long',
@@ -55,7 +71,10 @@ export class AdminGroupsComponent {
   readonly memberBusy = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
-  readonly memberUserIdDraft = signal('');
+  readonly memberSearchInput = signal('');
+  readonly userSuggestions = signal<AdminUserRowDto[]>([]);
+  readonly userSearchLoading = signal(false);
+  readonly pickedUser = signal<AdminUserRowDto | null>(null);
   readonly editingGroup = signal<AdminGroupDto | null>(null);
 
   readonly createGroupForm = this.fb.group({
@@ -88,20 +107,47 @@ export class AdminGroupsComponent {
     { value: 'MOBILIER_ONLY', label: 'Mobilier uniquement' },
   ];
 
+  /** Liste déroulante type de groupe (sans datalist : évite la liste vide quand la valeur courante filtre tout). */
+  readonly groupTypePickerOpen = signal(false);
+  /** Miroir du champ pour filtrer les suggestions (le FormControl ne déclenche pas les computed). */
+  readonly groupTypeDraftMirror = signal('');
+
   readonly groupTypeSuggestions = computed(() => {
     const presets = ['Service municipal', 'Association', 'Autre'];
-    const seen = new Set(presets.map(p => p.toLowerCase()));
+    const seen = new Set<string>();
+    const out: string[] = [];
+    const push = (label: string) => {
+      const k = AdminGroupsComponent.normalizeTypeKey(label);
+      if (!k || seen.has(k)) {
+        return;
+      }
+      seen.add(k);
+      out.push(label.trim());
+    };
+    for (const p of presets) {
+      push(p);
+    }
     const extras: string[] = [];
     for (const g of this.groups()) {
       const badge = this.getBadge(g);
-      const key = badge.trim().toLowerCase();
-      if (badge && !seen.has(key)) {
-        seen.add(key);
-        extras.push(badge);
+      if (badge) {
+        extras.push(badge.trim());
       }
     }
     extras.sort((a, b) => a.localeCompare(b, 'fr'));
-    return [...presets, ...extras];
+    for (const e of extras) {
+      push(e);
+    }
+    return out;
+  });
+
+  readonly visibleGroupTypeSuggestions = computed(() => {
+    const q = AdminGroupsComponent.normalizeTypeKey(this.groupTypeDraftMirror());
+    const all = this.groupTypeSuggestions();
+    if (!q) {
+      return all;
+    }
+    return all.filter(s => AdminGroupsComponent.normalizeTypeKey(s).includes(q));
   });
 
   readonly groupCards = computed<AdminGroupCardViewModel[]>(() =>
@@ -119,6 +165,33 @@ export class AdminGroupsComponent {
   );
 
   constructor() {
+    this.userSearchTrigger
+      .pipe(
+        debounceTime(280),
+        distinctUntilChanged(),
+        switchMap(raw => {
+          const q = raw.trim();
+          if (q.length < 2) {
+            this.userSuggestions.set([]);
+            return of<AdminUserRowDto[]>([]);
+          }
+          this.userSearchLoading.set(true);
+          return this.api
+            .getJson<AdminUsersListResponse>('/api/admin/users', {
+              page: 0,
+              size: 15,
+              q,
+            })
+            .pipe(
+              map(res => res.content ?? []),
+              finalize(() => this.userSearchLoading.set(false)),
+              catchError(() => of([]))
+            );
+        }),
+        takeUntilDestroyed()
+      )
+      .subscribe(rows => this.userSuggestions.set(rows));
+
     this.loadGroups();
   }
 
@@ -130,7 +203,7 @@ export class AdminGroupsComponent {
 
     this.selectedGroup.set(group);
     this.groupMembers.set([]);
-    this.memberUserIdDraft.set('');
+    this.resetMemberPicker();
     this.loadingMembers.set(true);
 
     this.adminGroupService
@@ -145,29 +218,27 @@ export class AdminGroupsComponent {
   closeMembersModal(): void {
     this.selectedGroup.set(null);
     this.groupMembers.set([]);
-    this.memberUserIdDraft.set('');
+    this.resetMemberPicker();
   }
 
   addMemberToSelectedGroup(): void {
     const group = this.selectedGroup();
-    const raw = this.memberUserIdDraft().trim();
-    if (!group?.id || !raw) {
-      this.errorMessage.set('Saisissez un identifiant utilisateur (UUID).');
-      return;
-    }
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRe.test(raw)) {
-      this.errorMessage.set('UUID utilisateur invalide.');
+    const picked = this.pickedUser();
+    const userId = picked?.id ?? null;
+    if (!group?.id || !userId) {
+      this.errorMessage.set(
+        'Choisissez un utilisateur dans les suggestions (recherche par nom, prénom ou e-mail).'
+      );
       return;
     }
     this.errorMessage.set('');
     this.memberBusy.set(true);
     this.adminGroupService
-      .addMember(group.id, raw)
+      .addMember(group.id, userId)
       .pipe(finalize(() => this.memberBusy.set(false)))
       .subscribe({
         next: () => {
-          this.memberUserIdDraft.set('');
+          this.resetMemberPicker();
           this.successMessage.set('Membre ajoute.');
           this.openMembers(group.id);
           this.loadGroups();
@@ -296,12 +367,39 @@ export class AdminGroupsComponent {
       groupTypeDraft: 'Autre',
       description: '',
     });
+    this.groupTypeDraftMirror.set('Autre');
+    this.groupTypePickerOpen.set(true);
     this.errorMessage.set('');
     this.isCreateModalOpen.set(true);
   }
 
   closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
+    this.groupTypePickerOpen.set(false);
+  }
+
+  onGroupTypeDraftInput(value: string): void {
+    this.groupTypeDraftMirror.set(value);
+    this.groupTypePickerOpen.set(true);
+  }
+
+  pickGroupTypeSuggestion(label: string): void {
+    const v = label.trim();
+    this.createGroupForm.patchValue({ groupTypeDraft: v });
+    this.groupTypeDraftMirror.set(v);
+    this.groupTypePickerOpen.set(false);
+  }
+
+  toggleGroupTypePicker(): void {
+    this.groupTypePickerOpen.update(o => !o);
+  }
+
+  private static normalizeTypeKey(raw: string): string {
+    return raw
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{M}/gu, '');
   }
 
   submitCreateGroup(): void {
@@ -338,8 +436,30 @@ export class AdminGroupsComponent {
       });
   }
 
-  updateMemberUserIdDraft(value: string): void {
-    this.memberUserIdDraft.set(value);
+  onMemberSearchInput(value: string): void {
+    this.memberSearchInput.set(value);
+    this.pickedUser.set(null);
+    this.userSearchTrigger.next(value);
+  }
+
+  pickUserForGroup(user: AdminUserRowDto): void {
+    this.pickedUser.set(user);
+    this.memberSearchInput.set(this.userSuggestLabel(user));
+    this.userSuggestions.set([]);
+  }
+
+  userSuggestLabel(user: AdminUserRowDto): string {
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+    if (name && user.email) {
+      return `${name} (${user.email})`;
+    }
+    return name || user.email || user.id || '';
+  }
+
+  private resetMemberPicker(): void {
+    this.memberSearchInput.set('');
+    this.pickedUser.set(null);
+    this.userSuggestions.set([]);
   }
 
   memberRoleLabel(role: AdminGroupMemberDto['role']): string {
@@ -369,13 +489,16 @@ export class AdminGroupsComponent {
       });
   }
 
-  /** Aligné sur les libellés du datalist et variantes courantes. */
+  /**
+   * Reconnaissance insensible à la casse / accents des profils Service, Association, Autre.
+   * Tout autre libellé non vide → type AUTRE en base (libellé conservé dans le nom ou la catégorie affichée).
+   */
   private resolvePresetFromTypeInput(raw: string): AdminGroupFormType | null {
-    const t = raw.trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+    const t = AdminGroupsComponent.normalizeTypeKey(raw);
     if (!t) {
       return null;
     }
-    if (t === 'service municipal' || t === 'service' || t.startsWith('service ')) {
+    if (t === 'service municipal' || t === 'service' || t.startsWith('service')) {
       return 'SERVICE';
     }
     if (t === 'association' || t.startsWith('association')) {

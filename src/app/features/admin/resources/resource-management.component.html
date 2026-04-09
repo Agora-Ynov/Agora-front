@@ -42,87 +42,86 @@
       Affichage {{ displayedResources().length }} / {{ resources().length }} ressource(s) — page
       {{ resourceListPage() + 1 }} / {{ resourceListTotalPages() }}
     </p>
-    <div class="resource-grid">
+    <div class="resource-list" role="list">
       <article
-        class="resource-card"
+        class="resource-row"
         *ngFor="let resource of displayedResources(); trackBy: trackByResourceId"
+        role="listitem"
       >
-        <div class="card-top">
-          <div class="resource-title-block">
-            <div class="resource-icon" [attr.data-kind]="getTypeIcon(resource.resourceType)"></div>
+        <div class="resource-row__thumb" aria-hidden="true">
+          <img
+            *ngIf="resource.imageUrl?.trim()"
+            class="resource-row__thumb-img"
+            [src]="resource.imageUrl ?? ''"
+            [alt]="'Miniature — ' + resource.name"
+            loading="lazy"
+          />
+          <div
+            *ngIf="!resource.imageUrl?.trim()"
+            class="resource-row__thumb-placeholder"
+            [attr.data-kind]="getTypeIcon(resource.resourceType)"
+          ></div>
+        </div>
 
-            <div>
-              <h2>{{ resource.name }}</h2>
-              <span class="type-badge">{{ getTypeLabel(resource.resourceType) }}</span>
-            </div>
+        <div class="resource-row__main">
+          <div class="resource-row__tags">
+            <span
+              class="resource-row__pill resource-row__pill--type"
+              [class.resource-row__pill--room]="resource.resourceType === 'IMMOBILIER'"
+              [class.resource-row__pill--gear]="resource.resourceType === 'MOBILIER'"
+            >
+              {{ getTypeLabel(resource.resourceType) }}
+            </span>
+            <span
+              class="resource-row__pill resource-row__pill--price"
+              [class.resource-row__pill--price-muted]="isRentalUnset(resource)"
+            >
+              {{ getRentalPillText(resource) }}
+            </span>
+            <span
+              class="resource-row__pill resource-row__pill--feat"
+              *ngFor="let feature of getFeatureLabels(resource)"
+              >{{ feature }}</span
+            >
           </div>
 
-          <div class="card-actions">
-            <button
-              type="button"
-              class="icon-btn"
-              (click)="openEditModal(resource)"
-              aria-label="Modifier"
-            >
-              Editer
-            </button>
-            <button
-              type="button"
-              class="icon-btn danger"
-              (click)="deleteResource(resource.id)"
-              aria-label="Supprimer"
-            >
+          <h2 class="resource-row__title">{{ resource.name }}</h2>
+
+          <p class="resource-row__meta">
+            <span>Capacité : {{ getCapacityLabel(resource) }}</span>
+            <span class="resource-row__meta-sep" aria-hidden="true">·</span>
+            <span>Caution : {{ getPriceEuros(resource.depositAmountCents) }} €</span>
+            <span class="resource-row__meta-sep" aria-hidden="true">·</span>
+            <span class="resource-row__meta-id">#{{ resource.id | slice : 0 : 8 }}</span>
+          </p>
+
+          <p class="resource-row__desc">
+            {{ resource.description || 'Description indisponible.' }}
+          </p>
+
+          <p class="resource-row__catalog-line">
+            <span class="resource-row__catalog-label">Tarif catalogue</span>
+            {{ getCatalogRentalLabel(resource) }}
+          </p>
+        </div>
+
+        <div class="resource-row__aside">
+          <div class="resource-row__admin">
+            <button type="button" class="text-btn" (click)="openEditModal(resource)">Éditer</button>
+            <button type="button" class="text-btn text-btn--danger" (click)="deleteResource(resource.id)">
               Supprimer
             </button>
           </div>
-        </div>
-
-        <p class="resource-description">
-          {{ resource.description || 'Description indisponible.' }}
-        </p>
-
-        <hr />
-
-        <div class="resource-infos">
-          <div>
-            <span class="label">Capacite</span>
-            <strong>{{ getCapacityLabel(resource) }}</strong>
+          <div class="resource-row__cta">
+            <a class="btn-outline" [routerLink]="['/catalogue', resource.id]">Voir la page</a>
+            <a
+              class="btn-primary"
+              [routerLink]="['/calendar']"
+              [queryParams]="{ resourceId: resource.id }"
+            >
+              Disponibilités
+            </a>
           </div>
-        </div>
-
-        <div class="deposit-block">
-          <span class="label">Caution</span>
-          <div>
-            <strong class="deposit">{{ getPriceEuros(resource.depositAmountCents) }}EUR</strong>
-          </div>
-        </div>
-
-        <div
-          class="deposit-block"
-          *ngIf="resource.rentalPriceCents !== null && resource.rentalPriceCents !== undefined"
-        >
-          <span class="label">Tarif location</span>
-          <div>
-            <strong>{{ getPriceEuros(resource.rentalPriceCents) }}EUR / réservation</strong>
-          </div>
-        </div>
-
-        <div class="features-block" *ngIf="getFeatureLabels(resource).length">
-          <span class="label">Caracteristiques</span>
-          <div class="feature-tags">
-            <span class="feature-tag" *ngFor="let feature of getFeatureLabels(resource)">{{
-              feature
-            }}</span>
-          </div>
-        </div>
-
-        <hr />
-
-        <div class="card-footer-actions">
-          <a class="secondary-btn secondary-btn--link" [routerLink]="['/catalogue', resource.id]">
-            Voir la page
-          </a>
-          <button type="button" class="secondary-btn" disabled>Disponibilites</button>
         </div>
       </article>
     </div>

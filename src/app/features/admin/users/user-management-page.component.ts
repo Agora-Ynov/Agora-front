@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import {
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 import {
   AdminUsersService,
   AdminUserRowDto,
@@ -20,7 +31,7 @@ type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING_VALIDATION';
 @Component({
   selector: 'app-user-management-page',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './user-management-page.component.html',
   styleUrl: './user-management-page.component.scss',
 })
@@ -55,6 +66,14 @@ export class UserManagementPageComponent {
   readonly usersTotalElements = signal(0);
   readonly usersPageSizeOptions = [10, 20, 50, 100] as const;
 
+  private readonly searchReload = new Subject<void>();
+  private readonly searchSuggestTrigger = new Subject<string>();
+
+  readonly searchSuggestions = signal<AdminUserRowDto[]>([]);
+  readonly searchSuggestLoading = signal(false);
+  readonly resendActivationTarget = signal<AdminUserRowDto | null>(null);
+  readonly resendActivationBusy = signal(false);
+
   readonly createFirstName = signal('Jean');
   readonly createLastName = signal('Dupont');
   readonly createPhone = signal('06 12 34 56 78');
@@ -77,24 +96,8 @@ export class UserManagementPageComponent {
     return hasIdentity;
   });
 
-  readonly filteredUsers = computed(() => {
-    const term = this.searchTerm().trim().toLowerCase();
-    if (!term) {
-      return this.users();
-    }
-    return this.users().filter(user => {
-      const haystack = [
-        user.firstName ?? '',
-        user.lastName ?? '',
-        user.email ?? '',
-        user.internalRef ?? '',
-        user.phone ?? '',
-      ]
-        .join(' ')
-        .toLowerCase();
-      return haystack.includes(term);
-    });
-  });
+  /** Liste paginée : filtre serveur via paramètre `q` (plus de filtrage client doublon). */
+  readonly filteredUsers = computed(() => this.users());
 
   readonly adminDisplayName = computed(() => {
     const admin = this.authService.currentUser();
@@ -107,11 +110,49 @@ export class UserManagementPageComponent {
         this.isCreateModalOpen() ||
         this.viewedUser() !== null ||
         this.actingUser() !== null ||
-        this.isEditModalOpen();
+        this.isEditModalOpen() ||
+        this.resendActivationTarget() !== null;
       if (typeof document !== 'undefined') {
         document.body.classList.toggle('agora-modal-open', open);
       }
     });
+
+    this.searchReload.pipe(debounceTime(380), takeUntilDestroyed()).subscribe(() => {
+      this.usersPage.set(0);
+      this.loadUsers();
+    });
+
+    this.searchSuggestTrigger
+      .pipe(
+        debounceTime(220),
+        distinctUntilChanged(),
+        switchMap(() => {
+          const q = this.searchTerm().trim();
+          if (q.length < 2) {
+            this.searchSuggestions.set([]);
+            return of<AdminUserRowDto[]>([]);
+          }
+          const f = this.filter();
+          const { accountType, status } = this.apiListParams(f);
+          this.searchSuggestLoading.set(true);
+          return this.api
+            .getJson<AdminUsersListResponse>('/api/admin/users', {
+              page: 0,
+              size: 15,
+              q,
+              ...(accountType ? { accountType } : {}),
+              ...(status ? { status } : {}),
+            })
+            .pipe(
+              map(res => res.content ?? []),
+              finalize(() => this.searchSuggestLoading.set(false)),
+              catchError(() => of<AdminUserRowDto[]>([]))
+            );
+        }),
+        takeUntilDestroyed()
+      )
+      .subscribe(rows => this.searchSuggestions.set(rows));
+
     this.loadUsers();
   }
 
@@ -119,6 +160,7 @@ export class UserManagementPageComponent {
     this.filter.set(value);
     this.usersPage.set(0);
     this.loadUsers();
+    this.searchSuggestTrigger.next(this.searchTerm());
   }
 
   private apiListParams(filter: AccountTypeFilter): { accountType?: string; status?: string } {
@@ -170,6 +212,7 @@ export class UserManagementPageComponent {
         ...listParams(this.usersPage(), this.usersPageSize()),
         ...(accountType ? { accountType } : {}),
         ...(status ? { status } : {}),
+        ...(this.searchTerm().trim() ? { q: this.searchTerm().trim() } : {}),
       }),
     }).subscribe({
       next: ({ counts, rows }) => {
@@ -199,6 +242,62 @@ export class UserManagementPageComponent {
 
   setSearchTerm(value: string): void {
     this.searchTerm.set(value);
+    this.searchReload.next();
+    this.searchSuggestTrigger.next(value);
+  }
+
+  onSearchFocus(): void {
+    this.searchSuggestTrigger.next(this.searchTerm());
+  }
+
+  pickSearchSuggestion(user: AdminUserRowDto): void {
+    const q = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || (user.email ?? '');
+    this.searchTerm.set(q);
+    this.searchSuggestions.set([]);
+    this.searchReload.next();
+  }
+
+  openResendActivationModal(user: AdminUserRowDto): void {
+    this.resendActivationTarget.set(user);
+  }
+
+  closeResendActivationModal(): void {
+    this.resendActivationTarget.set(null);
+  }
+
+  confirmResendActivation(): void {
+    const user = this.resendActivationTarget();
+    const id = user?.id;
+    if (!id) {
+      return;
+    }
+    if (!user.email?.trim()) {
+      this.feedback.set(
+        "Impossible : aucun e-mail sur la fiche. Utilisez d'abord « activation autonome » sur la fiche utilisateur."
+      );
+      this.closeResendActivationModal();
+      return;
+    }
+    this.resendActivationBusy.set(true);
+    this.adminUsers.resendActivation(id, undefined, false, { transferCache: false }).subscribe({
+      next: () => {
+        this.resendActivationBusy.set(false);
+        this.closeResendActivationModal();
+        this.feedback.set(
+          'Courriel d’activation renvoyé (nouveau lien ; durée typique 72 h, envoi via la messagerie configurée, ex. Brevo).'
+        );
+      },
+      error: (err: { error?: { message?: string; detail?: string } | string }) => {
+        this.resendActivationBusy.set(false);
+        const body = err?.error;
+        const msg =
+          typeof body === 'string'
+            ? body
+            : body?.message ?? body?.detail ?? "Impossible de renvoyer l'activation.";
+        this.feedback.set(typeof msg === 'string' ? msg : "Impossible de renvoyer l'activation.");
+        this.closeResendActivationModal();
+      },
+    });
   }
 
   goUsersPage(page: number): void {
@@ -517,15 +616,6 @@ export class UserManagementPageComponent {
         this.loadUsers();
       },
       error: () => this.feedback.set('Echec de la creation (verifiez les droits et les donnees).'),
-    });
-  }
-
-  resendActivation(user: AdminUserRowDto): void {
-    const id = user.id;
-    if (!id) return;
-    this.adminUsers.resendActivation(id, undefined, false, { transferCache: false }).subscribe({
-      next: () => this.feedback.set('Courriel d’activation renvoye.'),
-      error: () => this.feedback.set('Impossible de renvoyer l’activation.'),
     });
   }
 

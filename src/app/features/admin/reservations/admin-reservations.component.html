@@ -33,12 +33,6 @@
       <span>Exo. / dispenses</span>
     </article>
   </section>
-  <p class="stats-page-hint">
-    Ces indicateurs concernent uniquement les réservations chargées sur la page courante ({{
-      reservations().length
-    }}
-    ligne(s) sur {{ resTotalElements() || reservations().length }} au total dans l’API).
-  </p>
 
   <div class="feedback-box" *ngIf="feedbackMessage()">
     {{ feedbackMessage() }}
@@ -68,19 +62,20 @@
     <div class="reservations-panel__header">
       <h2>
         Liste des réservations —
-        {{ filteredReservations().length }} après filtre
         @if (resTotalElements()) {
           <span class="reservations-panel__meta">
-            (page {{ resPage() + 1 }} / {{ resTotalPages() || 1 }}, {{ resTotalElements() }} au
-            total)</span
+            {{ resTotalElements() }} correspondant au filtre (page {{ resPage() + 1 }} /
+            {{ resTotalPages() || 1 }})</span
           >
+        } @else {
+          <span class="reservations-panel__meta">aucun resultat</span>
         }
       </h2>
     </div>
 
     <div class="reservations-table">
       <div class="reservations-table__head">
-        <span>ID</span>
+        <span>Réf.</span>
         <span>Ressource</span>
         <span>Reserveur</span>
         <span>Date</span>
@@ -90,15 +85,12 @@
         <span>Actions</span>
       </div>
 
-      @for (
-        reservation of filteredReservations();
-        track trackByReservationId($index, reservation)
-      ) {
+      @for (reservation of reservations(); track trackByReservationId($index, reservation)) {
         <article
           class="reservations-row"
           [class.reservations-row--pending]="statusRowPending(reservation)"
         >
-          <div class="cell cell--id">{{ reservation.id.slice(0, 8) }}…</div>
+          <div class="cell cell--ref">{{ reservation.displayReference }}</div>
           <div class="cell cell--resource">{{ reservation.resourceName }}</div>
           <div class="cell cell--user">
             <strong>{{ reservation.userName }}</strong>
@@ -236,8 +228,8 @@
         <header class="modal-header">
           <div>
             <h3 id="reservation-details-title">Gestion de la reservation</h3>
-            <p>ID reservation</p>
-            <strong>{{ reservation.id }}</strong>
+            <p>Référence</p>
+            <strong>{{ reservation.displayReference }}</strong>
           </div>
 
           <div class="modal-header__side">
@@ -262,7 +254,9 @@
           <div class="detail-card">
             <span>Reserveur</span>
             <strong>{{ reservation.userName }}</strong>
-            <small>Detail citoyen non inclus dans la liste admin</small>
+            @if (reservation.userEmail && reservation.userEmail !== reservation.userName) {
+              <small>{{ reservation.userEmail }}</small>
+            }
           </div>
           <div class="detail-card">
             <span>Date de debut</span>
@@ -311,19 +305,19 @@
             (ngModelChange)="paymentDraft.set($event)"
           >
             @for (status of paymentStatusOptions(); track status) {
-              <option [ngValue]="status">{{ paymentLabel(status) }} ({{ status }})</option>
+              <option [ngValue]="status">{{ paymentLabel(status) }}</option>
             }
           </select>
         </section>
 
         <section class="modal-section">
-          <label class="field-label" for="adminComment">Commentaire (trace cote paiement)</label>
+          <label class="field-label" for="adminComment">Commentaire pour l’historique interne</label>
           <textarea
             id="adminComment"
             class="field-control field-control--textarea"
             [ngModel]="adminCommentDraft()"
             (ngModelChange)="adminCommentDraft.set($event)"
-            placeholder="Optionnel — visible dans l historique des paiements"
+            placeholder="Optionnel — joint à l’historique des mises à jour de caution"
           ></textarea>
 
           <button type="button" class="secondary-action" (click)="saveAdminComment()">
@@ -406,8 +400,9 @@
         </header>
 
         <div class="warning-box">
-          Vous allez refuser la reservation <strong>{{ reservationReject.id }}</strong
-          >. Indiquez un motif (enregistre cote serveur).
+          Vous allez refuser la réservation
+          <strong>{{ reservationReject.displayReference }}</strong> ({{ reservationReject.resourceName }}).
+          Indiquez un motif clair pour l’usager.
         </div>
 
         <label class="field-label" for="rejectReason">Motif *</label>

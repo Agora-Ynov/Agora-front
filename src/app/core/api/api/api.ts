@@ -30,21 +30,4 @@ export * from './superadmin.service';
 import { SuperadminService } from './superadmin.service';
 export * from './waitlist.service';
 import { WaitlistService } from './waitlist.service';
-export const APIS = [
-  AdminAuditService,
-  AdminBlackoutsService,
-  AdminExportsService,
-  AdminGroupsService,
-  AdminPaymentsService,
-  AdminReservationsService,
-  AdminStatsService,
-  AdminUsersService,
-  AgoraAuthService,
-  CalendarService,
-  GroupsService,
-  ReservationDocumentsService,
-  ReservationsService,
-  ResourcesService,
-  SuperadminService,
-  WaitlistService,
-];
+export const APIS = [AdminAuditService, AdminBlackoutsService, AdminExportsService, AdminGroupsService, AdminPaymentsService, AdminReservationsService, AdminStatsService, AdminUsersService, AgoraAuthService, CalendarService, GroupsService, ReservationDocumentsService, ReservationsService, ResourcesService, SuperadminService, WaitlistService];
