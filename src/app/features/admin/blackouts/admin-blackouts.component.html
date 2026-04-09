@@ -171,13 +171,18 @@
   </main>
 
   @if (isModalOpen()) {
-    <div class="modal-backdrop" (click)="closeModal()">
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la fenetre de creation"
+      (click)="closeModal()"
+    >
+    </button>
       <div
         class="modal-card"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blackout-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <div class="modal-header">
           <div>
@@ -247,17 +252,21 @@
           </div>
         </form>
       </div>
-    </div>
   }
 
   @if (blackoutPendingDeletion(); as group) {
-    <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la confirmation de suppression"
+      (click)="closeDeleteModal()"
+    >
+    </button>
       <div
         class="modal-card modal-card--danger"
         role="dialog"
         aria-modal="true"
         aria-labelledby="blackout-delete-modal-title"
-        (click)="$event.stopPropagation()"
       >
         <div class="modal-header modal-header--danger">
           <div class="modal-header__lead">
@@ -329,6 +338,5 @@
           </button>
         </div>
       </div>
-    </div>
   }
 </section>

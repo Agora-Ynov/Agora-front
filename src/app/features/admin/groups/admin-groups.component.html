@@ -247,13 +247,18 @@
   </main>
 
   @if (selectedGroup(); as group) {
-    <div class="modal-backdrop" (click)="closeMembersModal()">
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la fenetre des membres"
+      (click)="closeMembersModal()"
+    >
+    </button>
       <section
         class="members-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="group-members-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="members-modal__header">
           <div>
@@ -287,17 +292,21 @@
           </div>
         }
       </section>
-    </div>
   }
 
   @if (isCreateModalOpen()) {
-    <div class="modal-backdrop" (click)="closeCreateModal()">
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la creation de groupe"
+      (click)="closeCreateModal()"
+    >
+    </button>
       <section
         class="create-group-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-group-title"
-        (click)="$event.stopPropagation()"
       >
         <header class="create-group-modal__header">
           <h3 id="create-group-title">Creer un nouveau groupe</h3>
@@ -343,6 +352,5 @@
           </button>
         </form>
       </section>
-    </div>
   }
 </section>
