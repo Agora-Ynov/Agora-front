@@ -175,10 +175,6 @@ export class ResourceManagementComponent implements OnInit {
     return this.resourceService.fromCents(value);
   }
 
-  hasRentalPrice(cents: number | null | undefined): boolean {
-    return cents !== null && cents !== undefined;
-  }
-
   getCapacityLabel(resource: ResourceDto): string {
     if (resource.resourceType === 'IMMOBILIER') {
       return resource.capacity ? `${resource.capacity} pers.` : 'Non renseignee';

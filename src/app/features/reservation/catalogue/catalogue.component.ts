@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, isDevMode, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { distinctUntilChanged, finalize, map, of, switchMap } from 'rxjs';
@@ -152,9 +152,32 @@ export class CatalogueComponent {
           const filtered = rows.filter(
             (r): r is ResourceDto & { id: string } => r.id != null && String(r.id).length > 0
           );
+          if (isDevMode()) {
+            /* eslint-disable no-console -- traces locales catalogue (dev uniquement) */
+            console.debug(
+              '[Agora][Catalogue] rows recus',
+              rows.length,
+              '→ apres filtre',
+              filtered.length
+            );
+            if (rows.length > 0 && filtered.length === 0) {
+              console.warn('[Agora][Catalogue] TOUS les rows ont ete filtres (id vide ?)', rows);
+            }
+            /* eslint-enable no-console */
+          }
           this.resources.set(filtered.map(resource => this.mapResource(resource)));
         },
         error: (error: HttpErrorResponse) => {
+          if (isDevMode()) {
+            /* eslint-disable no-console -- trace erreur API catalogue (dev uniquement) */
+            console.error(
+              '[Agora][Catalogue] erreur chargement ressources',
+              error.status,
+              error.message,
+              error
+            );
+            /* eslint-enable no-console */
+          }
           const message =
             error.status === 0
               ? "Impossible de joindre l'API (backend arrete ou mauvais port sur l'hote). Docker : verifier BACKEND_PORT dans .env (souvent 8080) et que le proxy (proxy.conf.js) utilise le meme port."

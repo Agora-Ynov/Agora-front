@@ -89,7 +89,10 @@
         </div>
       </div>
 
-      <div class="deposit-block" *ngIf="hasRentalPrice(resource.rentalPriceCents)">
+      <div
+        class="deposit-block"
+        *ngIf="resource.rentalPriceCents !== null && resource.rentalPriceCents !== undefined"
+      >
         <span class="label">Tarif location</span>
         <div>
           <strong>{{ getPriceEuros(resource.rentalPriceCents) }}EUR / réservation</strong>
@@ -174,7 +177,10 @@
             formControlName="rentalAmountEuros"
             placeholder="Laisser vide si tarif à confirmer au secrétariat"
           />
-          <small>0 = gratuit. Vide = le catalogue affichera « À confirmer » pour le tarif location.</small>
+          <small
+            >0 = gratuit. Vide = le catalogue affichera « À confirmer » pour le tarif
+            location.</small
+          >
         </div>
 
         <div class="form-section-title">Caution</div>
