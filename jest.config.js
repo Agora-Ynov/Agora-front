@@ -1,5 +1,7 @@
 module.exports = {
   preset: 'jest-preset-angular',
+  /** Réduit le bruit : résumé + détails uniquement en cas d'échec */
+  silent: true,
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   testMatch: ['**/src/**/*.spec.ts'],
   collectCoverageFrom: [
