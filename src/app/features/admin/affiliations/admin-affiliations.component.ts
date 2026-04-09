@@ -2,11 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-type AffiliationType =
-  | 'SOCIAL_CRITERIA'
-  | 'ASSOCIATION'
-  | 'ELECTED_MANDATE'
-  | 'GROUP_JOIN';
+type AffiliationType = 'SOCIAL_CRITERIA' | 'ASSOCIATION' | 'ELECTED_MANDATE' | 'GROUP_JOIN';
 type AffiliationStatus = 'PENDING' | 'INFO_REQUESTED' | 'APPROVED' | 'REFUSED';
 type AffiliationTab = 'TO_PROCESS' | 'PROCESSED';
 type AffiliationStatusFilter = 'ALL' | AffiliationStatus;
@@ -82,8 +78,7 @@ export class AdminAffiliationsComponent {
       status: 'INFO_REQUESTED',
       submittedAt: 'Soumise le 18 mars 2026 a 14:30',
       handledBy: 'Traitee par Jean Martin (Secretaire)',
-      note:
-        "Merci de fournir egalement une piece d'identite en cours de validite ainsi que votre dernier avis d'imposition.",
+      note: "Merci de fournir egalement une piece d'identite en cours de validite ainsi que votre dernier avis d'imposition.",
       documents: ['attestation_CAF_2026.pdf'],
       summary:
         'Demande de reevaluation des conditions sociales avec pieces partielles deja transmises.',
@@ -97,8 +92,7 @@ export class AdminAffiliationsComponent {
       submittedAt: 'Soumise le 10 mars 2026 a 11:00',
       handledBy: 'Traitee par Marie Dupont (Administratrice)',
       groupName: 'Conseillere municipale',
-      note:
-        'Demande approuvee. Rattachement au Conseil Municipal effectue. Exoneration mandat electif activee.',
+      note: 'Demande approuvee. Rattachement au Conseil Municipal effectue. Exoneration mandat electif activee.',
       documents: ['arrete_nomination.pdf', 'carte_elu.pdf'],
       summary:
         "Elue municipale demandant l'activation de l'exoneration mandat electif et le rattachement au groupe Conseil Municipal.",
@@ -111,12 +105,10 @@ export class AdminAffiliationsComponent {
       status: 'REFUSED',
       submittedAt: 'Soumise le 5 mars 2026 a 08:45',
       handledBy: 'Traitee par Jean Martin (Secretaire)',
-      note:
-        "Demande refusee : votre licence sportive ne justifie pas le rattachement a ce groupe. Veuillez contacter le manager de l'association (tel. 01 23 45 67 89) pour une adhesion directe.",
+      note: "Demande refusee : votre licence sportive ne justifie pas le rattachement a ce groupe. Veuillez contacter le manager de l'association (tel. 01 23 45 67 89) pour une adhesion directe.",
       groupName: 'Groupe : Association Sportive Municipale',
       documents: ['licenceBadminton2026.pdf'],
-      summary:
-        'Demande de rattachement au groupe sportif municipal sur presentation de licence.',
+      summary: 'Demande de rattachement au groupe sportif municipal sur presentation de licence.',
     },
   ]);
 
@@ -128,9 +120,8 @@ export class AdminAffiliationsComponent {
       infoRequested: requests.filter(request => request.status === 'INFO_REQUESTED').length,
       approved: requests.filter(request => request.status === 'APPROVED').length,
       refused: requests.filter(request => request.status === 'REFUSED').length,
-      toProcess: requests.filter(request =>
-        ['PENDING', 'INFO_REQUESTED'].includes(request.status)
-      ).length,
+      toProcess: requests.filter(request => ['PENDING', 'INFO_REQUESTED'].includes(request.status))
+        .length,
     };
   });
 
@@ -181,9 +172,7 @@ export class AdminAffiliationsComponent {
     this.modalMode.set(mode);
     this.requesterMessageDraft.set(request.note ?? '');
     this.internalCommentDraft.set(
-      mode === 'APPROVE'
-        ? "Demande validee. Votre exoneration est activee des aujourd'hui."
-        : ''
+      mode === 'APPROVE' ? "Demande validee. Votre exoneration est activee des aujourd'hui." : ''
     );
     this.refusalReasonDraft.set('');
   }

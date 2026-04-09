@@ -160,10 +160,10 @@ export class BookingFormComponent {
         .getCurrentUser()
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-        error: () => {
-          this.groups.set([]);
-        },
-      });
+          error: () => {
+            this.groups.set([]);
+          },
+        });
     }
 
     effect(

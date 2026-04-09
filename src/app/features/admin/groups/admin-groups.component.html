@@ -73,7 +73,11 @@
           <article class="group-card">
             <header class="group-card__header">
               <div class="group-card__title-wrap">
-                <span class="group-card__icon" [class]="'group-card__icon--' + group.icon" aria-hidden="true">
+                <span
+                  class="group-card__icon"
+                  [class]="'group-card__icon--' + group.icon"
+                  aria-hidden="true"
+                >
                   @switch (group.icon) {
                     @case ('crown') {
                       <svg viewBox="0 0 24 24" fill="none">
@@ -96,8 +100,18 @@
                           stroke="currentColor"
                           stroke-width="1.8"
                         />
-                        <path d="M9.5 8H12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                        <path d="M9.5 12H12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                        <path
+                          d="M9.5 8H12.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <path
+                          d="M9.5 12H12.5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
                         <path
                           d="M17.5 8.5H19.5V18.5H10.5"
                           stroke="currentColor"
@@ -201,8 +215,18 @@
                   stroke="currentColor"
                   stroke-width="1.8"
                 />
-                <path d="M9.5 8H12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                <path d="M9.5 12H12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path
+                  d="M9.5 8H12.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M9.5 12H12.5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
                 <path
                   d="M17.5 8.5H19.5V18.5H10.5"
                   stroke="currentColor"
@@ -243,106 +267,113 @@
         </article>
       </section>
     }
-
   </main>
 
   @if (selectedGroup(); as group) {
-    <div class="modal-backdrop" (click)="closeMembersModal()">
-      <section
-        class="members-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="group-members-title"
-        (click)="$event.stopPropagation()"
-      >
-        <header class="members-modal__header">
-          <div>
-            <h3 id="group-members-title">{{ group.name }}</h3>
-            <p>Liste chargee via GET /api/admin/groups/{{ group.id }}/members</p>
-          </div>
-          <button type="button" class="members-modal__close" (click)="closeMembersModal()">
-            X
-          </button>
-        </header>
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la fenetre des membres"
+      (click)="closeMembersModal()"
+    ></button>
+    <section
+      class="members-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="group-members-title"
+    >
+      <header class="members-modal__header">
+        <div>
+          <h3 id="group-members-title">{{ group.name }}</h3>
+          <p>Liste chargee via GET /api/admin/groups/{{ group.id }}/members</p>
+        </div>
+        <button type="button" class="members-modal__close" (click)="closeMembersModal()">X</button>
+      </header>
 
-        @if (loadingMembers()) {
-          <p class="members-modal__empty">Chargement des membres...</p>
-        } @else if (!groupMembers().length) {
-          <p class="members-modal__empty">Aucun membre dans ce groupe.</p>
-        } @else {
-          <div class="members-list">
-            @for (member of groupMembers(); track member.userId) {
-              <article class="member-row">
-                <div>
-                  <strong>{{ member.firstName }} {{ member.lastName }}</strong>
-                  <p>{{ member.email || 'Sans email' }}</p>
-                </div>
+      @if (loadingMembers()) {
+        <p class="members-modal__empty">Chargement des membres...</p>
+      } @else if (!groupMembers().length) {
+        <p class="members-modal__empty">Aucun membre dans ce groupe.</p>
+      } @else {
+        <div class="members-list">
+          @for (member of groupMembers(); track member.userId) {
+            <article class="member-row">
+              <div>
+                <strong>{{ member.firstName }} {{ member.lastName }}</strong>
+                <p>{{ member.email || 'Sans email' }}</p>
+              </div>
 
-                <div class="member-row__meta">
-                  <span class="group-chip">{{ memberRoleLabel(member.role) }}</span>
-                  <span>Depuis le {{ formatJoinedAt(member.joinedAt) }}</span>
-                </div>
-              </article>
-            }
-          </div>
-        }
-      </section>
-    </div>
+              <div class="member-row__meta">
+                <span class="group-chip">{{ memberRoleLabel(member.role) }}</span>
+                <span>Depuis le {{ formatJoinedAt(member.joinedAt) }}</span>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
   }
 
   @if (isCreateModalOpen()) {
-    <div class="modal-backdrop" (click)="closeCreateModal()">
-      <section
-        class="create-group-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-group-title"
-        (click)="$event.stopPropagation()"
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la creation de groupe"
+      (click)="closeCreateModal()"
+    ></button>
+    <section
+      class="create-group-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-group-title"
+    >
+      <header class="create-group-modal__header">
+        <h3 id="create-group-title">Creer un nouveau groupe</h3>
+        <button type="button" class="create-group-modal__close" (click)="closeCreateModal()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <form
+        class="create-group-form"
+        [formGroup]="createGroupForm"
+        (ngSubmit)="submitCreateGroup()"
       >
-        <header class="create-group-modal__header">
-          <h3 id="create-group-title">Creer un nouveau groupe</h3>
-          <button type="button" class="create-group-modal__close" (click)="closeCreateModal()">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          </button>
-        </header>
+        <label class="create-group-field">
+          <span>Nom du groupe *</span>
+          <input type="text" formControlName="name" placeholder="Ex: Service Administratif" />
+        </label>
 
-        <form class="create-group-form" [formGroup]="createGroupForm" (ngSubmit)="submitCreateGroup()">
-          <label class="create-group-field">
-            <span>Nom du groupe *</span>
-            <input type="text" formControlName="name" placeholder="Ex: Service Administratif" />
-          </label>
+        <label class="create-group-field">
+          <span>Type de groupe *</span>
+          <select formControlName="groupType">
+            @for (option of groupTypeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
 
-          <label class="create-group-field">
-            <span>Type de groupe *</span>
-            <select formControlName="groupType">
-              @for (option of groupTypeOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </label>
+        <label class="create-group-field">
+          <span>Description</span>
+          <textarea
+            formControlName="description"
+            rows="4"
+            placeholder="Description du groupe et de ses activites..."
+          ></textarea>
+        </label>
 
-          <label class="create-group-field">
-            <span>Description</span>
-            <textarea
-              formControlName="description"
-              rows="4"
-              placeholder="Description du groupe et de ses activites..."
-            ></textarea>
-          </label>
+        <div class="create-group-note">
+          <strong>Mapping API :</strong> le type choisi preconfigure le body `POST
+          /api/admin/groups` avec les droits et remises prevus par les mocks.
+        </div>
 
-          <div class="create-group-note">
-            <strong>Mapping API :</strong> le type choisi preconfigure le body
-            `POST /api/admin/groups` avec les droits et remises prevus par les mocks.
-          </div>
-
-          <button type="submit" class="create-group-submit" [disabled]="isCreating()">
-            {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}
-          </button>
-        </form>
-      </section>
-    </div>
+        <button type="submit" class="create-group-submit" [disabled]="isCreating()">
+          {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}
+        </button>
+      </form>
+    </section>
   }
 </section>

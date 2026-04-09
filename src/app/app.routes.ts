@@ -83,9 +83,7 @@ export const routes: Routes = [
     path: 'admin/groups',
     canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/admin/groups/admin-groups.component').then(
-        m => m.AdminGroupsComponent
-      ),
+      import('./features/admin/groups/admin-groups.component').then(m => m.AdminGroupsComponent),
   },
   {
     path: 'admin/users',

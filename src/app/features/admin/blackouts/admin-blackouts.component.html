@@ -51,12 +51,7 @@
       <div class="blackout-info__heading">
         <span class="blackout-info__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 8V12"
-              stroke="currentColor"
-              stroke-width="1.9"
-              stroke-linecap="round"
-            />
+            <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
             <path
               d="M12 16H12.01"
               stroke="currentColor"
@@ -115,7 +110,9 @@
                 @for (resourceLabel of group.resourceLabels; track resourceLabel) {
                   <span
                     class="resource-chip"
-                    [class.resource-chip--global]="group.isGlobal && resourceLabel === 'Toutes les ressources'"
+                    [class.resource-chip--global]="
+                      group.isGlobal && resourceLabel === 'Toutes les ressources'
+                    "
                   >
                     {{ resourceLabel }}
                   </span>
@@ -171,163 +168,134 @@
   </main>
 
   @if (isModalOpen()) {
-    <div class="modal-backdrop" (click)="closeModal()">
-      <div
-        class="modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="blackout-modal-title"
-        (click)="$event.stopPropagation()"
-      >
-        <div class="modal-header">
-          <div>
-            <h3 id="blackout-modal-title">Ajouter une fermeture</h3>
-            <p>Creation via POST /api/admin/blackouts</p>
-          </div>
-          <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fermer">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M7 7L17 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <path
-                d="M17 7L7 17"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la fenetre de creation"
+      (click)="closeModal()"
+    ></button>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="blackout-modal-title">
+      <div class="modal-header">
+        <div>
+          <h3 id="blackout-modal-title">Ajouter une fermeture</h3>
+          <p>Creation via POST /api/admin/blackouts</p>
+        </div>
+        <button type="button" class="modal-close" (click)="closeModal()" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" [formGroup]="form" (ngSubmit)="submitForm()">
+        <label class="form-field">
+          <span>Ressource</span>
+          <select formControlName="resourceId">
+            <option [ngValue]="null">Toutes les ressources</option>
+            @for (resource of activeResources(); track resource.id) {
+              <option [ngValue]="resource.id">{{ resource.name }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Date de debut</span>
+            <input type="date" formControlName="dateFrom" />
+          </label>
+
+          <label class="form-field">
+            <span>Date de fin</span>
+            <input type="date" formControlName="dateTo" />
+          </label>
         </div>
 
-        <form class="modal-form" [formGroup]="form" (ngSubmit)="submitForm()">
-          <label class="form-field">
-            <span>Ressource</span>
-            <select formControlName="resourceId">
-              <option [ngValue]="null">Toutes les ressources</option>
-              @for (resource of activeResources(); track resource.id) {
-                <option [ngValue]="resource.id">{{ resource.name }}</option>
-              }
-            </select>
-          </label>
+        <label class="form-field">
+          <span>Libelle</span>
+          <input
+            type="text"
+            formControlName="reason"
+            maxlength="160"
+            placeholder="Ex: Jour ferie - Fete du Travail"
+          />
+        </label>
 
-          <div class="form-grid">
-            <label class="form-field">
-              <span>Date de debut</span>
-              <input type="date" formControlName="dateFrom" />
-            </label>
+        <div class="modal-note">
+          <strong>Entree attendue :</strong> `resourceId | null`, `dateFrom`, `dateTo`, `reason`
+        </div>
 
-            <label class="form-field">
-              <span>Date de fin</span>
-              <input type="date" formControlName="dateTo" />
-            </label>
-          </div>
-
-          <label class="form-field">
-            <span>Libelle</span>
-            <input
-              type="text"
-              formControlName="reason"
-              maxlength="160"
-              placeholder="Ex: Jour ferie - Fete du Travail"
-            />
-          </label>
-
-          <div class="modal-note">
-            <strong>Entree attendue :</strong> `resourceId | null`, `dateFrom`, `dateTo`, `reason`
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="modal-cancel" (click)="closeModal()">Annuler</button>
-            <button type="submit" class="modal-submit" [disabled]="isSaving()">
-              {{ isSaving() ? 'Enregistrement...' : 'Ajouter la fermeture' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="modal-submit" [disabled]="isSaving()">
+            {{ isSaving() ? 'Enregistrement...' : 'Ajouter la fermeture' }}
+          </button>
+        </div>
+      </form>
     </div>
   }
 
   @if (blackoutPendingDeletion(); as group) {
-    <div class="modal-backdrop" (click)="closeDeleteModal()">
-      <div
-        class="modal-card modal-card--danger"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="blackout-delete-modal-title"
-        (click)="$event.stopPropagation()"
-      >
-        <div class="modal-header modal-header--danger">
-          <div class="modal-header__lead">
-            <span class="modal-header__danger-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 8V12"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M12 16H12.01"
-                  stroke="currentColor"
-                  stroke-width="2.4"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M10.2 4.85L3.95 15.65C3.18 16.98 4.14 18.65 5.68 18.65H18.32C19.86 18.65 20.82 16.98 20.05 15.65L13.8 4.85C13.03 3.52 10.97 3.52 10.2 4.85Z"
-                  stroke="currentColor"
-                  stroke-width="1.9"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <div>
-              <h3 id="blackout-delete-modal-title">Confirmer la suppression</h3>
-              <p>Cette action supprimera la fermeture selectionnee.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="modal-close"
-            (click)="closeDeleteModal()"
-            aria-label="Fermer"
-          >
+    <button
+      type="button"
+      class="modal-backdrop"
+      aria-label="Fermer la confirmation de suppression"
+      (click)="closeDeleteModal()"
+    ></button>
+    <div
+      class="modal-card modal-card--danger"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="blackout-delete-modal-title"
+    >
+      <div class="modal-header modal-header--danger">
+        <div class="modal-header__lead">
+          <span class="modal-header__danger-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 8V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
               <path
-                d="M7 7L17 17"
+                d="M12 16H12.01"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.4"
                 stroke-linecap="round"
               />
               <path
-                d="M17 7L7 17"
+                d="M10.2 4.85L3.95 15.65C3.18 16.98 4.14 18.65 5.68 18.65H18.32C19.86 18.65 20.82 16.98 20.05 15.65L13.8 4.85C13.03 3.52 10.97 3.52 10.2 4.85Z"
                 stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+                stroke-width="1.9"
+                stroke-linejoin="round"
               />
             </svg>
-          </button>
+          </span>
+          <div>
+            <h3 id="blackout-delete-modal-title">Confirmer la suppression</h3>
+            <p>Cette action supprimera la fermeture selectionnee.</p>
+          </div>
         </div>
+        <button type="button" class="modal-close" (click)="closeDeleteModal()" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
 
-        <div class="delete-summary">
-          <p><strong>Periode :</strong> {{ formatDateRange(group) }}</p>
-          <p><strong>Libelle :</strong> {{ group.reason }}</p>
-          <p><strong>Ressources :</strong> {{ group.resourceLabels.join(', ') }}</p>
-        </div>
+      <div class="delete-summary">
+        <p><strong>Periode :</strong> {{ formatDateRange(group) }}</p>
+        <p><strong>Libelle :</strong> {{ group.reason }}</p>
+        <p><strong>Ressources :</strong> {{ group.resourceLabels.join(', ') }}</p>
+      </div>
 
-        <div class="modal-actions">
-          <button type="button" class="modal-cancel" (click)="closeDeleteModal()">Annuler</button>
-          <button
-            type="button"
-            class="modal-submit modal-submit--danger"
-            [disabled]="deletingKey() === group.key"
-            (click)="confirmDeleteGroup()"
-          >
-            {{ deletingKey() === group.key ? 'Suppression...' : 'Confirmer la suppression' }}
-          </button>
-        </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel" (click)="closeDeleteModal()">Annuler</button>
+        <button
+          type="button"
+          class="modal-submit modal-submit--danger"
+          [disabled]="deletingKey() === group.key"
+          (click)="confirmDeleteGroup()"
+        >
+          {{ deletingKey() === group.key ? 'Suppression...' : 'Confirmer la suppression' }}
+        </button>
       </div>
     </div>
   }

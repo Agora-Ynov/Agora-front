@@ -101,13 +101,20 @@
             <button
               type="button"
               class="password-toggle"
-              [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-label]="
+                showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
               [attr.aria-pressed]="showPassword"
               (click)="togglePasswordVisibility()"
             >
               @if (showPassword) {
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M3 3L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M3 3L21 21"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                   <path
                     d="M10.58 10.58C10.21 10.95 10 11.46 10 12C10 13.1 10.9 14 12 14C12.54 14 13.05 13.79 13.42 13.42"
                     stroke="currentColor"
@@ -160,13 +167,20 @@
             <button
               type="button"
               class="password-toggle"
-              [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-label]="
+                showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
               [attr.aria-pressed]="showConfirmPassword"
               (click)="toggleConfirmPasswordVisibility()"
             >
               @if (showConfirmPassword) {
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M3 3L21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path
+                    d="M3 3L21 21"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                   <path
                     d="M10.58 10.58C10.21 10.95 10 11.46 10 12C10 13.1 10.9 14 12 14C12.54 14 13.05 13.79 13.42 13.42"
                     stroke="currentColor"
