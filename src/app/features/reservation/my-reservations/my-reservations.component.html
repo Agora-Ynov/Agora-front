@@ -49,7 +49,9 @@
             <div class="reservation-card__header">
               <div>
                 <h2>{{ reservation.resourceName }}</h2>
-                <p>#{{ reservation.id }}</p>
+                @if (reservation.bookingReference) {
+                  <p class="reservation-card__ref">Réf. {{ reservation.bookingReference }}</p>
+                }
               </div>
 
               <div class="reservation-card__badges">
@@ -279,6 +281,33 @@
           </article>
         }
       </div>
+
+      @if (totalPages() > 1) {
+        <nav class="reservations-pagination" aria-label="Pagination des réservations">
+          <button
+            type="button"
+            class="reservations-pagination__btn"
+            (click)="goToPage(page() - 1)"
+            [disabled]="page() <= 0"
+          >
+            Précédent
+          </button>
+          <span class="reservations-pagination__status">
+            Page {{ page() + 1 }} / {{ totalPages() }}
+            @if (totalElements() > 0) {
+              <span class="reservations-pagination__count">({{ totalElements() }} au total)</span>
+            }
+          </span>
+          <button
+            type="button"
+            class="reservations-pagination__btn"
+            (click)="goToPage(page() + 1)"
+            [disabled]="page() >= totalPages() - 1"
+          >
+            Suivant
+          </button>
+        </nav>
+      }
 
       @if (isCancellationModalOpen()) {
         <div

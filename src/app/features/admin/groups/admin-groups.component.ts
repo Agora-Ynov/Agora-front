@@ -165,6 +165,20 @@ export class AdminGroupsComponent {
     }))
   );
 
+  readonly adminGroupPage = signal(0);
+  readonly adminGroupPageSize = 4;
+
+  readonly pagedGroupCards = computed(() => {
+    const all = this.groupCards();
+    const start = this.adminGroupPage() * this.adminGroupPageSize;
+    return all.slice(start, start + this.adminGroupPageSize);
+  });
+
+  readonly adminGroupPageCount = computed(() => {
+    const n = this.groupCards().length;
+    return Math.max(1, Math.ceil(n / this.adminGroupPageSize));
+  });
+
   constructor() {
     this.userSearchTrigger
       .pipe(
@@ -200,9 +214,17 @@ export class AdminGroupsComponent {
         this.selectedGroup() !== null ||
         this.isEditModalOpen() ||
         this.isCreateModalOpen();
-      document.body.style.overflow = locked ? 'hidden' : '';
+      const { documentElement: html, body } = document;
+      if (locked) {
+        html.style.overflow = 'hidden';
+        body.style.overflow = 'hidden';
+      } else {
+        html.style.overflow = '';
+        body.style.overflow = '';
+      }
     });
     this.destroyRef.onDestroy(() => {
+      document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
     });
   }
@@ -482,6 +504,11 @@ export class AdminGroupsComponent {
     return this.frenchDateFormatter.format(new Date(value));
   }
 
+  goToAdminGroupPage(pageIndex: number): void {
+    const last = this.adminGroupPageCount() - 1;
+    this.adminGroupPage.set(Math.max(0, Math.min(pageIndex, last)));
+  }
+
   private loadGroups(): void {
     this.loading.set(true);
     this.errorMessage.set('');
@@ -493,6 +520,10 @@ export class AdminGroupsComponent {
         next: groups => {
           this.errorMessage.set('');
           this.groups.set(groups);
+          const pages = Math.max(1, Math.ceil(groups.length / this.adminGroupPageSize));
+          if (this.adminGroupPage() >= pages) {
+            this.adminGroupPage.set(Math.max(0, pages - 1));
+          }
         },
         error: () => {
           this.groups.set([]);

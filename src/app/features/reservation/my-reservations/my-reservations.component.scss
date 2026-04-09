@@ -11,7 +11,7 @@
 }
 
 .reservations-shell {
-  max-width: 1360px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
@@ -113,7 +113,53 @@
 
 .reservations-list {
   display: grid;
-  gap: 1.5rem;
+  gap: 1rem;
+}
+
+.reservations-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.reservations-pagination__btn {
+  min-height: 2.35rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid #c7d2e3;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #10203a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reservations-pagination__btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.reservations-pagination__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reservations-pagination__status {
+  font-size: 0.9rem;
+  color: #415773;
+  font-weight: 600;
+}
+
+.reservations-pagination__count {
+  font-weight: 500;
+  color: #64748b;
 }
 
 .feedback-banner {
@@ -127,11 +173,11 @@
 }
 
 .reservation-card {
-  padding: 1.9rem;
+  padding: 1.1rem 1.25rem;
   border: 1px solid #dbe3ef;
-  border-radius: 1.6rem;
+  border-radius: 1.1rem;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 24px 45px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
 }
 
 .reservation-card__header,
@@ -144,19 +190,22 @@
 
 .reservation-card__header {
   align-items: flex-start;
-  margin-bottom: 2rem;
+  margin-bottom: 1.1rem;
 }
 
 .reservation-card__header h2 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
+  line-height: 1.25;
   color: #0b1320;
 }
 
-.reservation-card__header p {
-  margin: 0.45rem 0 0;
-  color: #465a76;
-  font-size: 1.02rem;
+.reservation-card__ref {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .reservation-card__badges {
@@ -170,10 +219,10 @@
 .series-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 2rem;
-  padding: 0.2rem 0.75rem;
+  min-height: 1.65rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   background: #eef2ff;
   color: #4338ca;
@@ -184,10 +233,11 @@
 .payment-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 2rem;
-  padding: 0.2rem 0.8rem;
+  gap: 0.35rem;
+  min-height: 1.65rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 999px;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -219,7 +269,8 @@
 
 .reservation-card__grid {
   align-items: stretch;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
+  gap: 1rem;
 }
 
 .info-block {
@@ -398,7 +449,15 @@
 
 .reservation-card__footer {
   align-items: flex-start;
-  margin-top: 1.35rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.reservation-card__footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .reservation-card__footer p {
@@ -407,15 +466,26 @@
 }
 
 .cancel-button {
-  min-height: 2.6rem;
-  padding: 0.75rem 1.2rem;
+  min-height: 2.35rem;
+  padding: 0.5rem 0.95rem;
   border: 0;
-  border-radius: 0.85rem;
+  border-radius: 0.65rem;
   background: #dc1f42;
   color: #fff;
   font: inherit;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(220, 31, 66, 0.2);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #b91c3c;
+}
+
+.cancel-button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .cancel-button:disabled {
@@ -427,7 +497,8 @@
 .cancel-button--series {
   background: #fff;
   color: #b45309;
-  border: 2px solid #f59e0b;
+  border: 1px solid #f59e0b;
+  box-shadow: none;
 }
 
 .cancel-button--series:hover:not(:disabled) {

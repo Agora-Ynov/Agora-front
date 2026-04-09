@@ -57,19 +57,111 @@
     } @else if (!groupCards().length) {
       <p class="feedback">Aucun groupe a afficher pour le moment.</p>
     } @else {
-      <section class="groups-info-panel">
-        <h2>A propos des groupes organisationnels</h2>
+      <section class="groups-hero-info-row" aria-labelledby="groups-about-title">
+        <div class="groups-info-panel groups-info-panel--in-row">
+          <h2 id="groups-about-title">A propos des groupes organisationnels</h2>
 
-        <ul class="groups-info-list">
-          <li>Les utilisateurs peuvent appartenir a plusieurs groupes</li>
-          <li>Une reservation peut etre faite au nom d'un groupe</li>
-          <li>Le Conseil Municipal dispose de droits speciaux</li>
-          <li>Les groupes permettent de gerer les droits collectifs</li>
-        </ul>
+          <ul class="groups-info-list">
+            <li>Les utilisateurs peuvent appartenir a plusieurs groupes</li>
+            <li>Une reservation peut etre faite au nom d'un groupe</li>
+            <li>Le Conseil Municipal dispose de droits speciaux</li>
+            <li>Les groupes permettent de gerer les droits collectifs</li>
+          </ul>
+        </div>
+
+        <div class="special-groups-panel special-groups-panel--in-row">
+          <h2 class="special-groups-panel__title">Groupes speciaux</h2>
+
+          <article class="special-group special-group--council">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Conseil Municipal</h3>
+            </div>
+
+            <p>
+              Le conseil municipal est un groupe organisationnel particulier avec des pouvoirs
+              etendus. Certaines validations necessitent l'appartenance a ce groupe. Les membres
+              beneficient d'un acces prioritaire aux ressources et peuvent valider des budgets.
+            </p>
+          </article>
+
+          <article class="special-group special-group--services">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="6.5"
+                    y="4.75"
+                    width="9"
+                    height="14.5"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M9.5 8H12.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M9.5 12H12.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M17.5 8.5H19.5V18.5H10.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Services municipaux</h3>
+            </div>
+
+            <p>
+              Les services municipaux regroupent le personnel administratif de la collectivite. Ils
+              peuvent beneficier de conditions particulieres pour les reservations internes.
+            </p>
+          </article>
+
+          <article class="special-group special-group--associations">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 19C16.5 15.75 19.5 12.65 19.5 9.3C19.5 7.04 17.71 5.25 15.45 5.25C13.98 5.25 12.73 5.93 12 7.02C11.27 5.93 10.02 5.25 8.55 5.25C6.29 5.25 4.5 7.04 4.5 9.3C4.5 12.65 7.5 15.75 12 19Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Associations</h3>
+            </div>
+
+            <p>
+              Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
+              reservent des ressources. Les membres d'une association peuvent reserver au nom de leur
+              groupe.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section class="group-grid">
-        @for (group of groupCards(); track group.id) {
+        @for (group of pagedGroupCards(); track group.id) {
           <article class="group-card">
             <header class="group-card__header">
               <div class="group-card__title-wrap">
@@ -195,95 +287,29 @@
         }
       </section>
 
-      <section class="special-groups-panel">
-        <h2>Groupes speciaux</h2>
-
-        <article class="special-group special-group--council">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Conseil Municipal</h3>
-          </div>
-
-          <p>
-            Le conseil municipal est un groupe organisationnel particulier avec des pouvoirs
-            etendus. Certaines validations necessitent l'appartenance a ce groupe. Les membres
-            beneficient d'un acces prioritaire aux ressources et peuvent valider des budgets.
-          </p>
-        </article>
-
-        <article class="special-group special-group--services">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="6.5"
-                  y="4.75"
-                  width="9"
-                  height="14.5"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-                <path
-                  d="M9.5 8H12.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M9.5 12H12.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M17.5 8.5H19.5V18.5H10.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Services municipaux</h3>
-          </div>
-
-          <p>
-            Les services municipaux regroupent le personnel administratif de la collectivite. Ils
-            peuvent beneficier de conditions particulieres pour les reservations internes.
-          </p>
-        </article>
-
-        <article class="special-group special-group--associations">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 19C16.5 15.75 19.5 12.65 19.5 9.3C19.5 7.04 17.71 5.25 15.45 5.25C13.98 5.25 12.73 5.93 12 7.02C11.27 5.93 10.02 5.25 8.55 5.25C6.29 5.25 4.5 7.04 4.5 9.3C4.5 12.65 7.5 15.75 12 19Z"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Associations</h3>
-          </div>
-
-          <p>
-            Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
-            reservent des ressources. Les membres d'une association peuvent reserver au nom de leur
-            groupe.
-          </p>
-        </article>
-      </section>
+      @if (adminGroupPageCount() > 1) {
+        <nav class="admin-groups-pagination" aria-label="Pagination des groupes">
+          <button
+            type="button"
+            class="admin-groups-pagination__btn"
+            (click)="goToAdminGroupPage(adminGroupPage() - 1)"
+            [disabled]="adminGroupPage() <= 0"
+          >
+            Précédent
+          </button>
+          <span class="admin-groups-pagination__status">
+            Page {{ adminGroupPage() + 1 }} / {{ adminGroupPageCount() }}
+          </span>
+          <button
+            type="button"
+            class="admin-groups-pagination__btn"
+            (click)="goToAdminGroupPage(adminGroupPage() + 1)"
+            [disabled]="adminGroupPage() >= adminGroupPageCount() - 1"
+          >
+            Suivant
+          </button>
+        </nav>
+      }
     }
   </main>
 

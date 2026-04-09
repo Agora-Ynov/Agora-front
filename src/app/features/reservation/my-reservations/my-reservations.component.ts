@@ -37,6 +37,8 @@ type ReservationDepositStatus =
   | 'REFUNDED'
   | 'WAIVED';
 
+type ListRefreshSource = 'route' | 'reload';
+
 interface ReservationTimelineStep {
   label: string;
   date: string;
@@ -45,6 +47,8 @@ interface ReservationTimelineStep {
 
 interface ReservationCard {
   id: string;
+  /** Référence métier affichable (pas l’UUID technique). */
+  bookingReference: string | null;
   resourceName: string;
   status: ReservationDisplayStatus;
   reservationDate: string;
@@ -85,6 +89,12 @@ export class MyReservationsComponent {
   readonly recurringGroupIdToCancel = signal<string | null>(null);
   readonly recurringCancelBusy = signal(false);
 
+  /** Pagination liste (API paginée). */
+  readonly page = signal(0);
+  readonly pageSize = 6;
+  readonly totalPages = signal(1);
+  readonly totalElements = signal(0);
+
   readonly displayName = computed(() => {
     const user = this.currentUser();
     return user ? `${user.firstName} ${user.lastName}` : 'Utilisateur';
@@ -100,15 +110,32 @@ export class MyReservationsComponent {
     merge(
       this.route.queryParamMap.pipe(
         map(q => q.toString()),
-        distinctUntilChanged()
+        distinctUntilChanged(),
+        map((): ListRefreshSource => 'route')
       ),
-      this.reload$
+      this.reload$.pipe(map((): ListRefreshSource => 'reload'))
     )
       .pipe(
+        tap(src => {
+          if (src === 'route') {
+            this.page.set(0);
+          }
+        }),
         switchMap(() => this.fetchReservationList()),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  /** Change de page sans réinitialiser l’URL (contrairement à un changement de query). */
+  goToPage(nextPage: number): void {
+    const last = Math.max(0, this.totalPages() - 1);
+    const clamped = Math.max(0, Math.min(nextPage, last));
+    if (clamped === this.page()) {
+      return;
+    }
+    this.page.set(clamped);
+    this.reload$.next();
   }
 
   trackByReservationId(_index: number, reservation: ReservationCard): string {
@@ -304,9 +331,16 @@ export class MyReservationsComponent {
     this.expandedReservationId.set(null);
     this.reservationIdToCancel.set(null);
 
-    return this.reservationService.listMyReservations(0, 50).pipe(
+    return this.reservationService.listMyReservations(this.page(), this.pageSize).pipe(
       tap({
         next: response => {
+          const total = response.totalElements ?? 0;
+          const tp =
+            response.totalPages !== undefined && response.totalPages > 0
+              ? response.totalPages
+              : Math.max(1, Math.ceil(total / this.pageSize) || 1);
+          this.totalElements.set(total);
+          this.totalPages.set(tp);
           const reservations = (response.content ?? []).map(item => this.mapReservation(item));
           this.reservations.set(reservations);
           const highlightId =
@@ -339,8 +373,10 @@ export class MyReservationsComponent {
     );
     const status = (item.status ?? 'PENDING_VALIDATION') as ReservationApiStatus;
 
+    const ref = item.bookingReference?.trim();
     return {
       id: item.id ?? '',
+      bookingReference: ref ? ref : null,
       resourceName: item.resourceName ?? '',
       status: this.toDisplayStatus(status),
       reservationDate: item.date ?? '',

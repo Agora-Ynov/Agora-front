@@ -37,6 +37,8 @@ junit.xml
 .sass-cache/
 /connect.lock
 /coverage
+/reports/mutation
+.stryker-tmp/
 /libpeerconnection.log
 testem.log
 /typings
