@@ -1,35 +1,50 @@
-# Journal des changements — AGORA (frontend)
+# Notes de version — Agora (front)
 
-Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
+Document transmissible récapitulant les évolutions récentes de l’application Angular **agora-front**. Les éléments fonctionnels correspondent au code présent sur la branche d’intégration (ex. `develop`) au moment de cette rédaction.
 
-## [Non publié] — 2026-04
+## Qualité et outillage
 
-### Ajouté
+- **Prettier** : formatage homogène sur `src/**/*.ts` et `src/**/*.html`, aligné sur la vérification CI (`prettier --check`).
+- **Lint** : respect des règles ESLint Angular (égalités strictes dans les templates, absence de `console` non justifié hors blocs dev).
 
-- **Client API** : régénération / extension OpenAPI (services admin : audit, blackouts, exports, groupes, paiements, réservations, statistiques, utilisateurs ; authentification ; groupes « publics » ; documents de réservation ; liste d’attente ; super-admin ; calendrier et ressources alignés backend).
-- **Super-admin** : garde de route et espace dédié pour les parcours réservés à ce rôle.
-- **Activation de compte** : parcours dédié après inscription lorsque le backend l’exige.
-- **Admin ressources** : saisie du **tarif de location** (euros → centimes), sélection des **équipements / accessibilité** via cases à cocher (plus de saisie libre incohérente), affichage du tarif sur les cartes lorsqu’il est renseigné, champ **URL d’image**.
-- **Cartographie groupes / tarifs** : utilitaires pour exploiter les infos de groupes de l’API dans le catalogue (remises, libellés).
+## Authentification et comptes
 
-### Modifié
+- Parcours **login / register / activation** branché sur l’API OpenAPI générée.
+- **Jeton JWT** : gestion via intercepteur et garde d’accès aux routes protégées.
+- Rôles : garde **admin**, **superadmin** et directives/outils associés selon le profil renvoyé par le backend.
 
-- **Catalogue** : affichage des prix et libellés « à confirmer » clarifiés lorsque le tarif catalogue ou les remises groupes le justifient ; libellé de réinitialisation des filtres explicite.
-- **Réservation** : envoi des créneaux `slotStart` / `slotEnd` en **chaînes** (compatibilité JSON backend / Jackson) ; formulaire et flux réservation alignés.
-- **Mes réservations** : rechargement fiable lors du retour avec paramètres de requête (ex. `?created=…`), libellés de timeline caution moins ambigus.
-- **Calendrier de disponibilité** : ajustements UI / logique pour rester cohérent avec l’API.
-- **Fiche ressource** : cohérence avec `rentalPriceCents` et présentation.
-- **Espace admin** : utilisateurs, groupes, réservations, audit, tableau de bord (styles et comportements) ; intercepteurs JWT / erreurs et garde admin affinés.
-- **Profil / connexion** : champs et flux alignés avec les réponses `AuthMe` enrichies.
+## Réservations (utilisateur)
 
-### Corrigé
+- **Catalogue** : liste des ressources, filtres (famille, disponibilité, etc.), **réinitialisation des filtres** ; affichage des tarifs et indicateurs (dont **tarif de location** lorsque renseigné côté API).
+- **Formulaire de réservation** : création simple et invité ; envoi des créneaux au format attendu par l’API (chaînes pour les heures afin d’éviter les problèmes de sérialisation `LocalTime`).
+- **Mes réservations** : liste / détail avec rechargement cohérent après retour de flux (ex. paramètres de requête après création).
+- **Calendrier de disponibilités** : consultation des créneaux et réservation depuis le calendrier.
+- **Liste d’attente** : intégration des endpoints waitlist côté UI.
 
-- **Lint** : comparaisons strictes dans les templates Angular (`!==` via helper) ; suppression des `console.*` de debug dans le catalogue pour respecter ESLint en CI.
+## Administration
 
-### Tests
+- **Tableau de bord** : statistiques synthétiques (données admin stats / dashboard).
+- **Réservations admin** : liste, filtrage et mise à jour de statuts / paiements selon les DTO admin.
+- **Groupes admin** : création, mise à jour, membres (API admin groups).
+- **Utilisateurs admin** : gestion des comptes, tutelles, activation, impersonation (bannière dédiée).
+- **Ressources** : gestion CRUD côté UI ; affichage **tarif de location** lorsque `rentalPriceCents` est défini ; cartographique des champs accessibilité / étiquettes alignés sur le backend.
+- **Blackouts**, **affiliations**, **paiements** : écrans dédiés branchés sur les services admin.
+- **Audit** : consultation des entrées d’audit administrateur.
 
-- Suites Jest mises à jour (catalogue, détail ressource, routes) ; `npm run lint`, `npm test` et `ng build` (production) validés localement.
+## Super-admin
+
+- **Support administrateur** : promotion / gestion des comptes admin support (écran superadmin), conformément aux endpoints `superadmin` / support.
+
+## Client API (OpenAPI)
+
+- Client TypeScript **généré** sous `src/app/core/api/` (services et modèles), avec éventuelles **couches de façade** (`resource.service`, etc.) pour le mapping vers les modèles UI.
+- Après régénération OpenAPI, conserver le **format Prettier** sur les fichiers générés pour que la CI reste verte.
+
+## Dernières retouches (lot courant)
+
+- **Catalogue** : traces `console` limitées au **mode développement** (`isDevMode`) pour faciliter le diagnostic (chargement API, filtrage des ressources sans id).
+- **Admin — ressources** : affichage du bloc « Tarif location » avec condition stricte `!== null && !== undefined` (conformité template ESLint).
 
 ---
 
-*Les versions suivantes reprendront un numéro sémantique lors des releases taguées.*
+_Pour toute release, compléter une entrée datée ou versionnée (semver) en tête de fichier si le projet adopte un numéro de version publié._
