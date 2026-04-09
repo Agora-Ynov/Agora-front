@@ -137,7 +137,7 @@ export class AffiliationRequestComponent {
       id: 'ELECTED_MANDATE',
       title: 'Mandat electif',
       description:
-        "Vous etes elu(e) municipal(e) et souhaitez etre rattache(e) au Conseil Municipal et beneficier des conditions prevues.",
+        'Vous etes elu(e) municipal(e) et souhaitez etre rattache(e) au Conseil Municipal et beneficier des conditions prevues.',
       badge: 'Exoneration mandat electif + acces prioritaire',
       icon: 'crown',
     },
@@ -260,7 +260,9 @@ export class AffiliationRequestComponent {
 
     this.documentErrorMessage.set(null);
     this.documentFeedbackMessage.set(
-      files.length === 1 ? `Document ajoute : ${files[0].name}` : `${files.length} documents ajoutes`
+      files.length === 1
+        ? `Document ajoute : ${files[0].name}`
+        : `${files.length} documents ajoutes`
     );
     input.value = '';
   }

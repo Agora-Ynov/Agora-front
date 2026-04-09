@@ -252,7 +252,7 @@ export class AdminGroupsComponent {
     }
 
     if (group.isPreset) {
-      return "Ce groupe fait partie de la configuration initiale et porte des droits etendus.";
+      return 'Ce groupe fait partie de la configuration initiale et porte des droits etendus.';
     }
 
     return 'Ce groupe est personnalisable et peut etre ajuste selon les besoins du service.';

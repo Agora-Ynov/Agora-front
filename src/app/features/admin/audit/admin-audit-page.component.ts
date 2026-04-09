@@ -99,7 +99,8 @@ export class AdminAuditPageComponent {
     },
     {
       label: 'Validations',
-      value: this.entries().filter(entry => ['info', 'green', 'blue'].includes(entry.severity)).length,
+      value: this.entries().filter(entry => ['info', 'green', 'blue'].includes(entry.severity))
+        .length,
       tone: 'green',
     },
     {
@@ -120,7 +121,11 @@ export class AdminAuditPageComponent {
   ]);
 
   readonly bookingRefs = computed(() => [
-    ...new Set(this.entries().map(entry => entry.bookingRef).filter((entry): entry is string => !!entry)),
+    ...new Set(
+      this.entries()
+        .map(entry => entry.bookingRef)
+        .filter((entry): entry is string => !!entry)
+    ),
   ]);
 
   readonly filteredEntries = computed(() => {
