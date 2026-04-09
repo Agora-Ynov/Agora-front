@@ -304,7 +304,7 @@
         <header class="members-modal__header">
           <div>
             <h3 id="group-members-title">{{ group.name }}</h3>
-            <p>Membres du groupe — ajout et retrait via l'API admin</p>
+            <p>Gestion des membres du groupe</p>
           </div>
           <button type="button" class="members-modal__close" (click)="closeMembersModal()">
             X
@@ -320,7 +320,7 @@
                 [value]="memberSearchInput()"
                 [disabled]="memberBusy()"
                 (input)="onMemberSearchInput($any($event.target).value)"
-                placeholder="Nom, prénom ou e-mail (API admin/users?q=…)"
+                placeholder="Nom, prénom ou e-mail"
                 autocomplete="off"
               />
             </label>

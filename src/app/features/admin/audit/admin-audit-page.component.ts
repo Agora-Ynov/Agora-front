@@ -36,11 +36,11 @@ interface AuditEntryDto {
   performedAt: string;
   actorName: string;
   targetName: string | null;
-  /** Référence API « booking-… » si présente */
+  /** Ancienne clé métier éventuelle dans les détails */
   bookingRef: string | null;
   /** Identifiant réservation (UUID) si présent dans les détails */
   reservationId: string | null;
-  /** Libellé court affiché (#Résa · xxxxxxxx) */
+  /** Référence métier (booking reference) ou libellé court */
   bookingLabel: string | null;
   resourceName: string | null;
   ipAddress: string;
@@ -73,7 +73,7 @@ export class AdminAuditPageComponent implements OnDestroy {
   private static readonly uuidRe =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-  /** Clés techniques masquées dans le panneau « détails » (journal métier). */
+  /** Clés techniques ou redondantes : pas affichées dans le panneau détails. */
   private static readonly AUDIT_TECH_DETAIL_KEYS = new Set([
     'traceId',
     'correlationId',
@@ -82,6 +82,13 @@ export class AdminAuditPageComponent implements OnDestroy {
     'spanId',
     'parentSpanId',
     'reservationId',
+    'resourceId',
+    'reservationDisplayRef',
+    'recurringGroupId',
+    'groupId',
+    'blackoutId',
+    'reservationDocumentId',
+    'bookingReference',
   ]);
 
   private static readonly AUDIT_ACTION_LABELS_FR: Record<string, string> = {
@@ -114,8 +121,9 @@ export class AdminAuditPageComponent implements OnDestroy {
 
   private static readonly DETAIL_KEY_LABELS_FR: Record<string, string> = {
     resourceName: 'Ressource',
+    bookingReference: 'Référence réservation',
     bookingRef: 'Référence réservation',
-    reservationDisplayRef: 'Libellé réservation',
+    reservationDisplayRef: 'Référence affichée',
     ipAddress: 'Adresse IP',
     newStatus: 'Nouveau statut',
     previousDepositStatus: 'Caution (avant)',
@@ -407,19 +415,20 @@ export class AdminAuditPageComponent implements OnDestroy {
     const details = e.details ?? {};
     const resourceName =
       typeof details['resourceName'] === 'string' ? (details['resourceName'] as string) : null;
+    const bookingReference =
+      typeof details['bookingReference'] === 'string'
+        ? (details['bookingReference'] as string).trim()
+        : null;
     const bookingRef =
       typeof details['bookingRef'] === 'string' ? (details['bookingRef'] as string) : null;
     const reservationId =
       typeof details['reservationId'] === 'string' ? (details['reservationId'] as string) : null;
     const displayFromApi = details['reservationDisplayRef'];
     const bookingLabel =
-      typeof displayFromApi === 'string'
-        ? (displayFromApi as string)
-        : bookingRef
-          ? bookingRef
-          : reservationId && reservationId.length >= 8
-            ? `Résa · ${reservationId.substring(0, 8)}`
-            : null;
+      (bookingReference && bookingReference.length > 0 ? `Réf. ${bookingReference}` : null) ??
+      (bookingRef ? (bookingRef.startsWith('Réf.') ? bookingRef : `Réf. ${bookingRef}`) : null) ??
+      (typeof displayFromApi === 'string' ? (displayFromApi as string) : null) ??
+      (reservationId && reservationId.length >= 8 ? `Résa · ${reservationId.substring(0, 8)}` : null);
     const ipRaw = details['ipAddress'];
     const ipAddress = typeof ipRaw === 'string' ? ipRaw : '—';
 
@@ -479,12 +488,10 @@ export class AdminAuditPageComponent implements OnDestroy {
     bookingLabel: string | null
   ): string | null {
     const parts: string[] = [];
-    if (reservationId) {
-      parts.push(bookingLabel ?? `Résa · ${reservationId.substring(0, 8)}`);
-    }
-    const docId = details['reservationDocumentId'];
-    if (typeof docId === 'string') {
-      parts.push(`document ${docId}`);
+    if (bookingLabel) {
+      parts.push(bookingLabel);
+    } else if (reservationId) {
+      parts.push(`Résa · ${reservationId.substring(0, 8)}`);
     }
     const relay = details['relayChannel'];
     if (typeof relay === 'string') {
@@ -507,17 +514,9 @@ export class AdminAuditPageComponent implements OnDestroy {
     if (typeof prevDep === 'string' && typeof newDep === 'string') {
       parts.push(`caution ${prevDep} → ${newDep}`);
     }
-    const blackoutId = details['blackoutId'];
-    if (typeof blackoutId === 'string') {
-      parts.push(`fermeture ${blackoutId}`);
-    }
     const rowCount = details['rowCount'];
     if (typeof rowCount === 'string' || typeof rowCount === 'number') {
       parts.push(`${rowCount} ligne(s) export`);
-    }
-    const groupId = details['groupId'];
-    if (typeof groupId === 'string') {
-      parts.push(`groupe ${groupId}`);
     }
     if (parts.length === 0) {
       return null;
@@ -544,8 +543,11 @@ export class AdminAuditPageComponent implements OnDestroy {
   openReservationTimeline(reservationId: string, displayLabel?: string | null): void {
     const trimmed = displayLabel?.trim();
     const label =
-      trimmed ||
-      (reservationId.length >= 8 ? `Résa · ${reservationId.substring(0, 8)}` : reservationId);
+      trimmed && trimmed.length > 0
+        ? trimmed
+        : reservationId.length >= 8
+          ? `Résa · ${reservationId.substring(0, 8)}`
+          : reservationId;
     this.timelineModal.set({
       open: true,
       reservationId,
@@ -573,7 +575,7 @@ export class AdminAuditPageComponent implements OnDestroy {
         },
         error: () =>
           this.patchTimelineModal({
-            error: 'Impossible de charger la timeline (réseau ou droits).',
+            error: 'Impossible de charger le journal de cette réservation.',
             entries: [],
             totalElements: 0,
           }),
@@ -592,7 +594,7 @@ export class AdminAuditPageComponent implements OnDestroy {
     this.timelineModal.set(null);
   }
 
-  /** Entrée dans la barre de recherche : si UUID ou résa connue → modal timeline (données API). */
+  /** Entrée dans la barre de recherche : si UUID ou résa connue → modal timeline. */
   onSearchSubmit(): void {
     const term = this.searchTerm().trim();
     if (!term) {

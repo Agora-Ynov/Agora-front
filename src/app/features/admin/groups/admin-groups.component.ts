@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -51,6 +51,7 @@ export class AdminGroupsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly adminGroupService = inject(AdminGroupService);
   private readonly api = inject(ApiService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly userSearchTrigger = new Subject<string>();
 
   private readonly frenchDateFormatter = new Intl.DateTimeFormat('fr-FR', {
@@ -193,6 +194,17 @@ export class AdminGroupsComponent {
       .subscribe(rows => this.userSuggestions.set(rows));
 
     this.loadGroups();
+
+    effect(() => {
+      const locked =
+        this.selectedGroup() !== null ||
+        this.isEditModalOpen() ||
+        this.isCreateModalOpen();
+      document.body.style.overflow = locked ? 'hidden' : '';
+    });
+    this.destroyRef.onDestroy(() => {
+      document.body.style.overflow = '';
+    });
   }
 
   openMembers(groupId: string): void {
