@@ -19,6 +19,8 @@ export interface UserGroupSummaryDto {
   discountLabel?: string;
   memberCount?: number;
   isPreset?: boolean;
+  /** Pouvoir conseil (ex. élus) — exonération mandat côté réservation. */
+  councilPowers?: boolean;
 }
 export namespace UserGroupSummaryDto {
   export const DiscountTypeEnum = {

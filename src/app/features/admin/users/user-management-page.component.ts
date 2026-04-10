@@ -21,6 +21,7 @@ import {
   ActivateAutonomousRequestDto,
   UpdateTutoredUserRequestDto,
 } from '../../../core/api';
+import { AdminUserDetailResponseDto } from '../../../core/api/model/adminUserDetailResponseDto';
 import { ApiService } from '../../../core/api/api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -47,7 +48,10 @@ export class UserManagementPageComponent {
   readonly searchTerm = signal('');
   readonly filter = signal<AccountTypeFilter>('ALL');
   readonly isCreateModalOpen = signal(false);
-  readonly viewedUser = signal<AdminUserRowDto | null>(null);
+  /** Ouverture modal fiche : id cible (chargement puis {@link viewedUserDetail}). */
+  readonly detailModalUserId = signal<string | null>(null);
+  readonly viewedUserDetail = signal<AdminUserDetailResponseDto | null>(null);
+  readonly detailLoading = signal(false);
   readonly actingUser = signal<AdminUserRowDto | null>(null);
   readonly isEditModalOpen = signal(false);
   readonly editingUser = signal<AdminUserRowDto | null>(null);
@@ -108,7 +112,7 @@ export class UserManagementPageComponent {
     effect(() => {
       const open =
         this.isCreateModalOpen() ||
-        this.viewedUser() !== null ||
+        this.detailModalUserId() !== null ||
         this.actingUser() !== null ||
         this.isEditModalOpen() ||
         this.resendActivationTarget() !== null;
@@ -335,12 +339,31 @@ export class UserManagementPageComponent {
   }
 
   openUserDetail(user: AdminUserRowDto): void {
-    this.viewedUser.set(user);
-    this.activateEmailDraft.set(user.email ?? '');
+    const id = user.id?.trim();
+    if (!id) {
+      return;
+    }
+    this.detailModalUserId.set(id);
+    this.viewedUserDetail.set(null);
+    this.detailLoading.set(true);
+    this.adminUsers.getOne(id, 'body', false, { transferCache: false }).subscribe({
+      next: detail => {
+        this.viewedUserDetail.set(detail);
+        this.activateEmailDraft.set(detail.email?.trim() ?? '');
+        this.detailLoading.set(false);
+      },
+      error: () => {
+        this.detailLoading.set(false);
+        this.detailModalUserId.set(null);
+        this.feedback.set('Impossible de charger la fiche utilisateur.');
+      },
+    });
   }
 
   closeUserDetail(): void {
-    this.viewedUser.set(null);
+    this.detailModalUserId.set(null);
+    this.viewedUserDetail.set(null);
+    this.detailLoading.set(false);
   }
 
   openEditTutored(user: AdminUserRowDto): void {
@@ -463,13 +486,13 @@ export class UserManagementPageComponent {
   }
 
   startImpersonationFromDetail(): void {
-    const user = this.viewedUser();
-    if (!user?.id || !this.canImpersonate(user)) {
+    const detail = this.viewedUserDetail();
+    if (!detail?.id || !this.canImpersonateDetail(detail)) {
       this.feedback.set('Impersonation reservee aux comptes sous tutelle actifs.');
       return;
     }
     this.impersonateBusy.set(true);
-    this.adminUsers.impersonate(user.id, undefined, false, { transferCache: false }).subscribe({
+    this.adminUsers.impersonate(detail.id, undefined, false, { transferCache: false }).subscribe({
       next: res => {
         this.impersonateBusy.set(false);
         const token = res.accessToken?.trim();
@@ -496,11 +519,41 @@ export class UserManagementPageComponent {
     return this.rowAccountType(user) === 'TUTORED' && this.rowStatus(user) === 'ACTIVE';
   }
 
+  canImpersonateDetail(detail: AdminUserDetailResponseDto): boolean {
+    return (
+      this.asAccountType(detail.accountType) === 'TUTORED' && this.asStatus(detail.status) === 'ACTIVE'
+    );
+  }
+
+  getUserLabelDetail(d: AdminUserDetailResponseDto): string {
+    return `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() || 'Utilisateur';
+  }
+
+  rowAccountTypeDetail(d: AdminUserDetailResponseDto): UserAccountType {
+    return this.asAccountType(d.accountType);
+  }
+
+  rowStatusDetail(d: AdminUserDetailResponseDto): UserStatus {
+    return this.asStatus(d.status);
+  }
+
   downloadUserPdf(user: AdminUserRowDto): void {
     const id = user.id;
     if (!id) {
       return;
     }
+    this.downloadUserPdfById(id);
+  }
+
+  downloadUserPdfDetail(): void {
+    const id = this.viewedUserDetail()?.id;
+    if (!id) {
+      return;
+    }
+    this.downloadUserPdfById(id);
+  }
+
+  private downloadUserPdfById(id: string): void {
     this.printBusy.set(true);
     this.adminUsers
       .printSummary(id, 'response', false, {
@@ -529,8 +582,8 @@ export class UserManagementPageComponent {
       });
   }
 
-  suspendUser(user: AdminUserRowDto): void {
-    const id = user.id;
+  suspendCurrentUserDetail(): void {
+    const id = this.viewedUserDetail()?.id;
     if (!id) return;
     this.detailBusy.set(true);
     this.adminUsers.suspend(id, undefined, false, { transferCache: false }).subscribe({
@@ -547,12 +600,13 @@ export class UserManagementPageComponent {
     });
   }
 
-  purgeUserPermanently(user: AdminUserRowDto): void {
-    const id = user.id;
+  purgeCurrentUserDetail(): void {
+    const detail = this.viewedUserDetail();
+    const id = detail?.id;
     if (!id || this.detailBusy()) {
       return;
     }
-    const label = this.getUserLabel(user);
+    const label = this.getUserLabelDetail(detail);
     if (
       !window.confirm(
         `Supprimer définitivement « ${label} » ?\n\n` +
@@ -579,8 +633,8 @@ export class UserManagementPageComponent {
     });
   }
 
-  reactivateUser(user: AdminUserRowDto): void {
-    const id = user.id;
+  reactivateCurrentUserDetail(): void {
+    const id = this.viewedUserDetail()?.id;
     if (!id) return;
     this.detailBusy.set(true);
     this.adminUsers.reactivate(id, undefined, false, { transferCache: false }).subscribe({
@@ -621,8 +675,8 @@ export class UserManagementPageComponent {
   }
 
   submitActivateAutonomous(): void {
-    const user = this.viewedUser();
-    if (!user?.id) return;
+    const detail = this.viewedUserDetail();
+    if (!detail?.id) return;
     const email = this.activateEmailDraft().trim();
     if (!email) {
       this.feedback.set('Saisissez un e-mail valide.');
@@ -631,7 +685,7 @@ export class UserManagementPageComponent {
     const body: ActivateAutonomousRequestDto = { email };
     this.detailBusy.set(true);
     this.adminUsers
-      .activateAutonomous(user.id, body, undefined, false, { transferCache: false })
+      .activateAutonomous(detail.id, body, undefined, false, { transferCache: false })
       .subscribe({
         next: () => {
           this.detailBusy.set(false);
@@ -682,8 +736,10 @@ export class UserManagementPageComponent {
 
   getExemptionLabel(user: AdminUserRowDto): string {
     const ex = user.exemptions;
-    if (ex?.length) return ex[0] ?? 'Aucune';
-    return 'Aucune';
+    if (!ex?.length) return 'Aucune';
+    const first = ex[0] ?? 'Aucune';
+    if (ex.length <= 1) return first;
+    return `${first} +${ex.length - 1}`;
   }
 
   getAccountTypeSentence(type: UserAccountType): string {

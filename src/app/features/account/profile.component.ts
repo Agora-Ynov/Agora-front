@@ -18,11 +18,6 @@ interface SummaryCard {
   icon: SummaryIcon;
 }
 
-interface ExemptionStatus {
-  label: string;
-  active: boolean;
-}
-
 interface QuickAction {
   label: string;
   route: string;
@@ -79,17 +74,19 @@ export class ProfileComponent implements OnInit {
     ];
   });
 
-  readonly exemptions = computed<ExemptionStatus[]>(() => {
+  /** Rattachements renvoyés par GET /api/auth/me (tarif + pouvoir conseil). */
+  readonly membershipGroups = computed(() => this.currentUser()?.membershipGroups ?? []);
+
+  readonly hasActiveExemption = computed(() => {
     const user = this.currentUser();
-
-    return [
-      { label: 'Association', active: user?.exemptions.association ?? false },
-      { label: 'Critere social', active: user?.exemptions.social ?? false },
-      { label: 'Mandat electif', active: user?.exemptions.mandate ?? false },
-    ];
+    if (!user) {
+      return false;
+    }
+    if (user.exemptions.mandate || user.exemptions.association || user.exemptions.social) {
+      return true;
+    }
+    return user.membershipGroups.some(g => !!g.discountType && g.discountType !== 'NONE');
   });
-
-  readonly hasActiveExemption = computed(() => this.exemptions().some(item => item.active));
 
   readonly quickActions = computed<QuickAction[]>(() => {
     const adminRoute = this.authService.getAdminEntryPath();

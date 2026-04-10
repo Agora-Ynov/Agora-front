@@ -52,6 +52,18 @@ export interface ApiErrorResponse {
   message: string;
 }
 
+/** Rattachement groupe tel que renvoyé par GET /api/auth/me (hors mock). */
+export interface UserMembershipGroup {
+  id: string;
+  name: string;
+  preset: boolean;
+  councilPowers: boolean;
+  canBookImmobilier: boolean;
+  canBookMobilier: boolean;
+  discountType: string;
+  discountLabel: string;
+}
+
 export interface UserProfile {
   id: string;
   firstName: string;
@@ -69,11 +81,17 @@ export interface UserProfile {
   /** Promotion métier admin support (distinct du rôle JWT secrétaire). */
   adminSupport?: boolean;
   internalId?: string;
+  /**
+   * Dérivé des groupes / nom (pas de champs dédiés en base pour association & critère social).
+   * {@link membershipGroups} est la source détaillée.
+   */
   exemptions: {
     association: boolean;
     social: boolean;
     mandate: boolean;
   };
+  /** Groupes issus de l’API (tarifs, pouvoir conseil). */
+  membershipGroups: UserMembershipGroup[];
   groupIds: string[];
   createdAt: string;
 }

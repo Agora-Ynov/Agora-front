@@ -117,6 +117,7 @@ export class BookingFormComponent {
         social: false,
         mandate: false,
       },
+      membershipGroups: [],
       groupIds: [],
       createdAt: '',
     };

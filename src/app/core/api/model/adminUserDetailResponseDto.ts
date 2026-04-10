@@ -20,5 +20,6 @@ export interface AdminUserDetailResponseDto {
   internalRef?: string;
   notesAdmin?: string;
   groups?: Array<AdminUserGroupSnippetDto>;
+  exemptions?: Array<string>;
   createdAt?: string;
 }

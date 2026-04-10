@@ -11,7 +11,13 @@ import {
   RegisterResponseDto,
 } from '../api';
 import { JwtService } from './jwt.service';
-import { AccountStatus, UserProfile, UserRole, USER_ROLE_PRIORITY } from './auth.model';
+import {
+  AccountStatus,
+  UserMembershipGroup,
+  UserProfile,
+  UserRole,
+  USER_ROLE_PRIORITY,
+} from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -270,6 +276,24 @@ export class AuthService {
     const membershipRoles = USER_ROLE_PRIORITY.filter(r => roleSet.has(r));
     const primaryRole = membershipRoles[0] ?? jwtPrimary;
 
+    const membershipGroups: UserMembershipGroup[] = (response.groups ?? []).map(group => {
+      const name = (group.name ?? '').trim() || 'Groupe';
+      return {
+        id: group.id ?? '',
+        name,
+        preset: group.isPreset === true,
+        councilPowers: group.councilPowers === true,
+        canBookImmobilier: group.canBookImmobilier === true,
+        canBookMobilier: group.canBookMobilier === true,
+        discountType: group.discountType ?? 'NONE',
+        discountLabel: (group.discountLabel ?? '').trim() || 'Plein tarif',
+      };
+    });
+
+    const mandate = membershipGroups.some(g => g.councilPowers);
+    const association = membershipGroups.some(g => /association/i.test(g.name));
+    const social = membershipGroups.some(g => /habitant/i.test(g.name));
+
     return {
       id: response.id ?? '',
       firstName: response.firstName ?? '',
@@ -282,11 +306,12 @@ export class AuthService {
       accountStatus: this.mapAccountStatusFromApi(response.status),
       adminSupport: response.adminSupport === true,
       exemptions: {
-        association: false,
-        social: false,
-        mandate: false,
+        association,
+        social,
+        mandate,
       },
-      groupIds: (response.groups ?? []).map(group => group.id ?? '').filter(Boolean),
+      membershipGroups,
+      groupIds: membershipGroups.map(g => g.id).filter(Boolean),
       createdAt: response.createdAt ?? new Date(0).toISOString(),
     };
   }
