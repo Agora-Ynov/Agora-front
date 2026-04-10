@@ -105,6 +105,9 @@ export interface AdminUserGroupSnippetDto {
   id: string;
   name: string;
   discountLabel: string | null;
+  councilPowers?: boolean;
+  canBookImmobilier?: boolean;
+  canBookMobilier?: boolean;
 }
 
 export interface AdminUserDetailResponseDto {
@@ -118,6 +121,7 @@ export interface AdminUserDetailResponseDto {
   internalRef: string | null;
   notesAdmin: string | null;
   groups: AdminUserGroupSnippetDto[];
+  exemptions: string[];
   createdAt: string;
 }
 

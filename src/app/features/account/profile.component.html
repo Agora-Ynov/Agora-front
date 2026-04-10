@@ -146,55 +146,60 @@
               />
             </svg>
           </span>
-          <h2>Mes exonerations</h2>
+          <h2>Rattachements et tarifs groupe</h2>
         </div>
 
-        <div class="exemption-list">
-          @for (item of exemptions(); track item.label) {
-            <div class="exemption-row">
-              <span class="exemption-row__label">{{ item.label }}</span>
-              <span class="status-pill" [class.status-pill--active]="item.active">
-                <span class="status-pill__dot" aria-hidden="true">
-                  @if (item.active) {
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M4 8.3L6.6 10.9L12.1 5.4"
-                        stroke="currentColor"
-                        stroke-width="1.7"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  } @else {
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M5.2 5.2L10.8 10.8"
-                        stroke="currentColor"
-                        stroke-width="1.6"
-                        stroke-linecap="round"
-                      />
-                      <path
-                        d="M10.8 5.2L5.2 10.8"
-                        stroke="currentColor"
-                        stroke-width="1.6"
-                        stroke-linecap="round"
-                      />
-                    </svg>
+        <p class="exemption-note exemption-note--tight">
+          Chaque carte correspond à un groupe dont vous êtes membre, avec le tarif catalogue et les
+          droits de réservation définis par la mairie (synchronisés à la connexion).
+        </p>
+
+        @if (membershipGroups().length === 0) {
+          <p class="exemption-note exemption-note--inactive">Aucun groupe associé à ce compte.</p>
+        } @else {
+          <ul class="membership-group-list">
+            @for (g of membershipGroups(); track g.id) {
+              <li class="membership-group-card">
+                <div class="membership-group-card__head">
+                  <strong class="membership-group-card__name">{{ g.name }}</strong>
+                  @if (g.councilPowers) {
+                    <span class="account-pill membership-group-card__pill">Pouvoir conseil</span>
                   }
-                </span>
-                {{ item.active ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-          }
-        </div>
+                </div>
+                <p class="membership-group-card__tariff">
+                  <span class="membership-group-card__tariff-label">Tarif catalogue</span>
+                  {{ g.discountLabel }}
+                </p>
+                <p class="membership-group-card__meta">
+                  @if (g.canBookImmobilier || g.canBookMobilier) {
+                    Réservation :
+                    @if (g.canBookImmobilier) {
+                      <span>salles</span>
+                    }
+                    @if (g.canBookImmobilier && g.canBookMobilier) {
+                      <span aria-hidden="true"> · </span>
+                    }
+                    @if (g.canBookMobilier) {
+                      <span>matériel</span>
+                    }
+                  } @else {
+                    Réservation via ce groupe : non ouverte (paramétrage mairie).
+                  }
+                </p>
+              </li>
+            }
+          </ul>
+        }
 
         <div class="panel-card__separator"></div>
 
         <p class="exemption-note" [class.exemption-note--inactive]="!hasActiveExemption()">
           @if (hasActiveExemption()) {
-            Vous beneficiez d'exonerations sur vos reservations
+            Au moins un avantage tarifaire ou un pouvoir conseil est actif selon vos groupes. Le
+            catalogue retient la meilleure option parmi ces rattachements et le tarif personnel.
           } @else {
-            Aucune exoneration n'est active sur votre compte
+            Aucune remise ni pouvoir conseil sur vos groupes : tarifs affichés = barème standard
+            (plein tarif) par ressource.
           }
         </p>
       </article>

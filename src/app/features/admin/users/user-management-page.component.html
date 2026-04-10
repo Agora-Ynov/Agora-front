@@ -517,7 +517,7 @@
     </div>
   }
 
-  @if (viewedUser(); as user) {
+  @if (detailModalUserId()) {
     <div
       class="detail-modal-backdrop"
       role="button"
@@ -535,33 +535,41 @@
       >
         <header class="detail-modal__header">
           <div>
-            <h2 id="user-detail-modal-title">Fiche utilisateur - {{ getUserLabel(user) }}</h2>
-            <div class="detail-modal__badges">
-              <span
-                class="table-pill"
-                [class.table-pill--dark]="rowAccountType(user) === 'AUTONOMOUS'"
-                [class.table-pill--light]="rowAccountType(user) === 'TUTORED'"
-              >
-                {{ getTypeLabel(rowAccountType(user)) }}
-              </span>
-              <span class="table-pill table-pill--light">Utilisateur</span>
-              <span
-                class="table-pill"
-                [class.table-pill--green]="rowStatus(user) === 'ACTIVE'"
-                [class.table-pill--yellow]="rowStatus(user) === 'PENDING_VALIDATION'"
-                [class.table-pill--red]="rowStatus(user) === 'SUSPENDED'"
-              >
-                {{ getStatusLabel(rowStatus(user)) }}
-              </span>
-            </div>
+            @if (detailLoading()) {
+              <h2 id="user-detail-modal-title">Chargement de la fiche…</h2>
+            } @else {
+              @if (viewedUserDetail(); as dh) {
+                <h2 id="user-detail-modal-title">
+                  Fiche utilisateur - {{ getUserLabelDetail(dh) }}
+                </h2>
+                <div class="detail-modal__badges">
+                  <span
+                    class="table-pill"
+                    [class.table-pill--dark]="rowAccountTypeDetail(dh) === 'AUTONOMOUS'"
+                    [class.table-pill--light]="rowAccountTypeDetail(dh) === 'TUTORED'"
+                  >
+                    {{ getTypeLabel(rowAccountTypeDetail(dh)) }}
+                  </span>
+                  <span class="table-pill table-pill--light">Utilisateur</span>
+                  <span
+                    class="table-pill"
+                    [class.table-pill--green]="rowStatusDetail(dh) === 'ACTIVE'"
+                    [class.table-pill--yellow]="rowStatusDetail(dh) === 'PENDING_VALIDATION'"
+                    [class.table-pill--red]="rowStatusDetail(dh) === 'SUSPENDED'"
+                  >
+                    {{ getStatusLabel(rowStatusDetail(dh)) }}
+                  </span>
+                </div>
+              }
+            }
           </div>
 
           <div class="detail-modal__header-actions">
             <button
               type="button"
               class="detail-modal__pdf"
-              [disabled]="printBusy()"
-              (click)="downloadUserPdf(user)"
+              [disabled]="printBusy() || detailLoading() || !viewedUserDetail()"
+              (click)="downloadUserPdfDetail()"
             >
               {{ printBusy() ? 'PDF...' : 'Fiche PDF' }}
             </button>
@@ -577,136 +585,176 @@
         </header>
 
         <div class="detail-modal__body">
-          <div class="detail-modal__grid">
-            <div class="detail-modal__field">
-              <span>Nom complet</span>
-              <strong>{{ getUserLabel(user) }}</strong>
-            </div>
+          @if (detailLoading()) {
+            <p class="user-row__muted">Récupération des groupes et tarifs…</p>
+          } @else {
+            @if (viewedUserDetail(); as detail) {
+              <div class="detail-modal__grid">
+                <div class="detail-modal__field">
+                  <span>Nom complet</span>
+                  <strong>{{ getUserLabelDetail(detail) }}</strong>
+                </div>
 
-            <div class="detail-modal__field">
-              <span>
-                @if (user.email) {
-                  Email
-                } @else {
-                  Identifiant interne
-                }
-              </span>
-              <strong>
-                @if (user.email) {
-                  {{ user.email }}
-                } @else {
-                  # {{ user.internalRef }}
-                }
-              </strong>
-            </div>
+                <div class="detail-modal__field">
+                  <span>
+                    @if (detail.email) {
+                      Email
+                    } @else {
+                      Identifiant interne
+                    }
+                  </span>
+                  <strong>
+                    @if (detail.email) {
+                      {{ detail.email }}
+                    } @else {
+                      # {{ detail.internalRef }}
+                    }
+                  </strong>
+                </div>
 
-            <div class="detail-modal__field">
-              <span>Telephone</span>
-              <strong>{{ user.phone }}</strong>
-            </div>
-          </div>
+                <div class="detail-modal__field">
+                  <span>Telephone</span>
+                  <strong>{{ detail.phone }}</strong>
+                </div>
+              </div>
 
-          @if (rowAccountType(user) === 'TUTORED') {
-            <div class="detail-modal__section detail-modal__section--activate">
-              <span class="detail-modal__label">Activation autonome</span>
-              <p class="detail-modal__hint">
-                Associe un e-mail : le citoyen recevra un lien pour activer un acces autonome.
-              </p>
-              <label class="modal-field">
-                <span>E-mail *</span>
-                <input
-                  type="email"
-                  [value]="activateEmailDraft()"
-                  (input)="updateActivateEmail($any($event.target).value)"
-                  placeholder="nom.prenom@exemple.fr"
-                />
-              </label>
-              <button
-                type="button"
-                class="detail-modal__action"
-                [disabled]="detailBusy()"
-                (click)="submitActivateAutonomous()"
-              >
-                Lancer l'activation autonome
-              </button>
-            </div>
-          }
-
-          <div class="detail-modal__section">
-            <span class="detail-modal__label">Exonerations</span>
-            <div class="detail-modal__chips">
-              @if (user.exemptions?.length) {
-                @for (exemption of user.exemptions; track exemption) {
-                  <span class="table-pill table-pill--outline">{{ exemption }}</span>
-                }
-              } @else {
-                <span class="user-row__muted">Aucune</span>
+              @if (rowAccountTypeDetail(detail) === 'TUTORED') {
+                <div class="detail-modal__section detail-modal__section--activate">
+                  <span class="detail-modal__label">Activation autonome</span>
+                  <p class="detail-modal__hint">
+                    Associe un e-mail : le citoyen recevra un lien pour activer un acces autonome.
+                  </p>
+                  <label class="modal-field">
+                    <span>E-mail *</span>
+                    <input
+                      type="email"
+                      [value]="activateEmailDraft()"
+                      (input)="updateActivateEmail($any($event.target).value)"
+                      placeholder="nom.prenom@exemple.fr"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="detail-modal__action"
+                    [disabled]="detailBusy()"
+                    (click)="submitActivateAutonomous()"
+                  >
+                    Lancer l'activation autonome
+                  </button>
+                </div>
               }
-            </div>
-          </div>
 
-          <div class="detail-modal__meta">
-            <span>Compte cree le {{ formatCreatedAt(user.createdAt) }}</span>
-          </div>
+              <div class="detail-modal__section">
+                <span class="detail-modal__label">Avantages / exonérations (synthèse)</span>
+                <div class="detail-modal__chips">
+                  @if (detail.exemptions?.length) {
+                    @for (exemption of detail.exemptions; track exemption) {
+                      <span class="table-pill table-pill--outline">{{ exemption }}</span>
+                    }
+                  } @else {
+                    <span class="user-row__muted">Aucun libellé (tarifs standard)</span>
+                  }
+                </div>
+              </div>
 
-          <div class="detail-modal__section detail-modal__section--admin-actions">
-            <span class="detail-modal__label">Administration</span>
-            <p class="detail-modal__admin-hint">
-              Suspendre désactive le compte. La suppression définitive efface aussi réservations et
-              file d’attente (irréversible).
-            </p>
-            <div class="detail-modal__admin-actions">
-              @if (rowStatus(user) === 'ACTIVE') {
-                <button
-                  type="button"
-                  class="detail-modal__action detail-modal__action--danger"
-                  [disabled]="detailBusy()"
-                  (click)="suspendUser(user)"
-                >
-                  Suspendre le compte
-                </button>
-              }
-              @if (rowStatus(user) === 'SUSPENDED') {
+              <div class="detail-modal__section">
+                <span class="detail-modal__label">Groupes et droits de réservation</span>
+                @if (detail.groups?.length) {
+                  <ul class="detail-modal__group-list">
+                    @for (g of detail.groups; track g.id) {
+                      <li class="detail-modal__group-row">
+                        <strong>{{ g.name }}</strong>
+                        <span class="user-row__muted"> — {{ g.discountLabel }}</span>
+                        @if (g.councilPowers) {
+                          <span class="table-pill table-pill--outline">Pouvoir conseil</span>
+                        }
+                        <span class="detail-modal__group-rights">
+                          @if (g.canBookImmobilier || g.canBookMobilier) {
+                            @if (g.canBookImmobilier) {
+                              <span>Salles</span>
+                            }
+                            @if (g.canBookImmobilier && g.canBookMobilier) {
+                              <span aria-hidden="true"> · </span>
+                            }
+                            @if (g.canBookMobilier) {
+                              <span>Matériel</span>
+                            }
+                          } @else {
+                            <span class="user-row__muted">Réservation non ouverte</span>
+                          }
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="user-row__muted">Aucun groupe.</p>
+                }
+              </div>
+
+              <div class="detail-modal__meta">
+                <span>Compte cree le {{ formatCreatedAt(detail.createdAt) }}</span>
+              </div>
+
+              <div class="detail-modal__section detail-modal__section--admin-actions">
+                <span class="detail-modal__label">Administration</span>
+                <p class="detail-modal__admin-hint">
+                  Suspendre désactive le compte. La suppression définitive efface aussi réservations
+                  et file d’attente (irréversible).
+                </p>
+                <div class="detail-modal__admin-actions">
+                  @if (rowStatusDetail(detail) === 'ACTIVE') {
+                    <button
+                      type="button"
+                      class="detail-modal__action detail-modal__action--danger"
+                      [disabled]="detailBusy()"
+                      (click)="suspendCurrentUserDetail()"
+                    >
+                      Suspendre le compte
+                    </button>
+                  }
+                  @if (rowStatusDetail(detail) === 'SUSPENDED') {
+                    <button
+                      type="button"
+                      class="detail-modal__action"
+                      [disabled]="detailBusy()"
+                      (click)="reactivateCurrentUserDetail()"
+                    >
+                      Reactiver le compte
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="detail-modal__action detail-modal__action--purge"
+                    [disabled]="detailBusy()"
+                    (click)="purgeCurrentUserDetail()"
+                  >
+                    Supprimer definitivement
+                  </button>
+                </div>
+              </div>
+
+              <footer class="detail-modal__footer">
                 <button
                   type="button"
                   class="detail-modal__action"
-                  [disabled]="detailBusy()"
-                  (click)="reactivateUser(user)"
+                  [disabled]="impersonateBusy() || !canImpersonateDetail(detail)"
+                  (click)="startImpersonationFromDetail()"
                 >
-                  Reactiver le compte
+                  <span class="detail-modal__action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span>Impersonation</span>
                 </button>
-              }
-              <button
-                type="button"
-                class="detail-modal__action detail-modal__action--purge"
-                [disabled]="detailBusy()"
-                (click)="purgeUserPermanently(user)"
-              >
-                Supprimer definitivement
-              </button>
-            </div>
-          </div>
-
-          <footer class="detail-modal__footer">
-            <button
-              type="button"
-              class="detail-modal__action"
-              [disabled]="impersonateBusy() || !canImpersonate(user)"
-              (click)="startImpersonationFromDetail()"
-            >
-              <span class="detail-modal__action-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 4L18 6.2V10.8C18 14.5 15.65 17.8 12 19.1C8.35 17.8 6 14.5 6 10.8V6.2L12 4Z"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-              <span>Impersonation</span>
-            </button>
-          </footer>
+              </footer>
+            }
+          }
         </div>
       </section>
     </div>

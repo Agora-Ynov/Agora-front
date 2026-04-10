@@ -12,4 +12,7 @@ export interface AdminUserGroupSnippetDto {
   id?: string;
   name?: string;
   discountLabel?: string;
+  councilPowers?: boolean;
+  canBookImmobilier?: boolean;
+  canBookMobilier?: boolean;
 }
