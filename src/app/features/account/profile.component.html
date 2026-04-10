@@ -150,8 +150,8 @@
         </div>
 
         <p class="exemption-note exemption-note--tight">
-          Chaque carte correspond à un groupe dont vous êtes membre, avec le tarif catalogue et les droits
-          de réservation définis par la mairie (synchronisés à la connexion).
+          Chaque carte correspond à un groupe dont vous êtes membre, avec le tarif catalogue et les
+          droits de réservation définis par la mairie (synchronisés à la connexion).
         </p>
 
         @if (membershipGroups().length === 0) {
@@ -195,11 +195,11 @@
 
         <p class="exemption-note" [class.exemption-note--inactive]="!hasActiveExemption()">
           @if (hasActiveExemption()) {
-            Au moins un avantage tarifaire ou un pouvoir conseil est actif selon vos groupes. Le catalogue
-            retient la meilleure option parmi ces rattachements et le tarif personnel.
+            Au moins un avantage tarifaire ou un pouvoir conseil est actif selon vos groupes. Le
+            catalogue retient la meilleure option parmi ces rattachements et le tarif personnel.
           } @else {
-            Aucune remise ni pouvoir conseil sur vos groupes : tarifs affichés = barème standard (plein
-            tarif) par ressource.
+            Aucune remise ni pouvoir conseil sur vos groupes : tarifs affichés = barème standard
+            (plein tarif) par ressource.
           }
         </p>
       </article>

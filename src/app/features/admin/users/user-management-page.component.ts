@@ -521,7 +521,8 @@ export class UserManagementPageComponent {
 
   canImpersonateDetail(detail: AdminUserDetailResponseDto): boolean {
     return (
-      this.asAccountType(detail.accountType) === 'TUTORED' && this.asStatus(detail.status) === 'ACTIVE'
+      this.asAccountType(detail.accountType) === 'TUTORED' &&
+      this.asStatus(detail.status) === 'ACTIVE'
     );
   }
 
