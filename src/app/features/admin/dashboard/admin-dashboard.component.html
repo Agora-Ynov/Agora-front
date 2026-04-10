@@ -5,8 +5,15 @@
       <p>Tableau de bord de gestion - Administrateur</p>
     </section>
 
+    @if (loadError(); as err) {
+      <div class="admin-load-error" role="alert">{{ err }}</div>
+    }
+    @if (loading()) {
+      <p class="admin-loading">Chargement du tableau de bord...</p>
+    }
+
     <section class="admin-summary" aria-label="Indicateurs administrateur">
-      @for (card of statCards; track card.label) {
+      @for (card of statCards(); track card.label) {
         <article class="summary-card">
           <div class="summary-card__content">
             <p class="summary-card__label">{{ card.label }}</p>
@@ -325,7 +332,7 @@
         <h2>Reservations recentes</h2>
 
         <div class="reservation-list">
-          @for (reservation of recentReservations; track reservation.title + reservation.date) {
+          @for (reservation of recentReservations(); track reservation.id) {
             <div class="reservation-item">
               <div>
                 <strong>{{ reservation.title }}</strong>
@@ -377,33 +384,68 @@
         <div class="stats-block">
           <div class="stats-row">
             <span>Taux de validation</span>
-            <strong>{{ validationRate }}%</strong>
+            <strong>{{ validationRate() }}%</strong>
           </div>
 
           <div class="progress-track" aria-hidden="true">
-            <span class="progress-bar" [style.width.%]="validationRate"></span>
+            <span class="progress-bar" [style.width.%]="validationRate()"></span>
           </div>
 
           <div class="stats-list">
             <div class="stats-row">
               <span>Exonerations appliquees</span>
-              <strong>{{ appliedExemptions }}</strong>
+              <strong>{{ appliedExemptions() }}</strong>
             </div>
             <div class="stats-row">
               <span>Paiements en attente</span>
-              <strong class="stats-row__warning">{{ pendingPayments }}</strong>
+              <strong class="stats-row__warning">{{ pendingPayments() }}</strong>
             </div>
           </div>
 
           <div class="panel-card__separator"></div>
 
           <div class="revenue-block">
-            <span>Revenu total (ce mois)</span>
-            <strong>{{ totalRevenue }}</strong>
+            <span>Indicateur financier</span>
+            <strong>{{ totalRevenueLabel() }}</strong>
           </div>
         </div>
       </article>
     </section>
+
+    @if (canStaffExports()) {
+      <section class="exports-card" aria-label="Exports CSV administrateur">
+        <h2>Exports CSV</h2>
+        <p class="exports-card__hint">
+          Reservations et paiements (<code>GET /api/admin/exports/...</code>) — reserve au
+          secrétariat / support / superadmin.
+        </p>
+        @if (exportMessage(); as exMsg) {
+          <p class="exports-card__msg" role="status">{{ exMsg }}</p>
+        }
+        <div class="exports-card__dates">
+          <label>
+            Du
+            <input
+              type="date"
+              [value]="exportDateFrom()"
+              (input)="setExportFrom($any($event.target).value)"
+            />
+          </label>
+          <label>
+            Au
+            <input
+              type="date"
+              [value]="exportDateTo()"
+              (input)="setExportTo($any($event.target).value)"
+            />
+          </label>
+        </div>
+        <div class="exports-card__actions">
+          <button type="button" (click)="downloadReservationsExport()">Reservations (.csv)</button>
+          <button type="button" (click)="downloadPaymentsExport()">Paiements (.csv)</button>
+        </div>
+      </section>
+    }
 
     <section class="news-card">
       <div class="news-card__heading">
@@ -414,18 +456,14 @@
             <path d="M12 7H12.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" />
           </svg>
         </span>
-        <h2>Nouveautes - Alignement cahier fonctionnel</h2>
+        <h2>Synthese (donnees chargees)</h2>
       </div>
 
-      <div class="news-grid">
-        @for (column of newsColumns; track $index) {
-          <ul class="news-list">
-            @for (item of column.items; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
+      <ul class="news-list news-list--single">
+        @for (line of dashboardDigest(); track line) {
+          <li>{{ line }}</li>
         }
-      </div>
+      </ul>
     </section>
   </main>
 </section>

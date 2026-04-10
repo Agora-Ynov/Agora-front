@@ -11,6 +11,9 @@
 npm-debug.log
 yarn-error.log
 
+# Cursor IDEs / agentes (ne pas versionner)
+.cursor/
+
 # IDEs and editors
 .idea/
 .project
@@ -34,6 +37,8 @@ junit.xml
 .sass-cache/
 /connect.lock
 /coverage
+/reports/mutation
+.stryker-tmp/
 /libpeerconnection.log
 testem.log
 /typings

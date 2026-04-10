@@ -1,3 +1,17 @@
+@if (isImpersonating()) {
+  <div class="impersonation-banner" role="status">
+    <span>
+      Vous agissez pour le compte d'un usager
+      @if (impersonationAdminEmail(); as adminMail) {
+        <span class="impersonation-banner__meta">(impersonation : {{ adminMail }})</span>
+      }
+    </span>
+    <button type="button" class="impersonation-banner__exit" (click)="exitImpersonation()">
+      Reprendre la session administrateur
+    </button>
+  </div>
+}
+
 <header class="app-header">
   <div class="header-container">
     <div class="header-bar">
@@ -106,6 +120,36 @@
           <span>Catalogue</span>
         </a>
 
+        @if (showAdminHeaderLink()) {
+          <a
+            [routerLink]="adminNavLink()"
+            routerLinkActive="active-link"
+            class="nav-link"
+            (click)="closeMenu()"
+          >
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="5"
+                  y="5"
+                  width="14"
+                  height="14"
+                  rx="2"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+                <path
+                  d="M9 12H15"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <path d="M9 9H15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span>{{ adminNavLabel() }}</span>
+          </a>
+        }
         <a
           routerLink="/calendar"
           routerLinkActive="active-link"
@@ -144,20 +188,80 @@
 
       <div class="header-actions">
         @if (currentUser()) {
-          <a routerLink="/account" class="user-name" (click)="closeMenu()">
-            <span class="user-name__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
-                <path
-                  d="M5 19C6.8 15.9 9.1 14.4 12 14.4C14.9 14.4 17.2 15.9 19 19"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </span>
-            <span>{{ fullName() }}</span>
-          </a>
+          <div
+            class="header-user-wrap"
+            [class.header-user-wrap--open]="userMenuOpen()"
+            tabindex="-1"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <button
+              type="button"
+              class="user-menu-trigger"
+              [attr.aria-expanded]="userMenuOpen()"
+              aria-haspopup="true"
+              (click)="toggleUserMenu($event)"
+            >
+              <span class="user-name__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" />
+                  <path
+                    d="M5 19C6.8 15.9 9.1 14.4 12 14.4C14.9 14.4 17.2 15.9 19 19"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <span class="user-menu-trigger__label">{{ fullName() }}</span>
+              <span class="user-menu-trigger__caret" aria-hidden="true">▾</span>
+            </button>
+            @if (userMenuOpen()) {
+              <div class="user-menu-dropdown" role="menu">
+                <a
+                  routerLink="/account"
+                  role="menuitem"
+                  class="user-menu-dropdown__link user-menu-dropdown__link--strong"
+                  (click)="closeUserMenu()"
+                >
+                  Mon compte
+                </a>
+                @if (showAdminNav()) {
+                  <div class="user-menu-dropdown__section">Actions rapides</div>
+                  @for (qa of adminQuickActions(); track qa.route) {
+                    <a
+                      [routerLink]="qa.route"
+                      role="menuitem"
+                      class="user-menu-dropdown__link"
+                      (click)="closeUserMenu()"
+                    >
+                      {{ qa.label }}
+                    </a>
+                  }
+                  @if (!authService.canAccessFullAdminSpa()) {
+                    <a
+                      [routerLink]="adminNavLink()"
+                      role="menuitem"
+                      class="user-menu-dropdown__link"
+                      (click)="closeUserMenu()"
+                    >
+                      {{ adminNavLabel() }} — tableau de bord
+                    </a>
+                  }
+                }
+                @if (showDelegationAdmin()) {
+                  <a
+                    routerLink="/superadmin/admin-support"
+                    role="menuitem"
+                    class="user-menu-dropdown__link user-menu-dropdown__link--delegation"
+                    (click)="closeUserMenu()"
+                  >
+                    Délégation ADMIN
+                  </a>
+                }
+              </div>
+            }
+          </div>
           <button type="button" class="action-btn action-btn--logout" (click)="logout()">
             <span class="action-btn__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">

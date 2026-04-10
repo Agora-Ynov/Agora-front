@@ -16,10 +16,19 @@
       @if (resourceDetail(); as detail) {
         <section class="resource-detail-hero">
           <div class="resource-detail-media">
-            <div
-              class="resource-detail-cover"
-              [ngClass]="'resource-detail-cover--' + detail.coverTheme"
-            ></div>
+            @if (detail.imageUrl) {
+              <img
+                class="resource-detail-photo"
+                [src]="detail.imageUrl"
+                [alt]="'Illustration — ' + detail.name"
+                loading="lazy"
+              />
+            } @else {
+              <div
+                class="resource-detail-cover"
+                [ngClass]="'resource-detail-cover--' + detail.coverTheme"
+              ></div>
+            }
             <span class="resource-detail-type">{{ detail.typeLabel }}</span>
           </div>
 
@@ -47,27 +56,40 @@
 
             <article class="resource-detail-card">
               <p class="resource-detail-card__label">Disponibilites</p>
-              <div class="resource-detail-chip-list">
-                @for (availability of detail.availability; track availability) {
-                  <span class="resource-detail-chip">{{ availability }}</span>
-                }
-              </div>
+              @if (detail.availability.length) {
+                <div class="resource-detail-chip-list">
+                  @for (availability of detail.availability; track availability) {
+                    <span class="resource-detail-chip">{{ availability }}</span>
+                  }
+                </div>
+              } @else {
+                <a
+                  class="resource-detail-calendar-link"
+                  [routerLink]="['/calendar']"
+                  [queryParams]="{ resourceId: detail.id }"
+                >
+                  Voir le calendrier des disponibilites
+                </a>
+              }
             </article>
 
-            <section class="resource-detail-characteristics">
-              <h2>Caracteristiques</h2>
-              <ul>
-                @for (characteristic of detail.characteristics; track characteristic) {
-                  <li>{{ characteristic }}</li>
-                }
-              </ul>
-            </section>
+            @if (detail.characteristics.length) {
+              <section class="resource-detail-characteristics">
+                <h2>Caracteristiques</h2>
+                <ul>
+                  @for (characteristic of detail.characteristics; track characteristic) {
+                    <li>{{ characteristic }}</li>
+                  }
+                </ul>
+              </section>
+            }
 
             @if (isAuthenticated()) {
               <div class="resource-detail-cta">
                 <a
                   class="resource-detail-cta__primary"
-                  [routerLink]="['/catalogue', detail.id, 'reserver']"
+                  [routerLink]="['/calendar']"
+                  [queryParams]="{ resourceId: detail.id }"
                 >
                   Reserver cette ressource
                 </a>
@@ -100,20 +122,20 @@
         <section class="resource-detail-extra">
           <h2>Informations complementaires</h2>
           <p>
-            <strong>Conditions d'utilisation :</strong> la ressource doit etre rendue dans l'etat
-            initial. Tout degat constate pourra etre facture.
+            <strong>Conditions d'utilisation :</strong> la ressource doit être rendue dans l'état
+            initial. Tout dégât constaté pourra être facturé.
           </p>
           <p>
-            <strong>Caution :</strong> une caution peut etre demandee lors de la reservation. Elle
-            sera restituee apres verification de l'etat de la ressource.
+            <strong>Caution :</strong> une caution peut être demandée lors de la réservation. Elle
+            sera restituée après vérification de l'état de la ressource.
           </p>
           <p>
-            <strong>Annulation :</strong> les annulations doivent etre effectuees au moins 7 jours
-            avant la reservation pour un traitement simplifie.
+            <strong>Annulation :</strong> les annulations doivent être effectuées au moins 7 jours
+            avant la réservation pour un traitement simplifié.
           </p>
           <p>
-            <strong>Tarifs groupes :</strong> les membres d'un groupe peuvent beneficier de remises
-            ou d'exonerations selon leur rattachement et les regles de la commune.
+            <strong>Tarifs groupes :</strong> les membres d'un groupe peuvent bénéficier de remises
+            ou d'exonérations selon leur rattachement et les règles de la commune.
           </p>
         </section>
       }

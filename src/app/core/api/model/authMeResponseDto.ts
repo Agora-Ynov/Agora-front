@@ -17,8 +17,13 @@ export interface AuthMeResponseDto {
   accountType?: AuthMeResponseDto.AccountTypeEnum;
   status?: AuthMeResponseDto.StatusEnum;
   phone?: string;
+  roles?: Array<AuthMeResponseDto.RolesEnum>;
   groups?: Array<UserGroupSummaryDto>;
   createdAt?: string;
+  /**
+   * Promotion métier ADMIN_SUPPORT (compte habilité au périmètre support), distinct du rôle JWT SECRETARY_ADMIN.
+   */
+  adminSupport?: boolean;
 }
 export namespace AuthMeResponseDto {
   export const AccountTypeEnum = {
@@ -31,4 +36,12 @@ export namespace AuthMeResponseDto {
     Deleted: 'DELETED',
   } as const;
   export type StatusEnum = (typeof StatusEnum)[keyof typeof StatusEnum];
+  export const RolesEnum = {
+    Citizen: 'CITIZEN',
+    Superadmin: 'SUPERADMIN',
+    SecretaryAdmin: 'SECRETARY_ADMIN',
+    DelegateAdmin: 'DELEGATE_ADMIN',
+    GroupManager: 'GROUP_MANAGER',
+  } as const;
+  export type RolesEnum = (typeof RolesEnum)[keyof typeof RolesEnum];
 }

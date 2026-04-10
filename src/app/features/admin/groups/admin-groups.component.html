@@ -57,19 +57,111 @@
     } @else if (!groupCards().length) {
       <p class="feedback">Aucun groupe a afficher pour le moment.</p>
     } @else {
-      <section class="groups-info-panel">
-        <h2>A propos des groupes organisationnels</h2>
+      <section class="groups-hero-info-row" aria-labelledby="groups-about-title">
+        <div class="groups-info-panel groups-info-panel--in-row">
+          <h2 id="groups-about-title">A propos des groupes organisationnels</h2>
 
-        <ul class="groups-info-list">
-          <li>Les utilisateurs peuvent appartenir a plusieurs groupes</li>
-          <li>Une reservation peut etre faite au nom d'un groupe</li>
-          <li>Le Conseil Municipal dispose de droits speciaux</li>
-          <li>Les groupes permettent de gerer les droits collectifs</li>
-        </ul>
+          <ul class="groups-info-list">
+            <li>Les utilisateurs peuvent appartenir a plusieurs groupes</li>
+            <li>Une reservation peut etre faite au nom d'un groupe</li>
+            <li>Le Conseil Municipal dispose de droits speciaux</li>
+            <li>Les groupes permettent de gerer les droits collectifs</li>
+          </ul>
+        </div>
+
+        <div class="special-groups-panel special-groups-panel--in-row">
+          <h2 class="special-groups-panel__title">Groupes speciaux</h2>
+
+          <article class="special-group special-group--council">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Conseil Municipal</h3>
+            </div>
+
+            <p>
+              Le conseil municipal est un groupe organisationnel particulier avec des pouvoirs
+              etendus. Certaines validations necessitent l'appartenance a ce groupe. Les membres
+              beneficient d'un acces prioritaire aux ressources et peuvent valider des budgets.
+            </p>
+          </article>
+
+          <article class="special-group special-group--services">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="6.5"
+                    y="4.75"
+                    width="9"
+                    height="14.5"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                  <path
+                    d="M9.5 8H12.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M9.5 12H12.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M17.5 8.5H19.5V18.5H10.5"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Services municipaux</h3>
+            </div>
+
+            <p>
+              Les services municipaux regroupent le personnel administratif de la collectivite. Ils
+              peuvent beneficier de conditions particulieres pour les reservations internes.
+            </p>
+          </article>
+
+          <article class="special-group special-group--associations">
+            <div class="special-group__heading">
+              <span class="special-group__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 19C16.5 15.75 19.5 12.65 19.5 9.3C19.5 7.04 17.71 5.25 15.45 5.25C13.98 5.25 12.73 5.93 12 7.02C11.27 5.93 10.02 5.25 8.55 5.25C6.29 5.25 4.5 7.04 4.5 9.3C4.5 12.65 7.5 15.75 12 19Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+              <h3>Associations</h3>
+            </div>
+
+            <p>
+              Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
+              reservent des ressources. Les membres d'une association peuvent reserver au nom de
+              leur groupe.
+            </p>
+          </article>
+        </div>
       </section>
 
       <section class="group-grid">
-        @for (group of groupCards(); track group.id) {
+        @for (group of pagedGroupCards(); track group.id) {
           <article class="group-card">
             <header class="group-card__header">
               <div class="group-card__title-wrap">
@@ -156,9 +248,27 @@
                 <strong>{{ group.memberCount }}</strong>
               </div>
 
-              <button type="button" class="group-card__button" (click)="openMembers(group.id)">
-                Gerer les membres
-              </button>
+              <div class="group-card__actions">
+                <button type="button" class="group-card__button" (click)="openMembers(group.id)">
+                  Gerer les membres
+                </button>
+                @if (!group.isPreset) {
+                  <button
+                    type="button"
+                    class="group-card__button group-card__button--secondary"
+                    (click)="openEditByCardId(group.id)"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    class="group-card__button group-card__button--danger"
+                    (click)="confirmDeleteByCardId(group.id)"
+                  >
+                    Supprimer
+                  </button>
+                }
+              </div>
             </div>
 
             <div class="group-card__section">
@@ -177,95 +287,29 @@
         }
       </section>
 
-      <section class="special-groups-panel">
-        <h2>Groupes speciaux</h2>
-
-        <article class="special-group special-group--council">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M5 17.5H19L17.8 9.5L13.8 12.25L12 6.5L10.2 12.25L6.2 9.5L5 17.5Z"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Conseil Municipal</h3>
-          </div>
-
-          <p>
-            Le conseil municipal est un groupe organisationnel particulier avec des pouvoirs
-            etendus. Certaines validations necessitent l'appartenance a ce groupe. Les membres
-            beneficient d'un acces prioritaire aux ressources et peuvent valider des budgets.
-          </p>
-        </article>
-
-        <article class="special-group special-group--services">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="6.5"
-                  y="4.75"
-                  width="9"
-                  height="14.5"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-                <path
-                  d="M9.5 8H12.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M9.5 12H12.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M17.5 8.5H19.5V18.5H10.5"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Services municipaux</h3>
-          </div>
-
-          <p>
-            Les services municipaux regroupent le personnel administratif de la collectivite. Ils
-            peuvent beneficier de conditions particulieres pour les reservations internes.
-          </p>
-        </article>
-
-        <article class="special-group special-group--associations">
-          <div class="special-group__heading">
-            <span class="special-group__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 19C16.5 15.75 19.5 12.65 19.5 9.3C19.5 7.04 17.71 5.25 15.45 5.25C13.98 5.25 12.73 5.93 12 7.02C11.27 5.93 10.02 5.25 8.55 5.25C6.29 5.25 4.5 7.04 4.5 9.3C4.5 12.65 7.5 15.75 12 19Z"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-            <h3>Associations</h3>
-          </div>
-
-          <p>
-            Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
-            reservent des ressources. Les membres d'une association peuvent reserver au nom de leur
-            groupe.
-          </p>
-        </article>
-      </section>
+      @if (adminGroupPageCount() > 1) {
+        <nav class="admin-groups-pagination" aria-label="Pagination des groupes">
+          <button
+            type="button"
+            class="admin-groups-pagination__btn"
+            (click)="goToAdminGroupPage(adminGroupPage() - 1)"
+            [disabled]="adminGroupPage() <= 0"
+          >
+            Précédent
+          </button>
+          <span class="admin-groups-pagination__status">
+            Page {{ adminGroupPage() + 1 }} / {{ adminGroupPageCount() }}
+          </span>
+          <button
+            type="button"
+            class="admin-groups-pagination__btn"
+            (click)="goToAdminGroupPage(adminGroupPage() + 1)"
+            [disabled]="adminGroupPage() >= adminGroupPageCount() - 1"
+          >
+            Suivant
+          </button>
+        </nav>
+      }
     }
   </main>
 
@@ -286,12 +330,51 @@
         <header class="members-modal__header">
           <div>
             <h3 id="group-members-title">{{ group.name }}</h3>
-            <p>Liste chargee via GET /api/admin/groups/{{ group.id }}/members</p>
+            <p>Gestion des membres du groupe</p>
           </div>
           <button type="button" class="members-modal__close" (click)="closeMembersModal()">
             X
           </button>
         </header>
+
+        <div class="members-modal__add">
+          <div class="members-modal__add-field members-modal__add-field--grow">
+            <label class="members-modal__search-label">
+              <span>Rechercher un utilisateur</span>
+              <input
+                type="search"
+                [value]="memberSearchInput()"
+                [disabled]="memberBusy()"
+                (input)="onMemberSearchInput($any($event.target).value)"
+                placeholder="Nom, prénom ou e-mail"
+                autocomplete="off"
+              />
+            </label>
+            @if (userSearchLoading()) {
+              <span class="members-modal__search-hint">Recherche…</span>
+            }
+            @if (userSuggestions().length) {
+              <ul class="user-suggest" role="listbox">
+                @for (u of userSuggestions(); track u.id) {
+                  <li>
+                    <button type="button" class="user-suggest__row" (click)="pickUserForGroup(u)">
+                      <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+                      <span class="user-suggest__email">{{ u.email || 'Sans e-mail' }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <button
+            type="button"
+            class="members-modal__add-btn"
+            [disabled]="memberBusy()"
+            (click)="addMemberToSelectedGroup()"
+          >
+            Ajouter
+          </button>
+        </div>
 
         @if (loadingMembers()) {
           <p class="members-modal__empty">Chargement des membres...</p>
@@ -309,6 +392,14 @@
                 <div class="member-row__meta">
                   <span class="group-chip">{{ memberRoleLabel(member.role) }}</span>
                   <span>Depuis le {{ formatJoinedAt(member.joinedAt) }}</span>
+                  <button
+                    type="button"
+                    class="member-row__remove"
+                    [disabled]="memberBusy()"
+                    (click)="removeMemberFromSelectedGroup(member)"
+                  >
+                    Retirer
+                  </button>
                 </div>
               </article>
             }
@@ -354,11 +445,50 @@
 
           <label class="create-group-field">
             <span>Type de groupe *</span>
-            <select formControlName="groupType">
-              @for (option of groupTypeOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
+            <div class="group-type-combo">
+              <div class="group-type-combo__row">
+                <input
+                  type="text"
+                  formControlName="groupTypeDraft"
+                  placeholder="Ex: Service municipal, Association, ou un libelle personnalise"
+                  autocomplete="off"
+                  (focus)="groupTypePickerOpen.set(true)"
+                  (input)="onGroupTypeDraftInput($any($event.target).value)"
+                />
+                <button
+                  type="button"
+                  class="group-type-combo__toggle"
+                  (click)="toggleGroupTypePicker(); $event.preventDefault()"
+                >
+                  Liste
+                </button>
+              </div>
+              @if (groupTypePickerOpen()) {
+                <ul class="group-type-combo__list" role="listbox">
+                  @for (s of visibleGroupTypeSuggestions(); track s) {
+                    <li
+                      role="option"
+                      [attr.aria-selected]="
+                        (createGroupForm.get('groupTypeDraft')?.value ?? '').toString().trim() === s
+                      "
+                    >
+                      <button
+                        type="button"
+                        class="group-type-combo__opt"
+                        (click)="pickGroupTypeSuggestion(s)"
+                      >
+                        {{ s }}
+                      </button>
+                    </li>
+                  }
+                </ul>
               }
-            </select>
+            </div>
+            <small class="create-group-field__hint">
+              Profils rapides : Service municipal, Association ou Autre (insensible à la casse).
+              Tout autre libellé crée un groupe « Autre » ; les types affichés existants sont
+              proposés sans doublon.
+            </small>
           </label>
 
           <label class="create-group-field">
@@ -370,13 +500,83 @@
             ></textarea>
           </label>
 
-          <div class="create-group-note">
-            <strong>Mapping API :</strong> le type choisi preconfigure le body `POST
-            /api/admin/groups` avec les droits et remises prevus par les mocks.
-          </div>
-
           <button type="submit" class="create-group-submit" [disabled]="isCreating()">
             {{ isCreating() ? 'Creation...' : 'Creer le groupe' }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (isEditModalOpen()) {
+    <div class="modal-backdrop">
+      <button
+        type="button"
+        class="modal-backdrop__dismiss"
+        aria-label="Fermer la fenêtre"
+        (click)="closeEditModal()"
+      ></button>
+      <section
+        class="create-group-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-group-title"
+      >
+        <header class="create-group-modal__header">
+          <h3 id="edit-group-title">Modifier le groupe</h3>
+          <button type="button" class="create-group-modal__close" (click)="closeEditModal()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M7 7L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        <form class="create-group-form" [formGroup]="editGroupForm" (ngSubmit)="submitEditGroup()">
+          <label class="create-group-field">
+            <span>Nom du groupe *</span>
+            <input type="text" formControlName="name" />
+          </label>
+
+          <div class="create-group-field create-group-field--checks">
+            <label
+              ><input type="checkbox" formControlName="canViewImmobilier" /> Voir immobilier</label
+            >
+            <label
+              ><input type="checkbox" formControlName="canBookImmobilier" /> Reserver
+              immobilier</label
+            >
+            <label><input type="checkbox" formControlName="canViewMobilier" /> Voir mobilier</label>
+            <label
+              ><input type="checkbox" formControlName="canBookMobilier" /> Reserver mobilier</label
+            >
+          </div>
+
+          <label class="create-group-field">
+            <span>Type de remise *</span>
+            <select formControlName="discountType">
+              @for (opt of discountTypeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="create-group-field">
+            <span>Valeur remise</span>
+            <input type="number" formControlName="discountValue" min="0" step="1" />
+          </label>
+
+          <label class="create-group-field">
+            <span>Champ d'application *</span>
+            <select formControlName="discountAppliesTo">
+              @for (opt of discountAppliesOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          <button type="submit" class="create-group-submit" [disabled]="isSavingEdit()">
+            {{ isSavingEdit() ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
         </form>
       </section>

@@ -37,76 +37,135 @@
 
   <div class="loading-box" *ngIf="isLoading()">Chargement des ressources...</div>
 
-  <div class="resource-grid" *ngIf="!isLoading()">
-    <article class="resource-card" *ngFor="let resource of resources(); trackBy: trackByResourceId">
-      <div class="card-top">
-        <div class="resource-title-block">
-          <div class="resource-icon" [attr.data-kind]="getTypeIcon(resource.resourceType)"></div>
+  <div class="resource-grid-wrap" *ngIf="!isLoading()">
+    <p class="resource-grid-meta" *ngIf="resources().length">
+      Affichage {{ displayedResources().length }} / {{ resources().length }} ressource(s) — page
+      {{ resourceListPage() + 1 }} / {{ resourceListTotalPages() }}
+    </p>
+    <div class="resource-list" role="list">
+      <article
+        class="resource-row"
+        *ngFor="let resource of displayedResources(); trackBy: trackByResourceId"
+        role="listitem"
+      >
+        <div class="resource-row__thumb" aria-hidden="true">
+          <img
+            *ngIf="resource.imageUrl?.trim()"
+            class="resource-row__thumb-img"
+            [src]="resource.imageUrl ?? ''"
+            [alt]="'Miniature — ' + resource.name"
+            loading="lazy"
+          />
+          <div
+            *ngIf="!resource.imageUrl?.trim()"
+            class="resource-row__thumb-placeholder"
+            [attr.data-kind]="getTypeIcon(resource.resourceType)"
+          ></div>
+        </div>
 
-          <div>
-            <h2>{{ resource.name }}</h2>
-            <span class="type-badge">{{ getTypeLabel(resource.resourceType) }}</span>
+        <div class="resource-row__main">
+          <div class="resource-row__tags">
+            <span
+              class="resource-row__pill resource-row__pill--type"
+              [class.resource-row__pill--room]="resource.resourceType === 'IMMOBILIER'"
+              [class.resource-row__pill--gear]="resource.resourceType === 'MOBILIER'"
+            >
+              {{ getTypeLabel(resource.resourceType) }}
+            </span>
+            <span
+              class="resource-row__pill resource-row__pill--price"
+              [class.resource-row__pill--price-muted]="isRentalUnset(resource)"
+            >
+              {{ getRentalPillText(resource) }}
+            </span>
+            <span
+              class="resource-row__pill resource-row__pill--feat"
+              *ngFor="let feature of getFeatureLabels(resource)"
+              >{{ feature }}</span
+            >
+          </div>
+
+          <h2 class="resource-row__title">{{ resource.name }}</h2>
+
+          <p class="resource-row__meta">
+            <span>Capacité : {{ getCapacityLabel(resource) }}</span>
+            <span class="resource-row__meta-sep" aria-hidden="true">·</span>
+            <span>Caution : {{ getPriceEuros(resource.depositAmountCents) }} €</span>
+            <span class="resource-row__meta-sep" aria-hidden="true">·</span>
+            <span class="resource-row__meta-id">#{{ resource.id | slice: 0 : 8 }}</span>
+          </p>
+
+          <p class="resource-row__desc">
+            {{ resource.description || 'Description indisponible.' }}
+          </p>
+
+          <p class="resource-row__catalog-line">
+            <span class="resource-row__catalog-label">Tarif catalogue</span>
+            {{ getCatalogRentalLabel(resource) }}
+          </p>
+        </div>
+
+        <div class="resource-row__aside">
+          <div class="resource-row__admin">
+            <button type="button" class="text-btn" (click)="openEditModal(resource)">Éditer</button>
+            <button
+              type="button"
+              class="text-btn text-btn--danger"
+              (click)="deleteResource(resource.id)"
+            >
+              Supprimer
+            </button>
+          </div>
+          <div class="resource-row__cta">
+            <a class="btn-outline" [routerLink]="['/catalogue', resource.id]">Voir la page</a>
+            <a
+              class="btn-primary"
+              [routerLink]="['/calendar']"
+              [queryParams]="{ resourceId: resource.id }"
+            >
+              Disponibilités
+            </a>
           </div>
         </div>
+      </article>
+    </div>
 
-        <div class="card-actions">
-          <button
-            type="button"
-            class="icon-btn"
-            (click)="openEditModal(resource)"
-            aria-label="Modifier"
-          >
-            Editer
-          </button>
-          <button
-            type="button"
-            class="icon-btn danger"
-            (click)="deleteResource(resource.id)"
-            aria-label="Supprimer"
-          >
-            Supprimer
-          </button>
-        </div>
+    <div
+      class="resource-pagination"
+      *ngIf="resources().length > 0"
+      aria-label="Pagination ressources"
+    >
+      <div class="resource-pagination__nav">
+        <button
+          type="button"
+          class="resource-pagination__btn"
+          (click)="prevResourceListPage()"
+          [disabled]="resourceListPage() <= 0"
+        >
+          Précédent
+        </button>
+        <span class="resource-pagination__status">
+          Page {{ resourceListPage() + 1 }} / {{ resourceListTotalPages() }}
+        </span>
+        <button
+          type="button"
+          class="resource-pagination__btn"
+          (click)="nextResourceListPage()"
+          [disabled]="resourceListPage() >= resourceListTotalPages() - 1"
+        >
+          Suivant
+        </button>
       </div>
-
-      <p class="resource-description">
-        {{ resource.description || 'Description indisponible.' }}
-      </p>
-
-      <hr />
-
-      <div class="resource-infos">
-        <div>
-          <span class="label">Capacite</span>
-          <strong>{{ getCapacityLabel(resource) }}</strong>
-        </div>
-      </div>
-
-      <div class="deposit-block">
-        <span class="label">Caution</span>
-        <div>
-          <strong class="deposit">{{ getPriceEuros(resource.depositAmountCents) }}EUR</strong>
-        </div>
-      </div>
-
-      <div class="features-block" *ngIf="getFeatureLabels(resource).length">
-        <span class="label">Caracteristiques</span>
-        <div class="feature-tags">
-          <span class="feature-tag" *ngFor="let feature of getFeatureLabels(resource)">{{
-            feature
-          }}</span>
-        </div>
-      </div>
-
-      <hr />
-
-      <div class="card-footer-actions">
-        <a class="secondary-btn secondary-btn--link" [routerLink]="['/catalogue', resource.id]">
-          Voir la page
-        </a>
-        <button type="button" class="secondary-btn" disabled>Disponibilites</button>
-      </div>
-    </article>
+      <label class="resource-pagination__size">
+        <span>Par page</span>
+        <select
+          [value]="resourceListPageSize()"
+          (change)="setResourceListPageSize(+$any($event.target).value)"
+        >
+          <option *ngFor="let s of resourceListPageSizeOptions" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="empty-box" *ngIf="!isLoading() && resources().length === 0 && !errorMessage()">
@@ -156,12 +215,24 @@
           <input id="resourceCapacity" type="number" formControlName="capacity" placeholder="100" />
         </div>
 
-        <!--
-          Champs non présents dans ResourceRequest backend (à réactiver si l’API expose tarif, quantité, exonération) :
-          - quantity (MOBILIER)
-          - basePriceEuros
-          - depositExemptible
-        -->
+        <div class="form-section-title">Tarif de location (catalogue)</div>
+
+        <div class="form-group">
+          <label for="resourceRentalAmount">Montant TTC (EUR) pour une réservation</label>
+          <input
+            id="resourceRentalAmount"
+            type="number"
+            step="0.01"
+            min="0"
+            formControlName="rentalAmountEuros"
+            placeholder="Ex. 120 ou 0 pour gratuit — vide si non renseigné"
+          />
+          <small>
+            Ce montant est affiché sur la fiche et dans le catalogue.
+            <strong>0</strong> = gratuit. Laisser <strong>vide</strong> = « Tarif non renseigné »
+            côté catalogue (aucun montant en base).
+          </small>
+        </div>
 
         <div class="form-section-title">Caution</div>
 
@@ -176,16 +247,19 @@
           <small>Laisser a 0 si aucune caution</small>
         </div>
 
-        <div class="form-group">
-          <label for="resourceAccessibilityTags">Caracteristiques</label>
-          <input
-            id="resourceAccessibilityTags"
-            type="text"
-            formControlName="accessibilityTagsText"
-            placeholder="PMR_ACCESS, PARKING, SOUND_SYSTEM"
-          />
-          <small>Utilise les tags API separes par des virgules.</small>
-        </div>
+        <fieldset class="form-group form-fieldset">
+          <legend>Équipements & accessibilité</legend>
+          <div class="accessibility-checkboxes">
+            <label class="checkbox-row" *ngFor="let opt of accessibilityOptions">
+              <input
+                type="checkbox"
+                [checked]="isTagSelected(opt.id)"
+                (change)="toggleAccessibilityTag(opt.id)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+          </div>
+        </fieldset>
 
         <div class="form-group">
           <label for="resourceImageUrl">Image URL</label>

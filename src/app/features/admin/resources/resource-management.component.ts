@@ -4,11 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
+  RESOURCE_ACCESSIBILITY_OPTIONS,
   ResourceDto,
   ResourceFormValue,
   ResourceType,
 } from '../../../core/api/models/resource.model';
 import { ResourceService } from '../../../core/api/resource.service';
+import { normalizeCentsInput } from '../../../core/api/resource-cents.util';
 
 @Component({
   selector: 'app-resource-management',
@@ -22,6 +24,9 @@ export class ResourceManagementComponent implements OnInit {
   private readonly resourceService = inject(ResourceService);
 
   readonly resources = signal<ResourceDto[]>([]);
+  readonly resourceListPage = signal(0);
+  readonly resourceListPageSize = signal(12);
+  readonly resourceListPageSizeOptions = [6, 12, 24, 48] as const;
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
   readonly isModalOpen = signal(false);
@@ -29,17 +34,32 @@ export class ResourceManagementComponent implements OnInit {
   readonly successMessage = signal('');
   readonly editingResourceId = signal<string | null>(null);
 
+  readonly accessibilityOptions = RESOURCE_ACCESSIBILITY_OPTIONS;
+
   readonly form = this.fb.group({
     resourceType: ['IMMOBILIER' as ResourceType, [Validators.required]],
     name: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
     capacity: [null as number | null, [Validators.min(0)]],
     depositAmountEuros: [0 as number | null, [Validators.required, Validators.min(0)]],
-    accessibilityTagsText: [''],
+    rentalAmountEuros: [null as number | null, [Validators.min(0)]],
+    accessibilityTags: [[] as string[]],
     imageUrl: [''],
   });
 
   readonly stats = computed(() => this.resourceService.getStats(this.resources()));
+
+  readonly resourceListTotalPages = computed(() => {
+    const n = this.resources().length;
+    const sz = this.resourceListPageSize();
+    return Math.max(1, Math.ceil(n / sz));
+  });
+
+  readonly displayedResources = computed(() => {
+    const all = this.resources();
+    const start = this.resourceListPage() * this.resourceListPageSize();
+    return all.slice(start, start + this.resourceListPageSize());
+  });
   readonly resourceType = computed(
     () => (this.form.controls.resourceType.value ?? 'IMMOBILIER') as ResourceType
   );
@@ -58,10 +78,41 @@ export class ResourceManagementComponent implements OnInit {
       .subscribe({
         next: resources => {
           this.resources.set(resources);
+          this.clampResourceListPage();
           this.errorMessage.set('');
         },
         error: () => this.errorMessage.set('Impossible de charger les ressources.'),
       });
+  }
+
+  private clampResourceListPage(): void {
+    const max = this.resourceListTotalPages() - 1;
+    if (this.resourceListPage() > max) {
+      this.resourceListPage.set(Math.max(0, max));
+    }
+  }
+
+  goResourceListPage(page: number): void {
+    const max = this.resourceListTotalPages() - 1;
+    const p = Math.min(Math.max(0, page), max);
+    if (p === this.resourceListPage()) return;
+    this.resourceListPage.set(p);
+  }
+
+  prevResourceListPage(): void {
+    this.goResourceListPage(this.resourceListPage() - 1);
+  }
+
+  nextResourceListPage(): void {
+    this.goResourceListPage(this.resourceListPage() + 1);
+  }
+
+  setResourceListPageSize(size: number): void {
+    const s = Math.max(1, size);
+    if (s === this.resourceListPageSize()) return;
+    this.resourceListPageSize.set(s);
+    this.resourceListPage.set(0);
+    this.clampResourceListPage();
   }
 
   openCreateModal(): void {
@@ -73,7 +124,8 @@ export class ResourceManagementComponent implements OnInit {
       description: '',
       capacity: null,
       depositAmountEuros: 0,
-      accessibilityTagsText: '',
+      rentalAmountEuros: null,
+      accessibilityTags: [],
       imageUrl: '',
     });
     this.isModalOpen.set(true);
@@ -90,7 +142,8 @@ export class ResourceManagementComponent implements OnInit {
       description: formValue.description,
       capacity: formValue.capacity,
       depositAmountEuros: formValue.depositAmountEuros,
-      accessibilityTagsText: formValue.accessibilityTagsText,
+      rentalAmountEuros: formValue.rentalAmountEuros,
+      accessibilityTags: [...formValue.accessibilityTags],
       imageUrl: formValue.imageUrl ?? '',
     });
 
@@ -129,8 +182,10 @@ export class ResourceManagementComponent implements OnInit {
           this.successMessage.set('Ressource modifiee avec succes.');
         } else {
           this.resources.set([resource, ...this.resources()]);
+          this.resourceListPage.set(0);
           this.successMessage.set('Ressource creee avec succes.');
         }
+        this.clampResourceListPage();
 
         this.closeModal();
       },
@@ -149,6 +204,7 @@ export class ResourceManagementComponent implements OnInit {
     this.resourceService.delete(resourceId).subscribe({
       next: () => {
         this.resources.set(this.resources().filter(resource => resource.id !== resourceId));
+        this.clampResourceListPage();
         this.successMessage.set('Ressource supprimee avec succes.');
       },
       error: () => {
@@ -173,7 +229,35 @@ export class ResourceManagementComponent implements OnInit {
     if (resource.resourceType === 'IMMOBILIER') {
       return resource.capacity ? `${resource.capacity} pers.` : 'Non renseignee';
     }
-    return 'Materiel';
+    return resource.capacity ? `${resource.capacity} unites` : '—';
+  }
+
+  /** Tarif catalogue (sans calcul groupe), même logique que la fiche publique. */
+  getCatalogRentalLabel(resource: ResourceDto): string {
+    const c = normalizeCentsInput(resource.rentalPriceCents);
+    if (c == null) {
+      return 'Non renseigné';
+    }
+    if (c === 0) {
+      return 'Gratuit';
+    }
+    return `${this.getPriceEuros(c)} EUR / réservation`;
+  }
+
+  /** Pastille compacte (style maquette). */
+  getRentalPillText(resource: ResourceDto): string {
+    const c = normalizeCentsInput(resource.rentalPriceCents);
+    if (c == null) {
+      return 'Tarif N/D';
+    }
+    if (c === 0) {
+      return 'Gratuit';
+    }
+    return `${this.getPriceEuros(c)} € / résa.`;
+  }
+
+  isRentalUnset(resource: ResourceDto): boolean {
+    return normalizeCentsInput(resource.rentalPriceCents) == null;
   }
 
   getFeatureLabels(resource: ResourceDto): string[] {
@@ -188,5 +272,23 @@ export class ResourceManagementComponent implements OnInit {
 
   get isEditing(): boolean {
     return !!this.editingResourceId();
+  }
+
+  isTagSelected(tagId: string): boolean {
+    const selected = this.form.controls.accessibilityTags.value ?? [];
+    return selected.includes(tagId);
+  }
+
+  toggleAccessibilityTag(tagId: string): void {
+    const control = this.form.controls.accessibilityTags;
+    const current = [...(control.value ?? [])];
+    const i = current.indexOf(tagId);
+    if (i >= 0) {
+      current.splice(i, 1);
+    } else {
+      current.push(tagId);
+    }
+    control.setValue(current);
+    control.markAsDirty();
   }
 }

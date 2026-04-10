@@ -1,0 +1,231 @@
+<div class="staff-hub">
+  <div class="staff-hub__bg" aria-hidden="true"></div>
+
+  <header class="staff-hub__header">
+    <div class="staff-hub__brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="url(#g1)" />
+        <path
+          d="M15 18L24 13L33 18"
+          stroke="white"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path d="M18 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+        <path d="M24 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+        <path d="M30 20V31" stroke="white" stroke-width="2" stroke-linecap="round" />
+        <path d="M14 33H34" stroke="white" stroke-width="2" stroke-linecap="round" />
+        <defs>
+          <linearGradient id="g1" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#38bdf8" />
+            <stop offset="1" stop-color="#4f46e5" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="staff-hub__header-text">
+      <p class="staff-hub__eyebrow">Espace équipe municipale</p>
+      <h1 class="staff-hub__title">Bonjour, {{ welcomeLine() }}</h1>
+      <p class="staff-hub__subtitle">
+        Votre centre de pilotage : accès rapide au secrétariat, au catalogue usagers et aux
+        indicateurs.
+      </p>
+    </div>
+    <a routerLink="/account" class="staff-hub__profile-chip">
+      <span class="staff-hub__profile-chip__icon" aria-hidden="true">◆</span>
+      Mon profil &amp; statut
+    </a>
+  </header>
+
+  @if (loadError(); as err) {
+    <p class="staff-hub__banner staff-hub__banner--warn" role="status">{{ err }}</p>
+  }
+
+  <div class="bento">
+    <!-- Zone d’accueil + stats empilées type puzzle -->
+    <section class="tile tile--welcome">
+      <div class="tile--welcome__inner">
+        <h2 class="tile__heading">Vue d’ensemble</h2>
+        @if (loading()) {
+          <p class="tile__muted">Chargement des indicateurs…</p>
+        } @else {
+          <div class="tile--welcome__progress">
+            <span class="tile--welcome__progress-label">Charge du jour (indicatif)</span>
+            <div
+              class="tile--welcome__bar"
+              role="progressbar"
+              [attr.aria-valuenow]="validationRate()"
+            >
+              <span class="tile--welcome__bar-fill" [style.width.%]="validationRate()"></span>
+            </div>
+            <span class="tile--welcome__progress-value">{{ validationRate() }}%</span>
+          </div>
+        }
+        <div class="tile--welcome__cta">
+          <a routerLink="/admin/reservations" class="hub-btn hub-btn--light"
+            >Traiter les réservations</a
+          >
+          <a routerLink="/catalogue" class="hub-btn hub-btn--ghost">Voir le catalogue public</a>
+        </div>
+      </div>
+    </section>
+
+    @for (s of statMinis(); track s.label) {
+      <section class="tile tile--stat" [class]="'tile--stat--' + s.tone">
+        <span class="tile--stat__label">{{ s.label }}</span>
+        <strong class="tile--stat__value">{{ s.value }}</strong>
+      </section>
+    }
+
+    <section class="tile tile--recent">
+      <div class="tile__head">
+        <h2 class="tile__heading">Dernières réservations</h2>
+        <a routerLink="/admin/reservations" class="tile__link">Tout voir →</a>
+      </div>
+      @if (loading()) {
+        <p class="tile__muted">…</p>
+      } @else if (!recentReservations().length) {
+        <p class="tile__muted">Aucune entrée récente.</p>
+      } @else {
+        <ul class="recent-list">
+          @for (r of recentReservations(); track r.id) {
+            <li class="recent-list__row">
+              <div>
+                <strong>{{ r.title }}</strong>
+                <span class="recent-list__sub">{{ r.requester }}</span>
+              </div>
+              <div class="recent-list__meta">
+                <span>{{ r.date }}</span>
+                <span
+                  class="pill"
+                  [class.pill--ok]="r.status === 'confirmed'"
+                  [class.pill--wait]="r.status === 'pending'"
+                  >{{ statusLabel(r.status) }}</span
+                >
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Grille navigation type puzzle -->
+    <a routerLink="/catalogue" class="tile tile--nav tile--nav--catalogue">
+      <span class="tile--nav__icon" aria-hidden="true">▣</span>
+      <span class="tile--nav__title">Catalogue</span>
+      <span class="tile--nav__hint">Parcourir les ressources</span>
+    </a>
+
+    <a routerLink="/calendar" class="tile tile--nav tile--nav--calendar">
+      <span class="tile--nav__icon" aria-hidden="true">◎</span>
+      <span class="tile--nav__title">Calendrier</span>
+      <span class="tile--nav__hint">Disponibilités</span>
+    </a>
+
+    <a routerLink="/reservations" class="tile tile--nav tile--nav--mine">
+      <span class="tile--nav__icon" aria-hidden="true">✓</span>
+      <span class="tile--nav__title">Mes réservations</span>
+      <span class="tile--nav__hint">Espace personnel</span>
+    </a>
+
+    <a routerLink="/admin/users" class="tile tile--nav tile--nav--users">
+      <span class="tile--nav__icon" aria-hidden="true">⧉</span>
+      <span class="tile--nav__title">Utilisateurs</span>
+      <span class="tile--nav__hint">Comptes &amp; statuts</span>
+    </a>
+
+    <a routerLink="/admin/reservations" class="tile tile--nav tile--nav--adminresa">
+      <span class="tile--nav__icon" aria-hidden="true">▤</span>
+      <span class="tile--nav__title">Réservations (admin)</span>
+      <span class="tile--nav__hint">Validation &amp; suivi</span>
+    </a>
+
+    <a routerLink="/admin/audit" class="tile tile--nav tile--nav--audit">
+      <span class="tile--nav__icon" aria-hidden="true">◉</span>
+      <span class="tile--nav__title">Journal d’audit</span>
+      <span class="tile--nav__hint">Traçabilité</span>
+    </a>
+
+    <a routerLink="/admin/blackouts" class="tile tile--nav tile--nav--blackout">
+      <span class="tile--nav__icon" aria-hidden="true">⊘</span>
+      <span class="tile--nav__title">Fermetures</span>
+      <span class="tile--nav__hint">Plages bloquées</span>
+    </a>
+
+    <a routerLink="/admin/resources" class="tile tile--nav tile--nav--resources">
+      <span class="tile--nav__icon" aria-hidden="true">◇</span>
+      <span class="tile--nav__title">Ressources</span>
+      <span class="tile--nav__hint">Fiches &amp; tarifs</span>
+    </a>
+
+    <a routerLink="/admin/groups" class="tile tile--nav tile--nav--groups">
+      <span class="tile--nav__icon" aria-hidden="true">⎔</span>
+      <span class="tile--nav__title">Groupes</span>
+      <span class="tile--nav__hint">Permissions</span>
+    </a>
+
+    <a routerLink="/admin/affiliations" class="tile tile--nav tile--nav--affil tile--nav--wide">
+      <span class="tile--nav__icon" aria-hidden="true">⎗</span>
+      <span class="tile--nav__title">Affiliations</span>
+      <span class="tile--nav__hint">Demandes et rattachements</span>
+    </a>
+
+    @if (showSuperadminTile()) {
+      <a
+        routerLink="/superadmin/admin-support"
+        class="tile tile--nav tile--nav--super tile--nav--wide"
+      >
+        <span class="tile--nav__icon" aria-hidden="true">✦</span>
+        <span class="tile--nav__title">Délégation ADMIN</span>
+        <span class="tile--nav__hint">Comptes admin support (superadmin)</span>
+      </a>
+    }
+
+    @if (canStaffExports()) {
+      <section class="tile tile--exports">
+        <h2 class="tile__heading">Exports CSV</h2>
+        <p class="tile__muted tile__muted--tight">
+          Réservations et paiements sur une plage de dates.
+        </p>
+        @if (exportMessage(); as exMsg) {
+          <p class="staff-hub__inline-msg" role="status">{{ exMsg }}</p>
+        }
+        <div class="exports-row">
+          <label>
+            Du
+            <input
+              type="date"
+              [value]="exportDateFrom()"
+              (input)="setExportFrom($any($event.target).value)"
+            />
+          </label>
+          <label>
+            Au
+            <input
+              type="date"
+              [value]="exportDateTo()"
+              (input)="setExportTo($any($event.target).value)"
+            />
+          </label>
+        </div>
+        <div class="exports-actions">
+          <button
+            type="button"
+            class="hub-btn hub-btn--primary"
+            (click)="downloadReservationsExport()"
+          >
+            Réservations
+          </button>
+          <button
+            type="button"
+            class="hub-btn hub-btn--secondary"
+            (click)="downloadPaymentsExport()"
+          >
+            Paiements
+          </button>
+        </div>
+      </section>
+    }
+  </div>
+</div>

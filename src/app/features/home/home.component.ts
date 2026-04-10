@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { StaffHomeHubComponent } from './staff-home-hub/staff-home-hub.component';
 
 interface FeatureCard {
   icon: 'calendar' | 'building' | 'box' | 'users';
@@ -17,7 +18,7 @@ interface StepItem {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, StaffHomeHubComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
@@ -25,6 +26,11 @@ export class HomeComponent {
   private readonly authService = inject(AuthService);
 
   readonly isAuthenticated = this.authService.isSessionActive;
+
+  /** Secrétariat / support / superadmin : accueil = hub métier (remplace ancien « /admin »). */
+  readonly showStaffHub = computed(
+    () => this.authService.isSessionActive() && this.authService.canAccessFullAdminSpa()
+  );
 
   featureCards: FeatureCard[] = [
     {

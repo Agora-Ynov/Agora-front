@@ -15,6 +15,7 @@ export interface ResourceDto {
   capacity?: number;
   description?: string;
   depositAmountCents?: number;
+  rentalPriceCents?: number;
   imageUrl?: string;
   accessibilityTags?: Array<string>;
   isActive?: boolean;

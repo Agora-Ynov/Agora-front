@@ -87,24 +87,30 @@ describe('CatalogueComponent', () => {
     expect(component.loading()).toBe(false);
     expect(component.errorMessage()).toBeNull();
     expect(component.resources().length).toBe(3);
-    expect(component.resources()[0]).toMatchObject({
-      id: 'r001',
-      family: 'ROOM',
-      typeLabel: 'Salle',
-      depositAmount: 150,
-      pricePerBooking: 75,
-    });
-    expect(component.resources()[1]).toMatchObject({
-      id: 'r005',
-      family: 'EQUIPMENT',
-      typeLabel: 'Materiel',
-      depositAmount: 200,
-      pricePerBooking: 100,
-    });
-    expect(component.resources()[2]).toMatchObject({
-      id: 'r999',
-      family: 'EQUIPMENT',
-    });
+    expect(component.resources()[0]).toEqual(
+      expect.objectContaining({
+        id: 'r001',
+        family: 'ROOM',
+        typeLabel: 'Salle',
+        depositAmount: 150,
+        pricePerBooking: 0,
+      })
+    );
+    expect(component.resources()[1]).toEqual(
+      expect.objectContaining({
+        id: 'r005',
+        family: 'EQUIPMENT',
+        typeLabel: 'Materiel',
+        depositAmount: 200,
+        pricePerBooking: 0,
+      })
+    );
+    expect(component.resources()[2]).toEqual(
+      expect.objectContaining({
+        id: 'r999',
+        family: 'EQUIPMENT',
+      })
+    );
   });
 
   it('should filter resources by family and features', async () => {
@@ -191,10 +197,12 @@ describe('CatalogueComponent', () => {
       mappedFallback.coverTheme
     );
     expect(mappedFallback.tags).toEqual(['12 places']);
-    expect(mappedFallback.pricePerBooking).toBe(42);
+    expect(mappedFallback.pricePerBooking).toBe(0);
   });
 
   it('should expose a readable error when mock loading fails', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
     await TestBed.configureTestingModule({
       imports: [CatalogueComponent],
       providers: [

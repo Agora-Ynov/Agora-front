@@ -28,6 +28,20 @@
   font-size: 0.94rem;
 }
 
+.admin-load-error {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.admin-loading {
+  margin-top: 1rem;
+  color: #48627f;
+}
+
 .admin-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -386,6 +400,97 @@
   top: -0.03rem;
   color: #22c55e;
   font-size: 0.95rem;
+}
+
+.news-list--single {
+  margin-top: 1.05rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.exports-card {
+  margin-top: 1.85rem;
+  padding: 1.6rem 1.75rem;
+  border: 1px solid #c7dbf7;
+  border-radius: 1.35rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.06);
+
+  h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1.12rem;
+    color: #1e3a8a;
+  }
+}
+
+.exports-card__hint {
+  margin: 0;
+  color: #48627f;
+  font-size: 0.9rem;
+  line-height: 1.45;
+
+  code {
+    font-size: 0.86em;
+    padding: 0.08em 0.35em;
+    border-radius: 0.35rem;
+    background: #f1f5f9;
+  }
+}
+
+.exports-card__msg {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  color: #854d0e;
+  font-size: 0.88rem;
+}
+
+.exports-card__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-top: 1rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #334f72;
+    font-weight: 600;
+  }
+
+  input {
+    padding: 0.45rem 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+    min-width: 11rem;
+  }
+}
+
+.exports-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+
+  button {
+    min-height: 2.5rem;
+    padding: 0.5rem 1.15rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: #1d4ed8;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #1e40af;
+  }
 }
 
 .admin-footer {

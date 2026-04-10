@@ -1,27 +1,44 @@
-# AgoraFront
+# AGORA — Frontend Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+Interface web du projet AGORA (réservations, administration, catalogue).
 
-## Development server
+## Prérequis
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- Node.js **20 LTS** recommandé (Stryker / Jest avec `jest-preset-angular` : éviter Node **24** tant que la chaîne Stryker n’est pas validée sur ta machine).
+- `npm install`
 
-## Code scaffolding
+## Tests
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+```bash
+npm test
+npm run test:coverage
+```
+
+### Couverture HTML / LCOV
+
+Après `npm run test:coverage` :
+
+- Rapport HTML : `coverage/lcov-report/index.html`
+- `coverage/lcov.info` (pour Sonar, CI, etc.)
+
+Les seuils Jest (`jest.config.js`) sont fixés à **≥90 %** (lignes, statements, fonctions) et **≥85 %** branches sur le périmètre **`src/app/shared`** (pipes, directives, utilitaires, pied de page), hors client OpenAPI généré.
+
+### Tests de mutation (Stryker)
+
+```bash
+npm run test:mutation
+```
+
+Rapport : `reports/mutation/mutation.html` (dossier listé dans `.gitignore`).
+
+Le fichier `jest.stryker.config.js` limite l’exécution aux tests `shared` pour réduire la durée et les problèmes de workers. Les seuils (`stryker.conf.mjs`, `break` ~65 %) sont volontairement **stricts mais atteignables** ; monte-les quand tu renforces les tests (objectif long terme **≥85 %** score de mutation sur ce périmètre).
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+npm run build
+```
 
-## Running unit tests
+## Affichage « Mes réservations »
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+La liste paginée (`/reservations`) utilise `bookingReference` lorsque l’API la renvoie ; l’identifiant technique UUID n’est pas affiché sous le titre de la ressource.

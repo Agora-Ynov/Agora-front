@@ -11,6 +11,28 @@
 export interface UserGroupSummaryDto {
   id?: string;
   name?: string;
-  preset?: boolean;
+  canBookImmobilier?: boolean;
+  canBookMobilier?: boolean;
+  discountType?: UserGroupSummaryDto.DiscountTypeEnum;
+  discountValue?: number;
+  discountAppliesTo?: UserGroupSummaryDto.DiscountAppliesToEnum;
+  discountLabel?: string;
+  memberCount?: number;
   isPreset?: boolean;
+}
+export namespace UserGroupSummaryDto {
+  export const DiscountTypeEnum = {
+    None: 'NONE',
+    Percentage: 'PERCENTAGE',
+    FixedAmount: 'FIXED_AMOUNT',
+    FullExempt: 'FULL_EXEMPT',
+  } as const;
+  export type DiscountTypeEnum = (typeof DiscountTypeEnum)[keyof typeof DiscountTypeEnum];
+  export const DiscountAppliesToEnum = {
+    All: 'ALL',
+    ImmobilierOnly: 'IMMOBILIER_ONLY',
+    MobilierOnly: 'MOBILIER_ONLY',
+  } as const;
+  export type DiscountAppliesToEnum =
+    (typeof DiscountAppliesToEnum)[keyof typeof DiscountAppliesToEnum];
 }

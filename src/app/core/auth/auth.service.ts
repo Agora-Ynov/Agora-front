@@ -11,7 +11,7 @@ import {
   RegisterResponseDto,
 } from '../api';
 import { JwtService } from './jwt.service';
-import { UserProfile, UserRole } from './auth.model';
+import { AccountStatus, UserProfile, UserRole, USER_ROLE_PRIORITY } from './auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -53,26 +53,29 @@ export class AuthService {
         withCredentials: true,
         transferCache: false,
       })
-      .pipe(
-        switchMap(response => {
-          const accessToken = this.readAccessTokenFromLogin(response);
-          if (!accessToken) {
-            this._currentUser.set(null);
-            return throwError(
-              () =>
-                new HttpErrorResponse({
-                  status: 401,
-                  error: {
-                    message: 'Réponse de connexion sans jeton d’accès.',
-                  },
-                })
-            );
-          }
-          const refreshToken = this.jwtService.getRefreshToken() ?? '';
-          this.jwtService.setTokens(accessToken, refreshToken);
-          return this.getCurrentUser().pipe(map(() => response));
-        })
+      .pipe(switchMap(response => this.establishSessionFromLoginResponse(response)));
+  }
+
+  /**
+   * Après activation de compte (POST /api/auth/activate) : enregistre l’access token puis charge /me.
+   */
+  establishSessionFromLoginResponse(response: LoginResponseDto): Observable<LoginResponseDto> {
+    const accessToken = this.readAccessTokenFromLogin(response);
+    if (!accessToken) {
+      this._currentUser.set(null);
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            error: {
+              message: 'Réponse sans jeton d’accès.',
+            },
+          })
       );
+    }
+    const refreshToken = this.jwtService.getRefreshToken() ?? '';
+    this.jwtService.setTokens(accessToken, refreshToken);
+    return this.getCurrentUser().pipe(map(() => response));
   }
 
   logout(): void {
@@ -135,22 +138,93 @@ export class AuthService {
   }
 
   hasRole(role: UserRole): boolean {
-    const payload = this.jwtService.getPayload();
-    return payload?.role === role;
+    return this.jwtService.getEffectiveRoles().includes(role);
   }
 
   hasAnyRole(...roles: UserRole[]): boolean {
-    const payload = this.jwtService.getPayload();
-    return !!payload && roles.includes(payload.role);
+    const effective = this.jwtService.getEffectiveRoles();
+    return roles.some(r => effective.includes(r));
   }
 
+  /**
+   * Accès aux écrans sous `/api/admin/**` (dashboard, résas, utilisateurs, audit…).
+   * Exclut le délégué — périmètre réduit côté cahier.
+   */
+  canAccessFullAdminSpa(): boolean {
+    return this.hasAnyRole('SUPERADMIN', 'SECRETARY_ADMIN', 'ADMIN_SUPPORT');
+  }
+
+  /** CRUD ressources (`/api/resources` POST/PUT/DELETE) : secrétaire, superadmin, support + délégué. */
+  canAccessDelegateResourceConsole(): boolean {
+    return this.hasRole('DELEGATE_ADMIN');
+  }
+
+  /** Entrée de menu « administration » : session valide + au moins une zone staff accessible. */
+  canSeeAdminNavigation(): boolean {
+    if (!this.isAuthenticated()) {
+      return false;
+    }
+    return this.canAccessFullAdminSpa() || this.canAccessDelegateResourceConsole();
+  }
+
+  getAdminEntryPath(): string {
+    if (this.canAccessFullAdminSpa()) {
+      return '/';
+    }
+    if (this.canAccessDelegateResourceConsole()) {
+      return '/admin/resources';
+    }
+    return '/';
+  }
+
+  getAdminNavLabel(): string {
+    if (this.canAccessFullAdminSpa()) {
+      return 'Tableau de bord';
+    }
+    if (this.canAccessDelegateResourceConsole()) {
+      return 'Gestion des ressources';
+    }
+    return 'Administration';
+  }
+
+  /**
+   * Compatibilité : « admin » pour la navigation = spa admin complète ou console ressources délégué.
+   */
   isAdmin(): boolean {
-    return this.hasAnyRole('SECRETARY_ADMIN', 'DELEGATE_ADMIN');
+    return this.canSeeAdminNavigation();
+  }
+
+  getImpersonatedByEmail(): string | null {
+    return this.jwtService.getPayload()?.impersonated_by ?? null;
   }
 
   isImpersonating(): boolean {
     const payload = this.jwtService.getPayload();
     return !!payload?.impersonated_by;
+  }
+
+  /**
+   * Active la session usager (JWT court) après {@link AdminUsersService#impersonate}.
+   */
+  startImpersonation(accessToken: string): Observable<UserProfile> {
+    this.jwtService.enterImpersonation(accessToken);
+    return this.getCurrentUser();
+  }
+
+  /**
+   * Restaure le jeton admin si une sauvegarde existe (fin d'impersonation).
+   */
+  endImpersonation(): Observable<UserProfile> {
+    if (!this.jwtService.exitImpersonation()) {
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { message: 'Aucune session administrateur à restaurer.' },
+          })
+      );
+    }
+    return this.getCurrentUser();
   }
 
   getAccessToken(): string | null {
@@ -179,16 +253,34 @@ export class AuthService {
   }
 
   private mapUserProfile(response: AuthMeResponseDto): UserProfile {
-    const tokenRole = this.jwtService.getPayload()?.role ?? 'CITIZEN';
+    const jwtOrdered = this.jwtService.getEffectiveRoles();
+    const jwtPrimary = jwtOrdered[0] ?? 'CITIZEN';
+
+    const roleSet = new Set<UserRole>();
+    for (const r of response.roles ?? []) {
+      const mapped = this.mapAuthMeRoleEnum(String(r));
+      if (mapped) {
+        roleSet.add(mapped);
+      }
+    }
+    if (response.adminSupport === true) {
+      roleSet.add('ADMIN_SUPPORT');
+    }
+
+    const membershipRoles = USER_ROLE_PRIORITY.filter(r => roleSet.has(r));
+    const primaryRole = membershipRoles[0] ?? jwtPrimary;
+
     return {
       id: response.id ?? '',
       firstName: response.firstName ?? '',
       lastName: response.lastName ?? '',
       email: response.email ?? '',
       phone: response.phone,
-      role: tokenRole,
+      role: primaryRole,
+      membershipRoles,
       accountType: response.accountType === 'TUTORED' ? 'TUTORED' : 'AUTONOMOUS',
-      accountStatus: response.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
+      accountStatus: this.mapAccountStatusFromApi(response.status),
+      adminSupport: response.adminSupport === true,
       exemptions: {
         association: false,
         social: false,
@@ -197,5 +289,41 @@ export class AuthService {
       groupIds: (response.groups ?? []).map(group => group.id ?? '').filter(Boolean),
       createdAt: response.createdAt ?? new Date(0).toISOString(),
     };
+  }
+
+  private mapAuthMeRoleEnum(value: string): UserRole | null {
+    switch (value) {
+      case 'CITIZEN':
+        return 'CITIZEN';
+      case 'SUPERADMIN':
+        return 'SUPERADMIN';
+      case 'SECRETARY_ADMIN':
+        return 'SECRETARY_ADMIN';
+      case 'DELEGATE_ADMIN':
+        return 'DELEGATE_ADMIN';
+      case 'GROUP_MANAGER':
+        return 'GROUP_MANAGER';
+      default:
+        return null;
+    }
+  }
+
+  private mapAccountStatusFromApi(status?: string): AccountStatus {
+    switch (status) {
+      case 'ACTIVE':
+        return 'ACTIVE';
+      case 'DELETED':
+        return 'INACTIVE';
+      case 'PENDING_VALIDATION':
+        return 'PENDING_VALIDATION';
+      case 'SUSPENDED':
+        return 'SUSPENDED';
+      case 'REJECTED':
+        return 'REJECTED';
+      case 'INACTIVE':
+        return 'INACTIVE';
+      default:
+        return 'INACTIVE';
+    }
   }
 }

@@ -235,8 +235,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 24px;
+  padding: max(16px, 4vh) 24px 32px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 1000;
 }
 
@@ -346,6 +347,14 @@
   color: #111827;
   font: inherit;
   box-sizing: border-box;
+}
+
+.form-field__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.4;
 }
 
 .modal-note {

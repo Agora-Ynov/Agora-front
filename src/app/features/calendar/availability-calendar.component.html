@@ -1,37 +1,12 @@
 <section class="calendar-page">
   <main class="calendar-main">
     <section class="calendar-hero">
-      <div class="calendar-hero__title">
-        <span class="calendar-hero__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect
-              x="4.75"
-              y="5.75"
-              width="14.5"
-              height="13.5"
-              rx="2"
-              stroke="currentColor"
-              stroke-width="1.9"
-            />
-            <path
-              d="M8 4.25V7.25"
-              stroke="currentColor"
-              stroke-width="1.9"
-              stroke-linecap="round"
-            />
-            <path
-              d="M16 4.25V7.25"
-              stroke="currentColor"
-              stroke-width="1.9"
-              stroke-linecap="round"
-            />
-            <path d="M4.75 9.5H19.25" stroke="currentColor" stroke-width="1.9" />
-          </svg>
-        </span>
-        <div>
-          <h1>Calendrier des disponibilites</h1>
-          <p>Consultez les creneaux disponibles avant de reserver</p>
-        </div>
+      <div>
+        <h1>Calendrier des disponibilites</h1>
+        <p>
+          Selectionnez une ressource, choisissez une plage disponible, puis continuez vers la
+          reservation.
+        </p>
       </div>
     </section>
 
@@ -39,103 +14,17 @@
       <p class="calendar-feedback calendar-feedback--error">{{ errorMessage() }}</p>
     }
 
-    <section class="calendar-filters">
-      <button
-        type="button"
-        class="resource-filter"
-        [class.resource-filter--active]="selectedResourceId() === 'ALL'"
-        (click)="selectResource('ALL')"
-      >
-        <span class="resource-filter__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect
-              x="4.75"
-              y="5.75"
-              width="14.5"
-              height="13.5"
-              rx="2"
-              stroke="currentColor"
-              stroke-width="1.8"
-            />
-            <path
-              d="M8 4.25V7.25"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-            <path
-              d="M16 4.25V7.25"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
-        </span>
-        <span>Toutes les ressources</span>
-      </button>
-
-      @for (resource of activeResources(); track resource.id) {
+    <section class="calendar-resource-picker">
+      @for (resource of activeResources(); track trackByResource($index, resource)) {
         <button
           type="button"
-          class="resource-filter"
-          [class.resource-filter--active]="selectedResourceId() === resource.id"
+          class="resource-chip"
+          [class.resource-chip--active]="selectedResourceId() === resource.id"
           (click)="selectResource(resource.id)"
         >
-          <span class="resource-filter__icon" aria-hidden="true">
-            @if (resource.resourceType === 'IMMOBILIER') {
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="7"
-                  y="4"
-                  width="10"
-                  height="16"
-                  rx="2"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-                <path
-                  d="M10 8H14"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M10 12H14"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-            } @else {
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M7 8.5L12 5.5L17 8.5V15.5L12 18.5L7 15.5V8.5Z"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                />
-                <path d="M7.5 8.8L12 11.5L16.5 8.8" stroke="currentColor" stroke-width="1.8" />
-              </svg>
-            }
-          </span>
-          <span>{{ getResourceLabel(resource) }}</span>
+          {{ getResourceLabel(resource) }}
         </button>
       }
-    </section>
-
-    <section class="calendar-legend" aria-label="Legende calendrier">
-      <span class="calendar-legend__item">
-        <span class="calendar-legend__dot calendar-legend__dot--reserved"></span>
-        <span>Reserve (confirme)</span>
-      </span>
-      <span class="calendar-legend__item">
-        <span class="calendar-legend__dot calendar-legend__dot--blackout"></span>
-        <span>Fermeture / Blackout</span>
-      </span>
-      <span class="calendar-legend__item">
-        <span class="calendar-legend__dot calendar-legend__dot--today"></span>
-        <span>Aujourd'hui</span>
-      </span>
     </section>
 
     <section class="calendar-panel">
@@ -143,8 +32,8 @@
         <button
           type="button"
           class="calendar-nav"
-          (click)="previousMonth()"
-          aria-label="Mois precedent"
+          (click)="previousWeek()"
+          aria-label="Semaine precedente"
         >
           <svg viewBox="0 0 24 24" fill="none">
             <path
@@ -157,9 +46,17 @@
           </svg>
         </button>
 
-        <h2>{{ monthLabel() }}</h2>
+        <div class="calendar-panel__heading">
+          <h2>{{ weekLabel() }}</h2>
+          <p>Selectionnez une ou plusieurs demi-heures contigues sur une meme journee.</p>
+        </div>
 
-        <button type="button" class="calendar-nav" (click)="nextMonth()" aria-label="Mois suivant">
+        <button
+          type="button"
+          class="calendar-nav"
+          (click)="nextWeek()"
+          aria-label="Semaine suivante"
+        >
           <svg viewBox="0 0 24 24" fill="none">
             <path
               d="M9.5 6.5L15 12L9.5 17.5"
@@ -172,138 +69,131 @@
         </button>
       </header>
 
+      <div class="calendar-legend" aria-label="Legende">
+        <span class="calendar-legend__item">
+          <span class="calendar-legend__swatch calendar-legend__swatch--available"></span>
+          Disponible
+        </span>
+        <span class="calendar-legend__item">
+          <span class="calendar-legend__swatch calendar-legend__swatch--reserved"></span>
+          Reserve
+        </span>
+        <span class="calendar-legend__item">
+          <span class="calendar-legend__swatch calendar-legend__swatch--blackout"></span>
+          Ferme
+        </span>
+        <span class="calendar-legend__item">
+          <span class="calendar-legend__swatch calendar-legend__swatch--past"></span>
+          Passe
+        </span>
+      </div>
+
       @if (loading()) {
         <p class="calendar-loading">Chargement du calendrier...</p>
+      } @else if (!selectedResourceId()) {
+        <p class="calendar-loading">Aucune ressource disponible pour le moment.</p>
       } @else {
-        <div class="calendar-weekdays">
-          @for (weekday of weekdays; track weekday) {
-            <span>{{ weekday }}</span>
-          }
-        </div>
-
-        <div class="calendar-grid">
-          @for (cell of visibleCells(); track trackByCellDate($index, cell)) {
-            <article
-              class="calendar-cell"
-              [class.calendar-cell--muted]="!cell.inCurrentMonth"
-              [class.calendar-cell--today]="cell.isToday"
-              [class.calendar-cell--blackout]="cell.isBlackout"
-              [class.calendar-cell--interactive]="cell.inCurrentMonth"
-              [class.calendar-cell--picked]="selectedDayIso() === cell.isoDate"
-              [attr.tabindex]="cell.inCurrentMonth ? 0 : -1"
-              [attr.role]="cell.inCurrentMonth ? 'button' : null"
-              [attr.aria-pressed]="cell.inCurrentMonth && selectedDayIso() === cell.isoDate"
-              [attr.aria-label]="
-                cell.inCurrentMonth ? 'Ouvrir le detail du jour ' + cell.dayNumber : null
-              "
-              (click)="onCellClick(cell, $event)"
-              (keydown)="onCellKeydown($event, cell)"
-            >
-              <span class="calendar-cell__day">{{ cell.dayNumber }}</span>
-
-              @if (cell.isBlackout) {
-                <div class="calendar-cell__status calendar-cell__status--blackout">
-                  <span class="calendar-cell__marker"></span>
-                  <span class="calendar-cell__status-text">{{
-                    cell.blackoutReason || 'Fermeture'
-                  }}</span>
-                </div>
-              } @else if (cell.isReserved) {
-                <div class="calendar-cell__status calendar-cell__status--reserved">
-                  <span class="calendar-cell__marker"></span>
-                  <span class="calendar-cell__status-text">Indisponible</span>
-                </div>
-              } @else if (cell.availableCount > 0) {
-                <div class="calendar-cell__status calendar-cell__status--available">
-                  {{ cell.availableCount }} creneau(x)
-                </div>
-              }
-            </article>
-          }
-        </div>
-
-        @if (selectedDayPanel(); as detail) {
-          <aside class="calendar-day-panel" aria-live="polite">
-            <div class="calendar-day-panel__head">
-              <h3 class="calendar-day-panel__title">{{ detail.labelDate }}</h3>
-              <button
-                type="button"
-                class="calendar-day-panel__close"
-                (click)="closeDayPanel()"
-                aria-label="Fermer le detail du jour"
-              >
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <div class="calendar-panel__schedule">
+          <div class="calendar-board-shell">
+            <div class="calendar-board" [style.--calendar-slot-rows]="slotRowCount">
+              <div class="calendar-board__header calendar-board__header--time">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="7.25" stroke="currentColor" stroke-width="1.7" />
                   <path
-                    d="M7 7L17 17M17 7L7 17"
+                    d="M12 8.5V12.2L14.4 13.8"
                     stroke="currentColor"
-                    stroke-width="2"
+                    stroke-width="1.7"
                     stroke-linecap="round"
+                    stroke-linejoin="round"
                   />
                 </svg>
-              </button>
+              </div>
+
+              @for (day of weekDays(); track trackByDay($index, day)) {
+                <div
+                  class="calendar-board__header"
+                  [class.calendar-board__header--today]="day.isToday"
+                  [class.calendar-board__header--past]="day.isPast"
+                >
+                  <strong>{{ day.shortLabel }}</strong>
+                  <span>{{ day.dayLabel }}</span>
+                </div>
+              }
+
+              <div class="calendar-time-axis">
+                @for (row of timeRows(); track $index) {
+                  <span>{{ row.label }}</span>
+                }
+              </div>
+
+              @for (day of weekDays(); track trackByDay($index, day)) {
+                <div
+                  class="calendar-day-column"
+                  [class.calendar-day-column--today]="day.isToday"
+                  [class.calendar-day-column--past]="day.isPast"
+                  [class.calendar-day-column--blackout]="day.isBlackout"
+                >
+                  <div class="calendar-day-column__grid"></div>
+
+                  @if (day.isBlackout) {
+                    <div
+                      class="calendar-day-column__overlay calendar-day-column__overlay--blackout"
+                    >
+                      {{ day.blackoutReason || 'Fermeture' }}
+                    </div>
+                  } @else if (day.isPast) {
+                    <div class="calendar-day-column__overlay calendar-day-column__overlay--past">
+                      Creneaux passes
+                    </div>
+                  }
+
+                  <div class="calendar-day-column__cells">
+                    @for (cell of day.cells; track trackBySlot($index, cell)) {
+                      <button
+                        type="button"
+                        class="calendar-cell-button"
+                        [class.calendar-cell-button--available]="
+                          cell.isAvailable && !day.isPast && !day.isBlackout
+                        "
+                        [class.calendar-cell-button--inactive]="
+                          cell.isReserved || day.isPast || day.isBlackout
+                        "
+                        [class.calendar-cell-button--selected]="isCellSelected(day, cell)"
+                        [disabled]="!cell.isAvailable || day.isPast || day.isBlackout"
+                        (click)="selectCell(day, cell)"
+                      >
+                        <span class="calendar-cell-button__fill"></span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="calendar-selection-bar">
+            <div class="calendar-selection-bar__content">
+              <strong>Plage selectionnee</strong>
+              <p>
+                @if (selectionLabel(); as label) {
+                  {{ label }}
+                } @else {
+                  Choisissez une plage horaire disponible pour continuer.
+                }
+              </p>
             </div>
 
-            @if (detail.isBlackout) {
-              <p class="calendar-day-panel__emphasis">
-                {{ detail.blackoutReason || 'Fermeture exceptionnelle' }}
-              </p>
-            } @else if (detail.hasReservedSlots && !canViewReservationDetails()) {
-              <p class="calendar-day-panel__muted">Indisponible</p>
-            } @else if (detail.hasReservedSlots && canViewReservationDetails()) {
-              <p class="calendar-day-panel__lead">Creneaux occupes :</p>
-              <ul class="calendar-day-panel__list">
-                @for (line of detail.reservedLines; track line) {
-                  <li>{{ line }}</li>
-                }
-              </ul>
-            } @else if (detail.availableCount > 0) {
-              <p class="calendar-day-panel__emphasis">
-                {{ detail.availableCount }} creneau(x) disponible(s) sur cette ressource / filtre.
-              </p>
-            } @else {
-              <p class="calendar-day-panel__muted">Aucun creneau sur cette vue pour ce jour.</p>
-            }
-          </aside>
-        }
+            <button
+              type="button"
+              class="calendar-submit"
+              [disabled]="!selectedRange()"
+              (click)="submitSelection()"
+            >
+              Reserver
+            </button>
+          </div>
+        </div>
       }
-    </section>
-
-    <section class="upcoming-panel">
-      <h2>Creneaux indisponibles ce mois-ci</h2>
-      <p class="upcoming-panel__hint">
-        Donnees issues du calendrier (meme source que la grille). Comptes demo : voir seeds back
-        (profil dev).
-      </p>
-
-      <div class="upcoming-list">
-        @for (row of occupiedSlotsPreview(); track row.id) {
-          <article
-            class="upcoming-item"
-            [class.upcoming-item--public]="!canViewReservationDetails()"
-          >
-            @if (canViewReservationDetails()) {
-              <div>
-                <strong>{{ row.resourceName }}</strong>
-                <p>{{ row.detailLine }}</p>
-              </div>
-              <span class="upcoming-item__status">Indisponible</span>
-            } @else {
-              <p class="upcoming-item__public-line">Indisponible</p>
-            }
-          </article>
-        } @empty {
-          <p class="upcoming-panel__empty">Aucun creneau occupe sur cette vue.</p>
-        }
-      </div>
-    </section>
-
-    <section class="calendar-cta">
-      <div>
-        <h2>Vous souhaitez reserver ?</h2>
-        <p>Consultez le catalogue et soumettez votre demande</p>
-      </div>
-
-      <a routerLink="/catalogue" class="calendar-cta__button">Voir le catalogue</a>
     </section>
   </main>
 </section>

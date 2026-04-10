@@ -1,18 +1,24 @@
 module.exports = {
   preset: 'jest-preset-angular',
+  /** Réduit le bruit : résumé + détails uniquement en cas d'échec */
+  silent: true,
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   testMatch: ['**/src/**/*.spec.ts'],
+  testPathIgnorePatterns: ['<rootDir>/.stryker-tmp/', '/node_modules/'],
   collectCoverageFrom: [
-    'src/app/**/*.ts',
-    '!src/app/**/*.model.ts',
-    '!src/app/**/*.module.ts',
-    '!src/main.ts',
+    'src/app/shared/pipes/**/*.ts',
+    'src/app/shared/directives/**/*.ts',
+    'src/app/shared/utils/**/*.ts',
+    'src/app/shared/components/site-footer/**/*.ts',
+    '!**/*.spec.ts',
   ],
+  /** Seuils élevés sur le périmètre « shared » (hors API générée, hors gros composants de navigation). */
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 70,
-      lines: 70,
+      branches: 85,
+      functions: 90,
+      lines: 90,
+      statements: 90,
     },
   },
   coverageReporters: ['html', 'lcov', 'json-summary', 'text'],

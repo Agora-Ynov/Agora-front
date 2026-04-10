@@ -22,15 +22,21 @@ import { Observable } from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { CalendarResponseDto } from '../model/calendarResponseDto';
+import { ActivateAccountRequestDto } from '../model/activateAccountRequestDto';
 // @ts-ignore
-import { PagedResponseResourceDto } from '../model/pagedResponseResourceDto';
+import { ActivationStatusResponseDto } from '../model/activationStatusResponseDto';
 // @ts-ignore
-import { ResourceDto } from '../model/resourceDto';
+import { ApiError } from '../model/apiError';
 // @ts-ignore
-import { ResourceRequest } from '../model/resourceRequest';
+import { AuthMeResponseDto } from '../model/authMeResponseDto';
 // @ts-ignore
-import { TimeSlotDto } from '../model/timeSlotDto';
+import { LoginRequestDto } from '../model/loginRequestDto';
+// @ts-ignore
+import { LoginResponseDto } from '../model/loginResponseDto';
+// @ts-ignore
+import { RegisterRequestDto } from '../model/registerRequestDto';
+// @ts-ignore
+import { RegisterResponseDto } from '../model/registerResponseDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS } from '../variables';
@@ -40,7 +46,7 @@ import { BaseService } from '../api.base.service';
 @Injectable({
   providedIn: 'root',
 })
-export class RessourcesService extends BaseService {
+export class AuthenticationService extends BaseService {
   constructor(
     protected httpClient: HttpClient,
     @Optional() @Inject(BASE_PATH) basePath: string | string[],
@@ -50,40 +56,39 @@ export class RessourcesService extends BaseService {
   }
 
   /**
-   * Créer une ressource
-   * @endpoint post /api/resources
-   * @param resourceRequest
+   * @endpoint post /api/auth/activate
+   * @param activateAccountRequestDto
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public createResource(
-    resourceRequest: ResourceRequest,
+  public activateAccount(
+    activateAccountRequestDto: ActivateAccountRequestDto,
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<ResourceDto>;
-  public createResource(
-    resourceRequest: ResourceRequest,
+  ): Observable<LoginResponseDto>;
+  public activateAccount(
+    activateAccountRequestDto: ActivateAccountRequestDto,
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<ResourceDto>>;
-  public createResource(
-    resourceRequest: ResourceRequest,
+  ): Observable<HttpResponse<LoginResponseDto>>;
+  public activateAccount(
+    activateAccountRequestDto: ActivateAccountRequestDto,
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<ResourceDto>>;
-  public createResource(
-    resourceRequest: ResourceRequest,
+  ): Observable<HttpEvent<LoginResponseDto>>;
+  public activateAccount(
+    activateAccountRequestDto: ActivateAccountRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (resourceRequest === null || resourceRequest === undefined) {
+    if (activateAccountRequestDto === null || activateAccountRequestDto === undefined) {
       throw new Error(
-        'Required parameter resourceRequest was null or undefined when calling createResource.'
+        'Required parameter activateAccountRequestDto was null or undefined when calling activateAccount.'
       );
     }
 
@@ -118,11 +123,11 @@ export class RessourcesService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/resources`;
+    let localVarPath = `/api/auth/activate`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<ResourceDto>('post', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<LoginResponseDto>('post', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
-      body: resourceRequest,
+      body: activateAccountRequestDto,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,
@@ -133,43 +138,114 @@ export class RessourcesService extends BaseService {
   }
 
   /**
-   * Désactiver une ressource (soft delete)
-   * @endpoint delete /api/resources/{resourceId}
-   * @param resourceId
+   * @endpoint post /api/auth/login
+   * @param loginRequestDto
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public deleteResource(
-    resourceId: string,
+  public login(
+    loginRequestDto: LoginRequestDto,
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<LoginResponseDto>;
+  public login(
+    loginRequestDto: LoginRequestDto,
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<LoginResponseDto>>;
+  public login(
+    loginRequestDto: LoginRequestDto,
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<LoginResponseDto>>;
+  public login(
+    loginRequestDto: LoginRequestDto,
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
+    if (loginRequestDto === null || loginRequestDto === undefined) {
+      throw new Error(
+        'Required parameter loginRequestDto was null or undefined when calling login.'
+      );
+    }
+
+    let localVarHeaders = this.defaultHeaders;
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    // to determine the Content-Type header
+    const consumes: string[] = ['application/json'];
+    const httpContentTypeSelected: string | undefined =
+      this.configuration.selectHeaderContentType(consumes);
+    if (httpContentTypeSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/auth/login`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<LoginResponseDto>('post', `${basePath}${localVarPath}`, {
+      context: localVarHttpContext,
+      body: loginRequestDto,
+      responseType: <any>responseType_,
+      ...(withCredentials ? { withCredentials } : {}),
+      headers: localVarHeaders,
+      observe: observe,
+      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+      reportProgress: reportProgress,
+    });
+  }
+
+  /**
+   * Déconnexion (supprime le cookie refresh)
+   * @endpoint post /api/auth/logout
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public logout(
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any>;
-  public deleteResource(
-    resourceId: string,
+  public logout(
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpResponse<any>>;
-  public deleteResource(
-    resourceId: string,
+  public logout(
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpEvent<any>>;
-  public deleteResource(
-    resourceId: string,
+  public logout(
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (resourceId === null || resourceId === undefined) {
-      throw new Error(
-        'Required parameter resourceId was null or undefined when calling deleteResource.'
-      );
-    }
-
     let localVarHeaders = this.defaultHeaders;
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
@@ -193,9 +269,9 @@ export class RessourcesService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/resources/${this.configuration.encodeParam({ name: 'resourceId', value: resourceId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
+    let localVarPath = `/api/auth/logout`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<any>('post', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
@@ -207,81 +283,103 @@ export class RessourcesService extends BaseService {
   }
 
   /**
-   * Vue calendrier mensuelle
-   * Créneaux par ressource pour un mois donné (lecture). Paramètre optionnel resourceId pour filtrer.
-   * @endpoint get /api/calendar
-   * @param year Année
-   * @param month Mois (1-12)
-   * @param resourceId Filtrer sur une ressource (optionnel)
+   * Profil de l\&#39;utilisateur connecté
+   * @endpoint get /api/auth/me
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public getCalendar(
-    year: number,
-    month: number,
-    resourceId?: string,
+  public me(
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<CalendarResponseDto>;
-  public getCalendar(
-    year: number,
-    month: number,
-    resourceId?: string,
+  ): Observable<AuthMeResponseDto>;
+  public me(
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<CalendarResponseDto>>;
-  public getCalendar(
-    year: number,
-    month: number,
-    resourceId?: string,
+  ): Observable<HttpResponse<AuthMeResponseDto>>;
+  public me(
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<CalendarResponseDto>>;
-  public getCalendar(
-    year: number,
-    month: number,
-    resourceId?: string,
+  ): Observable<HttpEvent<AuthMeResponseDto>>;
+  public me(
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (year === null || year === undefined) {
-      throw new Error('Required parameter year was null or undefined when calling getCalendar.');
+    let localVarHeaders = this.defaultHeaders;
+
+    // authentication (bearerAuth) required
+    localVarHeaders = this.configuration.addCredentialToHeaders(
+      'bearerAuth',
+      'Authorization',
+      localVarHeaders,
+      'Bearer '
+    );
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
     }
-    if (month === null || month === undefined) {
-      throw new Error('Required parameter month was null or undefined when calling getCalendar.');
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
     }
 
-    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+    let localVarPath = `/api/auth/me`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<AuthMeResponseDto>('get', `${basePath}${localVarPath}`, {
+      context: localVarHttpContext,
+      responseType: <any>responseType_,
+      ...(withCredentials ? { withCredentials } : {}),
+      headers: localVarHeaders,
+      observe: observe,
+      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+      reportProgress: reportProgress,
+    });
+  }
 
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'year',
-      <any>year,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'month',
-      <any>month,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'resourceId',
-      <any>resourceId,
-      QueryParamStyle.Form,
-      true
-    );
-
+  /**
+   * Renouveler l\&#39;access token (refresh en cookie HttpOnly)
+   * @endpoint post /api/auth/refresh
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public refresh(
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<LoginResponseDto>;
+  public refresh(
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<LoginResponseDto>>;
+  public refresh(
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<LoginResponseDto>>;
+  public refresh(
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
     let localVarHeaders = this.defaultHeaders;
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
@@ -305,11 +403,10 @@ export class RessourcesService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/calendar`;
+    let localVarPath = `/api/auth/refresh`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<CalendarResponseDto>('get', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<LoginResponseDto>('post', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
-      params: localVarQueryParameters.toHttpParams(),
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,
@@ -320,360 +417,39 @@ export class RessourcesService extends BaseService {
   }
 
   /**
-   * Détail d\&#39;une ressource
-   * @endpoint get /api/resources/{resourceId}
-   * @param resourceId ID de la ressource
+   * @endpoint post /api/auth/register
+   * @param registerRequestDto
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public getResourceById(
-    resourceId: string,
+  public register(
+    registerRequestDto: RegisterRequestDto,
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<ResourceDto>;
-  public getResourceById(
-    resourceId: string,
+  ): Observable<RegisterResponseDto>;
+  public register(
+    registerRequestDto: RegisterRequestDto,
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<ResourceDto>>;
-  public getResourceById(
-    resourceId: string,
+  ): Observable<HttpResponse<RegisterResponseDto>>;
+  public register(
+    registerRequestDto: RegisterRequestDto,
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<ResourceDto>>;
-  public getResourceById(
-    resourceId: string,
+  ): Observable<HttpEvent<RegisterResponseDto>>;
+  public register(
+    registerRequestDto: RegisterRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (resourceId === null || resourceId === undefined) {
+    if (registerRequestDto === null || registerRequestDto === undefined) {
       throw new Error(
-        'Required parameter resourceId was null or undefined when calling getResourceById.'
-      );
-    }
-
-    let localVarHeaders = this.defaultHeaders;
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/resources/${this.configuration.encodeParam({ name: 'resourceId', value: resourceId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<ResourceDto>('get', `${basePath}${localVarPath}`, {
-      context: localVarHttpContext,
-      responseType: <any>responseType_,
-      ...(withCredentials ? { withCredentials } : {}),
-      headers: localVarHeaders,
-      observe: observe,
-      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-      reportProgress: reportProgress,
-    });
-  }
-
-  /**
-   * Lister les ressources
-   * Retourne une liste paginée des ressources actives. Filtres optionnels.
-   * @endpoint get /api/resources
-   * @param type Type de ressource (IMMOBILIER | MOBILIER)
-   * @param minCapacity Capacité minimale
-   * @param available Disponibilité (future implémentation)
-   * @param date Date de disponibilité (YYYY-MM-DD)
-   * @param page Page (0 par défaut)
-   * @param size Taille page (max 100)
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   * @param options additional options
-   */
-  public getResources(
-    type?: 'IMMOBILIER' | 'MOBILIER',
-    minCapacity?: number,
-    available?: boolean,
-    date?: string,
-    page?: number,
-    size?: number,
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<PagedResponseResourceDto>;
-  public getResources(
-    type?: 'IMMOBILIER' | 'MOBILIER',
-    minCapacity?: number,
-    available?: boolean,
-    date?: string,
-    page?: number,
-    size?: number,
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<PagedResponseResourceDto>>;
-  public getResources(
-    type?: 'IMMOBILIER' | 'MOBILIER',
-    minCapacity?: number,
-    available?: boolean,
-    date?: string,
-    page?: number,
-    size?: number,
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<PagedResponseResourceDto>>;
-  public getResources(
-    type?: 'IMMOBILIER' | 'MOBILIER',
-    minCapacity?: number,
-    available?: boolean,
-    date?: string,
-    page?: number,
-    size?: number,
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'type',
-      <any>type,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'minCapacity',
-      <any>minCapacity,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'available',
-      <any>available,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'date',
-      <any>date,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'page',
-      <any>page,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'size',
-      <any>size,
-      QueryParamStyle.Form,
-      true
-    );
-
-    let localVarHeaders = this.defaultHeaders;
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/resources`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<PagedResponseResourceDto>('get', `${basePath}${localVarPath}`, {
-      context: localVarHttpContext,
-      params: localVarQueryParameters.toHttpParams(),
-      responseType: <any>responseType_,
-      ...(withCredentials ? { withCredentials } : {}),
-      headers: localVarHeaders,
-      observe: observe,
-      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-      reportProgress: reportProgress,
-    });
-  }
-
-  /**
-   * Créneaux disponibles pour une ressource
-   * @endpoint get /api/resources/{resourceId}/slots
-   * @param resourceId ID ressource
-   * @param date Date obligatoire (YYYY-MM-DD)
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   * @param options additional options
-   */
-  public getSlots(
-    resourceId: string,
-    date: string,
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<Array<TimeSlotDto>>;
-  public getSlots(
-    resourceId: string,
-    date: string,
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<Array<TimeSlotDto>>>;
-  public getSlots(
-    resourceId: string,
-    date: string,
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<Array<TimeSlotDto>>>;
-  public getSlots(
-    resourceId: string,
-    date: string,
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    if (resourceId === null || resourceId === undefined) {
-      throw new Error('Required parameter resourceId was null or undefined when calling getSlots.');
-    }
-    if (date === null || date === undefined) {
-      throw new Error('Required parameter date was null or undefined when calling getSlots.');
-    }
-
-    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'date',
-      <any>date,
-      QueryParamStyle.Form,
-      true
-    );
-
-    let localVarHeaders = this.defaultHeaders;
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/resources/${this.configuration.encodeParam({ name: 'resourceId', value: resourceId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}/slots`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<Array<TimeSlotDto>>('get', `${basePath}${localVarPath}`, {
-      context: localVarHttpContext,
-      params: localVarQueryParameters.toHttpParams(),
-      responseType: <any>responseType_,
-      ...(withCredentials ? { withCredentials } : {}),
-      headers: localVarHeaders,
-      observe: observe,
-      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-      reportProgress: reportProgress,
-    });
-  }
-
-  /**
-   * Modifier une ressource
-   * @endpoint put /api/resources/{resourceId}
-   * @param resourceId
-   * @param resourceRequest
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   * @param options additional options
-   */
-  public updateResource(
-    resourceId: string,
-    resourceRequest: ResourceRequest,
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<ResourceDto>;
-  public updateResource(
-    resourceId: string,
-    resourceRequest: ResourceRequest,
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<ResourceDto>>;
-  public updateResource(
-    resourceId: string,
-    resourceRequest: ResourceRequest,
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<ResourceDto>>;
-  public updateResource(
-    resourceId: string,
-    resourceRequest: ResourceRequest,
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    if (resourceId === null || resourceId === undefined) {
-      throw new Error(
-        'Required parameter resourceId was null or undefined when calling updateResource.'
-      );
-    }
-    if (resourceRequest === null || resourceRequest === undefined) {
-      throw new Error(
-        'Required parameter resourceRequest was null or undefined when calling updateResource.'
+        'Required parameter registerRequestDto was null or undefined when calling register.'
       );
     }
 
@@ -708,11 +484,11 @@ export class RessourcesService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/resources/${this.configuration.encodeParam({ name: 'resourceId', value: resourceId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
+    let localVarPath = `/api/auth/register`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<ResourceDto>('put', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<RegisterResponseDto>('post', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
-      body: resourceRequest,
+      body: registerRequestDto,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,
@@ -720,5 +496,87 @@ export class RessourcesService extends BaseService {
       ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
       reportProgress: reportProgress,
     });
+  }
+
+  /**
+   * @endpoint get /api/auth/activate
+   * @param token
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public validateActivation(
+    token?: string,
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<ActivationStatusResponseDto>;
+  public validateActivation(
+    token?: string,
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<ActivationStatusResponseDto>>;
+  public validateActivation(
+    token?: string,
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<ActivationStatusResponseDto>>;
+  public validateActivation(
+    token?: string,
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
+    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+    localVarQueryParameters = this.addToHttpParams(
+      localVarQueryParameters,
+      'token',
+      <any>token,
+      QueryParamStyle.Form,
+      true
+    );
+
+    let localVarHeaders = this.defaultHeaders;
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/auth/activate`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<ActivationStatusResponseDto>(
+      'get',
+      `${basePath}${localVarPath}`,
+      {
+        context: localVarHttpContext,
+        params: localVarQueryParameters.toHttpParams(),
+        responseType: <any>responseType_,
+        ...(withCredentials ? { withCredentials } : {}),
+        headers: localVarHeaders,
+        observe: observe,
+        ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+        reportProgress: reportProgress,
+      }
+    );
   }
 }

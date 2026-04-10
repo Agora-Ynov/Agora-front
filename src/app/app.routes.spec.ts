@@ -2,9 +2,7 @@ import { routes } from './app.routes';
 
 describe('routes', () => {
   it('should expose the home route on root path', async () => {
-    expect(routes[0]).toMatchObject({
-      path: '',
-    });
+    expect(routes[0]?.path).toBe('');
 
     expect(routes[0]?.loadComponent).toBeDefined();
     const loadedComponent = await routes[0]?.loadComponent?.();
@@ -58,9 +56,7 @@ describe('routes', () => {
   it('should redirect unknown routes to root', () => {
     const fallbackRoute = routes[routes.length - 1];
 
-    expect(fallbackRoute).toMatchObject({
-      path: '**',
-      redirectTo: '',
-    });
+    expect(fallbackRoute?.path).toBe('**');
+    expect(fallbackRoute?.redirectTo).toBe('');
   });
 });

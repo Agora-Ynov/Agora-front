@@ -1,0 +1,4497 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "AGORA API",
+    "description": "Backend de réservation de ressources pour une mairie.\n\nAuthentification : Bearer JWT (`Authorization: Bearer <accessToken>`), refresh HttpOnly sur `/api/auth/refresh`.\n\nContrat complet : routes citoyennes (`/api/reservations`, `/api/resources`, …), administration (`/api/admin/**`), superadmin (`/api/superadmin/**`), liste d’attente (`/api/waitlist`), activation (`/api/auth/activate`).\n\nDocumentation interactive : `/swagger-ui.html`, OpenAPI JSON : `/v3/api-docs`.\n\nSi `/v3/api-docs` ne liste pas les chemins `/api/admin/**`, l’instance déployée n’exécute pas la même version du code que ce dépôt — reconstruire et redéployer.\n\nLes balises OpenAPI (`tags`) sont définies sur les contrôleurs pour éviter les doublons et permettre la génération de clients (TypeScript, etc.).\n",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:65368",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Admin Exports",
+      "description": "Exports CSV"
+    },
+    {
+      "name": "Admin Payments",
+      "description": "Cautions et paiements"
+    },
+    {
+      "name": "Admin Reservations",
+      "description": "Validation et suivi des réservations"
+    },
+    {
+      "name": "AgoraAuth",
+      "description": "Authentification, inscription, activation, profil /me"
+    },
+    {
+      "name": "Admin Groups",
+      "description": "Catalogue et membres des groupes"
+    },
+    {
+      "name": "Admin Stats",
+      "description": "Indicateurs tableau de bord"
+    },
+    {
+      "name": "Admin Audit",
+      "description": "Journal d'audit"
+    },
+    {
+      "name": "Groups",
+      "description": "Groupes visibles par l'utilisateur connecté"
+    },
+    {
+      "name": "Reservation Documents",
+      "description": "Pièces jointes réservation"
+    },
+    {
+      "name": "Waitlist",
+      "description": "Liste d'attente citoyenne"
+    },
+    {
+      "name": "Resources",
+      "description": "Catalogue des ressources (salles, équipements) + disponibilités"
+    },
+    {
+      "name": "Superadmin",
+      "description": "Gestion des comptes ADMIN_SUPPORT"
+    },
+    {
+      "name": "Calendar",
+      "description": "Vue calendrier et disponibilités"
+    },
+    {
+      "name": "Admin Blackouts",
+      "description": "Fermetures exceptionnelles"
+    },
+    {
+      "name": "Admin Users",
+      "description": "Utilisateurs côté secrétariat"
+    },
+    {
+      "name": "Reservations",
+      "description": "Gestion des réservations de ressources (créer, consulter, lister)"
+    }
+  ],
+  "paths": {
+    "/api/resources/{resourceId}": {
+      "get": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Détail d'une ressource",
+        "operationId": "getResourceById",
+        "parameters": [
+          {
+            "name": "resourceId",
+            "in": "path",
+            "description": "ID de la ressource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ressource trouvée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ressource introuvable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Modifier une ressource",
+        "operationId": "updateResource",
+        "parameters": [
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Ressource mise à jour",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ressource introuvable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Désactiver une ressource (soft delete)",
+        "operationId": "deleteResource",
+        "parameters": [
+          {
+            "name": "resourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ressource désactivée"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/api/admin/groups/{groupId}": {
+      "get": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "getOne_1",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminGroupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAdminGroupRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminGroupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/waitlist": {
+      "get": {
+        "tags": [
+          "Waitlist"
+        ],
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WaitlistEntryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Waitlist"
+        ],
+        "operationId": "enroll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWaitlistRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistEntryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/superadmin/admin-support": {
+      "get": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Lister les ADMIN_SUPPORT actifs",
+        "operationId": "getAdminSupportUsers",
+        "responses": {
+          "200": {
+            "description": "Liste retournée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminSupportUserDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé au SUPERADMIN",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminSupportUserDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Promouvoir un utilisateur actif en ADMIN_SUPPORT",
+        "operationId": "grantAdminSupport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSupportRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Utilisateur promu",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSupportUserDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé au SUPERADMIN",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSupportUserDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Utilisateur déjà ADMIN_SUPPORT",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSupportUserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/resources": {
+      "get": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Lister les ressources",
+        "description": "Retourne une liste paginée des ressources actives. Filtres optionnels.",
+        "operationId": "getResources",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Type de ressource (IMMOBILIER | MOBILIER)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IMMOBILIER",
+                "MOBILIER"
+              ]
+            }
+          },
+          {
+            "name": "minCapacity",
+            "in": "query",
+            "description": "Capacité minimale",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "available",
+            "in": "query",
+            "description": "Disponibilité (future implémentation)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de disponibilité (YYYY-MM-DD)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page (0 par défaut)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Taille page (max 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste récupérée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseResourceDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Créer une ressource",
+        "operationId": "createResource",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Ressource créée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès refusé",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reservations": {
+      "get": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Lister mes réservations",
+        "description": "Retourne les réservations de l'utilisateur connecté avec pagination et filtrage optionnel par statut",
+        "operationId": "getMyReservations",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filtre par statut (CONFIRMED, CANCELLED, etc.)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_VALIDATION",
+                "CONFIRMED",
+                "CANCELLED",
+                "REJECTED",
+                "PENDING_DOCUMENT"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page (0 par défaut)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Taille page (max 100)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réservations listées",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseReservationSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseReservationSummaryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Créer une réservation",
+        "description": "Créer une nouvelle réservation pour une ressource",
+        "operationId": "createReservation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReservationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Réservation créée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès refusé (groupe requis)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ressource ou groupe introuvable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Créneau indisponible",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reservations/{reservationId}/documents": {
+      "post": {
+        "tags": [
+          "Reservation Documents"
+        ],
+        "summary": "Ajouter un document à une réservation",
+        "operationId": "uploadDocument",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "docType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASSOCIATION_PROOF",
+                "IDENTITY",
+                "SOCIAL_PROOF",
+                "MANDATE_PROOF",
+                "WORD_EXCEL_DOC",
+                "OTHER"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDocumentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/reservations/recurring": {
+      "post": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Créer une série de réservations",
+        "description": "Génère une réservation par occurrence selon la fréquence, même créneau horaire.",
+        "operationId": "createRecurringReservations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecurringReservationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Occurrences créées",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paramètres invalides",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Créneau indisponible sur une occurrence",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "summary": "Renouveler l'access token (refresh en cookie HttpOnly)",
+        "operationId": "refresh",
+        "responses": {
+          "200": {
+            "description": "Token renouvelé",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès refusé (cookie manquant/invalide)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "summary": "Déconnexion (supprime le cookie refresh)",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Déconnecté"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/activate": {
+      "get": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "operationId": "validateActivation",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivationStatusResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "operationId": "activateAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateAccountRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userId}/suspend": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "suspend",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/resend-activation": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "resendActivation",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/reactivate": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "reactivate",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/impersonate": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "impersonate",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpersonationTokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/activate-autonomous": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "activateAutonomous",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateAutonomousRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/tutored": {
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "createTutored",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTutoredUserRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/groups": {
+      "get": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "list_4",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminGroupResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminGroupRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminGroupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/groups/{groupId}/members": {
+      "get": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "listMembers",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminGroupMemberResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "addMember",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGroupMemberRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/blackouts": {
+      "get": {
+        "tags": [
+          "Admin Blackouts"
+        ],
+        "operationId": "list_5",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BlackoutPeriodResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin Blackouts"
+        ],
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBlackoutRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlackoutPeriodResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/tutored": {
+      "patch": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "updateTutored",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTutoredUserRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/reservations/{reservationId}/status": {
+      "patch": {
+        "tags": [
+          "Admin Reservations"
+        ],
+        "operationId": "patchStatus",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchReservationStatusRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/payments/{reservationId}": {
+      "patch": {
+        "tags": [
+          "Admin Payments"
+        ],
+        "operationId": "patch",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminPatchPaymentRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPaymentRowResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/resources/{resourceId}/slots": {
+      "get": {
+        "tags": [
+          "Resources"
+        ],
+        "summary": "Créneaux disponibles pour une ressource",
+        "operationId": "getSlots",
+        "parameters": [
+          {
+            "name": "resourceId",
+            "in": "path",
+            "description": "ID ressource",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date obligatoire (YYYY-MM-DD)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slots retournés",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeSlotDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ressource introuvable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeSlotDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reservations/{reservationId}": {
+      "get": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Détail d'une réservation",
+        "description": "Récupérer les détails d'une réservation (accessible si propriétaire)",
+        "operationId": "getReservationById",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "description": "ID de la réservation",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Réservation trouvée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès interdit (pas propriétaire)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Réservation introuvable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDetailResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Annuler une réservation",
+        "description": "Annuler une réservation active. L'annulation est logique (statut = CANCELLED), pas une suppression physique.",
+        "operationId": "cancelReservation",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "description": "ID de la réservation",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Réservation annulée"
+          },
+          "400": {
+            "description": "Réservation déjà annulée ou rejetée"
+          },
+          "401": {
+            "description": "Authentification requise"
+          },
+          "403": {
+            "description": "Accès interdit (pas propriétaire)"
+          },
+          "404": {
+            "description": "Réservation introuvable"
+          }
+        }
+      }
+    },
+    "/api/reservations/recurring/{recurringGroupId}": {
+      "get": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Lister les occurrences d'une série",
+        "operationId": "listRecurringOccurrences",
+        "parameters": [
+          {
+            "name": "recurringGroupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste retournée",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Série inconnue",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reservations"
+        ],
+        "summary": "Annuler les occurrences futures d'une série",
+        "operationId": "cancelRecurringSeries",
+        "parameters": [
+          {
+            "name": "recurringGroupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Annulation effectuée"
+          },
+          "401": {
+            "description": "Authentification requise"
+          }
+        }
+      }
+    },
+    "/api/groups": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Lister mes groupes",
+        "description": "Groupes dont l'utilisateur est membre, avec effectif et règles de réservation / tarifs.",
+        "operationId": "listMyGroups",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserGroupSummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/groups/{groupId}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Détail d'un groupe (membre)",
+        "description": "Uniquement si l'utilisateur connecté appartient au groupe.",
+        "operationId": "getMyGroup",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserGroupSummaryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/calendar": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "summary": "Vue calendrier mensuelle",
+        "description": "Créneaux par ressource pour un mois donné (lecture). Paramètre optionnel resourceId pour filtrer.",
+        "operationId": "getCalendar",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "description": "Année",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 2026
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "description": "Mois (1-12)",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 4
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "description": "Filtrer sur une ressource (optionnel)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calendrier calculé",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paramètres invalides",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ressource introuvable (resourceId)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "AgoraAuth"
+        ],
+        "summary": "Profil de l'utilisateur connecté",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Profil récupéré",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès refusé (token manquant/invalide)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          },
+          {
+            "name": "accountType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUsersListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}": {
+      "get": {
+        "tags": [
+          "Admin Users"
+        ],
+        "operationId": "getOne",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Supprimer définitivement un utilisateur et ses données réservables",
+        "operationId": "purge",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/print-summary": {
+      "get": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Fiche PDF utilisateur (secrétariat)",
+        "operationId": "printSummary",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "byte"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/stats/dashboard": {
+      "get": {
+        "tags": [
+          "Admin Stats"
+        ],
+        "operationId": "dashboard",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDashboardStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/reservations": {
+      "get": {
+        "tags": [
+          "Admin Reservations"
+        ],
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PENDING_VALIDATION",
+                  "CONFIRMED",
+                  "CANCELLED",
+                  "REJECTED",
+                  "PENDING_DOCUMENT"
+                ]
+              }
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseReservationSummaryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/reservations/stats": {
+      "get": {
+        "tags": [
+          "Admin Reservations"
+        ],
+        "operationId": "stats",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReservationListStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/payments": {
+      "get": {
+        "tags": [
+          "Admin Payments"
+        ],
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT_PENDING",
+                "DEPOSIT_PAID",
+                "EXEMPT",
+                "WAIVED",
+                "REFUNDED"
+              ]
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseAdminPaymentRowResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/payments/{reservationId}/history": {
+      "get": {
+        "tags": [
+          "Admin Payments"
+        ],
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminPaymentHistoryEntryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/exports/reservations": {
+      "get": {
+        "tags": [
+          "Admin Exports"
+        ],
+        "operationId": "exportReservations",
+        "parameters": [
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv;charset=UTF-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "byte"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/exports/payments": {
+      "get": {
+        "tags": [
+          "Admin Exports"
+        ],
+        "operationId": "exportPayments",
+        "parameters": [
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv;charset=UTF-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "byte"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/audit": {
+      "get": {
+        "tags": [
+          "Admin Audit"
+        ],
+        "operationId": "list_6",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "adminUserId",
+            "in": "query",
+            "description": "Filtre acteur (email, sous-chaîne ou UUID utilisateur — cahier : adminUserId)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetUserId",
+            "in": "query",
+            "description": "Cible (email, sous-chaîne ou UUID — cahier : targetUserId)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "impersonationOnly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "reservationId",
+            "in": "query",
+            "description": "Filtrer les entrées dont le détail JSON contient ce reservationId (timeline)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAuditPageResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/waitlist/{waitlistId}": {
+      "delete": {
+        "tags": [
+          "Waitlist"
+        ],
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "waitlistId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/superadmin/secretary-admin/{userId}": {
+      "delete": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Retirer le rôle SECRETARY_ADMIN (interdit pour le dernier compte actif)",
+        "operationId": "revokeSecretaryAdmin",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rôle retiré"
+          },
+          "403": {
+            "description": "Accès réservé au SUPERADMIN"
+          },
+          "409": {
+            "description": "Dernier secrétaire ou compte inadapté"
+          }
+        }
+      }
+    },
+    "/api/superadmin/admin-support/{userId}": {
+      "delete": {
+        "tags": [
+          "Superadmin"
+        ],
+        "summary": "Révoquer le rôle ADMIN_SUPPORT",
+        "operationId": "revokeAdminSupport",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rôle révoqué"
+          },
+          "403": {
+            "description": "Accès réservé au SUPERADMIN"
+          }
+        }
+      }
+    },
+    "/api/admin/groups/{groupId}/members/{userId}": {
+      "delete": {
+        "tags": [
+          "Admin Groups"
+        ],
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/admin/blackouts/{blackoutId}": {
+      "delete": {
+        "tags": [
+          "Admin Blackouts"
+        ],
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "name": "blackoutId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ResourceRequest": {
+        "required": [
+          "accessibilityTags",
+          "name",
+          "resourceType"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "depositAmountCents": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "rentalPriceCents": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          },
+          "accessibilityTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ResourceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "type": "string"
+          },
+          "depositAmountCents": {
+            "type": "number",
+            "format": "double"
+          },
+          "rentalPriceCents": {
+            "type": "number",
+            "format": "double"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "accessibilityTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateAdminGroupRequestDto": {
+        "required": [
+          "discountAppliesTo",
+          "discountType",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "canViewImmobilier": {
+            "type": "boolean"
+          },
+          "canBookImmobilier": {
+            "type": "boolean"
+          },
+          "canViewMobilier": {
+            "type": "boolean"
+          },
+          "canBookMobilier": {
+            "type": "boolean"
+          },
+          "discountType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "PERCENTAGE",
+              "FIXED_AMOUNT",
+              "FULL_EXEMPT"
+            ]
+          },
+          "discountValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountAppliesTo": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "IMMOBILIER_ONLY",
+              "MOBILIER_ONLY"
+            ]
+          }
+        }
+      },
+      "AdminGroupResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isPreset": {
+            "type": "boolean"
+          },
+          "canViewImmobilier": {
+            "type": "boolean"
+          },
+          "canBookImmobilier": {
+            "type": "boolean"
+          },
+          "canViewMobilier": {
+            "type": "boolean"
+          },
+          "canBookMobilier": {
+            "type": "boolean"
+          },
+          "discountType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "PERCENTAGE",
+              "FIXED_AMOUNT",
+              "FULL_EXEMPT"
+            ]
+          },
+          "discountValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountAppliesTo": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "IMMOBILIER_ONLY",
+              "MOBILIER_ONLY"
+            ]
+          },
+          "discountLabel": {
+            "type": "string"
+          },
+          "memberCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "councilPowers": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateWaitlistRequestDto": {
+        "required": [
+          "resourceId",
+          "slotDate",
+          "slotEnd",
+          "slotStart"
+        ],
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slotDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotStart": {
+            "type": "string"
+          },
+          "slotEnd": {
+            "type": "string"
+          }
+        }
+      },
+      "WaitlistEntryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "slotDate": {
+            "type": "string"
+          },
+          "slotStart": {
+            "type": "string"
+          },
+          "slotEnd": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "notifiedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminSupportRequestDto": {
+        "required": [
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AdminSupportUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DELETED"
+            ]
+          }
+        }
+      },
+      "CreateReservationRequestDto": {
+        "required": [
+          "date",
+          "purpose",
+          "resourceId",
+          "slotEnd",
+          "slotStart"
+        ],
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotStart": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "slotEnd": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "LocalTime": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "second": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nano": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ReservationDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotStart": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "slotEnd": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_VALIDATION",
+              "CONFIRMED",
+              "CANCELLED",
+              "REJECTED",
+              "PENDING_DOCUMENT"
+            ]
+          },
+          "depositStatus": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_PENDING",
+              "DEPOSIT_PAID",
+              "EXEMPT",
+              "WAIVED",
+              "REFUNDED"
+            ]
+          },
+          "depositAmountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "depositAmountFullCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountLabel": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/ReservationResourceDto"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservationDocumentDto"
+            }
+          },
+          "recurringGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingReference": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
+          }
+        }
+      },
+      "ReservationDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "docType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "uploadedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "ReservationResourceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "depositAmountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "ReservationDocumentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "docType": {
+            "type": "string",
+            "enum": [
+              "ASSOCIATION_PROOF",
+              "IDENTITY",
+              "SOCIAL_PROOF",
+              "MANDATE_PROOF",
+              "WORD_EXCEL_DOC",
+              "OTHER"
+            ]
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SENT",
+              "FAILED"
+            ]
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateRecurringReservationRequestDto": {
+        "required": [
+          "endDate",
+          "frequency",
+          "purpose",
+          "resourceId",
+          "slotEnd",
+          "slotStart",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slotStart": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "slotEnd": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "WEEKLY",
+              "BIWEEKLY",
+              "MONTHLY"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "excludedDates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        }
+      },
+      "ReservationSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slotStart": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "slotEnd": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_VALIDATION",
+              "CONFIRMED",
+              "CANCELLED",
+              "REJECTED",
+              "PENDING_DOCUMENT"
+            ]
+          },
+          "depositStatus": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_PENDING",
+              "DEPOSIT_PAID",
+              "EXEMPT",
+              "WAIVED",
+              "REFUNDED"
+            ]
+          },
+          "depositAmountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "depositAmountFullCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountLabel": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "recurringGroupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingReference": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterRequestDto": {
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          },
+          "firstName": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "lastName": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "RegisterResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "AUTONOMOUS",
+              "TUTORED"
+            ]
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DELETED"
+            ]
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserSummaryDto"
+          }
+        }
+      },
+      "UserSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "AUTONOMOUS",
+              "TUTORED"
+            ]
+          },
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DELETED"
+            ]
+          }
+        }
+      },
+      "LoginRequestDto": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 72,
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      },
+      "ActivateAccountRequestDto": {
+        "required": [
+          "newPassword",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "newPassword": {
+            "maxLength": 128,
+            "minLength": 8,
+            "type": "string"
+          }
+        }
+      },
+      "ImpersonationTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access ; le sub est l'UUID du compte cible"
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "description": "Durée de vie du jeton en secondes",
+            "format": "int64"
+          }
+        },
+        "description": "Jeton d'accès court pour session d'impersonation (comptes TUTORED)"
+      },
+      "ActivateAutonomousRequestDto": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateTutoredUserRequestDto": {
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "birthYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "notesAdmin": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUserDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "internalRef": {
+            "type": "string"
+          },
+          "notesAdmin": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserGroupSnippetDto"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUserGroupSnippetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "discountLabel": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAdminGroupRequestDto": {
+        "required": [
+          "discountAppliesTo",
+          "discountType",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "canViewImmobilier": {
+            "type": "boolean"
+          },
+          "canBookImmobilier": {
+            "type": "boolean"
+          },
+          "canViewMobilier": {
+            "type": "boolean"
+          },
+          "canBookMobilier": {
+            "type": "boolean"
+          },
+          "discountType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "PERCENTAGE",
+              "FIXED_AMOUNT",
+              "FULL_EXEMPT"
+            ]
+          },
+          "discountValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountAppliesTo": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "IMMOBILIER_ONLY",
+              "MOBILIER_ONLY"
+            ]
+          }
+        }
+      },
+      "AddGroupMemberRequestDto": {
+        "required": [
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CreateBlackoutRequestDto": {
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "BlackoutPeriodResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "dateFrom": {
+            "type": "string"
+          },
+          "dateTo": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdByName": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateTutoredUserRequestDto": {
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "birthYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "notesAdmin": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminPatchReservationStatusRequestDto": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_VALIDATION",
+              "CONFIRMED",
+              "CANCELLED",
+              "REJECTED",
+              "PENDING_DOCUMENT"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminPatchPaymentRequestDto": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_PENDING",
+              "DEPOSIT_PAID",
+              "EXEMPT",
+              "WAIVED",
+              "REFUNDED"
+            ]
+          },
+          "amountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentMode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "CHECK"
+            ]
+          },
+          "checkNumber": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminPaymentRowResponseDto": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_PENDING",
+              "DEPOSIT_PAID",
+              "EXEMPT",
+              "WAIVED",
+              "REFUNDED"
+            ]
+          },
+          "amountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentMode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "CHECK"
+            ]
+          },
+          "checkNumber": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "updatedByName": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PagedResponseResourceDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceDto"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TimeSlotDto": {
+        "type": "object",
+        "properties": {
+          "slotStart": {
+            "type": "string"
+          },
+          "slotEnd": {
+            "type": "string"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PagedResponseReservationSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReservationSummaryResponseDto"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "UserGroupSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canBookImmobilier": {
+            "type": "boolean"
+          },
+          "canBookMobilier": {
+            "type": "boolean"
+          },
+          "discountType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "PERCENTAGE",
+              "FIXED_AMOUNT",
+              "FULL_EXEMPT"
+            ]
+          },
+          "discountValue": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "discountAppliesTo": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "IMMOBILIER_ONLY",
+              "MOBILIER_ONLY"
+            ]
+          },
+          "discountLabel": {
+            "type": "string"
+          },
+          "memberCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPreset": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CalendarDayDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Date (ISO)",
+            "format": "date",
+            "example": "2026-04-10"
+          },
+          "isBlackout": {
+            "type": "boolean",
+            "description": "Jour entièrement fermé (blackout)"
+          },
+          "blackoutReason": {
+            "type": "string",
+            "description": "Motif de fermeture si blackout",
+            "nullable": true
+          },
+          "slots": {
+            "type": "array",
+            "description": "Créneaux par ressource, triés par nom de ressource puis heure de début",
+            "items": {
+              "$ref": "#/components/schemas/CalendarSlotDto"
+            }
+          }
+        },
+        "description": "Jour calendrier avec créneaux et éventuelle fermeture"
+      },
+      "CalendarResponseDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "description": "Année",
+            "format": "int32",
+            "example": 2026
+          },
+          "month": {
+            "type": "integer",
+            "description": "Mois (1-12)",
+            "format": "int32",
+            "example": 4
+          },
+          "days": {
+            "type": "array",
+            "description": "Un élément par jour du mois, trié par date",
+            "items": {
+              "$ref": "#/components/schemas/CalendarDayDto"
+            }
+          }
+        },
+        "description": "Vue calendrier mensuelle (créneaux par ressource, alignée sur le contrat API AGORA)"
+      },
+      "CalendarSlotDto": {
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "description": "Identifiant de la ressource",
+            "format": "uuid"
+          },
+          "resourceName": {
+            "type": "string",
+            "description": "Nom affiché de la ressource"
+          },
+          "resourceType": {
+            "type": "string",
+            "description": "IMMOBILIER ou MOBILIER",
+            "enum": [
+              "IMMOBILIER",
+              "MOBILIER"
+            ]
+          },
+          "slotStart": {
+            "type": "string",
+            "description": "Heure de début (HH:mm)",
+            "example": "08:00"
+          },
+          "slotEnd": {
+            "type": "string",
+            "description": "Heure de fin (HH:mm)",
+            "example": "10:00"
+          },
+          "isAvailable": {
+            "type": "boolean",
+            "description": "false si une réservation bloquante occupe le créneau"
+          }
+        },
+        "description": "Créneau horaire pour une ressource donnée"
+      },
+      "AuthMeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "AUTONOMOUS",
+              "TUTORED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DELETED"
+            ]
+          },
+          "phone": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CITIZEN",
+                "SUPERADMIN",
+                "SECRETARY_ADMIN",
+                "DELEGATE_ADMIN",
+                "GROUP_MANAGER"
+              ]
+            }
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGroupSummaryDto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "adminSupport": {
+            "type": "boolean",
+            "description": "Promotion métier ADMIN_SUPPORT (compte habilité au périmètre support), distinct du rôle JWT SECRETARY_ADMIN."
+          }
+        }
+      },
+      "ActivationStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          },
+          "targetEmail": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUserRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "internalRef": {
+            "type": "string"
+          },
+          "notesAdmin": {
+            "type": "string"
+          },
+          "exemptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUsersListResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserRowDto"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AdminDashboardStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "todayReservations": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingDeposits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingDocuments": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tutoredAccounts": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalGroups": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AdminReservationListStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pendingGroup": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "confirmed": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cancelled": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "rejected": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "depositPending": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "exemptOrWaived": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PagedResponseAdminPaymentRowResponseDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPaymentRowResponseDto"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AdminPaymentHistoryEntryResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_PENDING",
+              "DEPOSIT_PAID",
+              "EXEMPT",
+              "WAIVED",
+              "REFUNDED"
+            ]
+          },
+          "amountCents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentMode": {
+            "type": "string",
+            "enum": [
+              "CASH",
+              "CHECK"
+            ]
+          },
+          "checkNumber": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "updatedByName": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AdminGroupMemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminAuditEntryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "adminName": {
+            "type": "string"
+          },
+          "targetName": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          },
+          "isImpersonation": {
+            "type": "boolean"
+          },
+          "performedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AdminAuditPageResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAuditEntryResponse"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

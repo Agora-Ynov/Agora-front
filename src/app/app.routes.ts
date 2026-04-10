@@ -1,10 +1,15 @@
 import { Routes } from '@angular/router';
+import { adminAuditResolver } from './features/admin/audit/admin-audit.resolver';
 import { adminGuard } from './core/guards/admin.guard';
+import { adminRootRedirectGuard } from './core/guards/admin-root-redirect.guard';
 import { authGuard } from './core/guards/auth.guard';
+import { staffHomeRedirectGuard } from './core/guards/staff-home-redirect.guard';
+import { superadminGuard } from './core/guards/superadmin.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    canActivate: [staffHomeRedirectGuard],
     loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
   },
   {
@@ -16,6 +21,13 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () =>
       import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+  },
+  {
+    path: 'auth/activate',
+    loadComponent: () =>
+      import('./features/auth/activate-account/activate-account.component').then(
+        m => m.ActivateAccountComponent
+      ),
   },
   {
     path: 'catalogue',
@@ -50,6 +62,7 @@ export const routes: Routes = [
   {
     path: 'admin/resources',
     canActivate: [adminGuard],
+    data: { allowDelegate: true },
     loadComponent: () =>
       import('./features/admin/resources/resource-management.component').then(
         m => m.ResourceManagementComponent
@@ -66,6 +79,9 @@ export const routes: Routes = [
   {
     path: 'admin/audit',
     canActivate: [adminGuard],
+    /** Données fraîches à chaque entrée sur la route (y compris retour depuis autre écran admin). */
+    runGuardsAndResolvers: 'always',
+    resolve: { auditBundle: adminAuditResolver },
     loadComponent: () =>
       import('./features/admin/audit/admin-audit-page.component').then(
         m => m.AdminAuditPageComponent
@@ -102,6 +118,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'account/waitlist',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/waitlist/waitlist-page.component').then(m => m.WaitlistPageComponent),
+  },
+  {
     path: 'account',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -117,10 +139,17 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [adminGuard],
+    pathMatch: 'full',
+    canActivate: [adminRootRedirectGuard],
     loadComponent: () =>
-      import('./features/admin/dashboard/admin-dashboard.component').then(
-        m => m.AdminDashboardComponent
+      import('./features/admin/admin-root-stub.component').then(m => m.AdminRootStubComponent),
+  },
+  {
+    path: 'superadmin/admin-support',
+    canActivate: [superadminGuard],
+    loadComponent: () =>
+      import('./features/superadmin/superadmin-admin-support-page.component').then(
+        m => m.SuperadminAdminSupportPageComponent
       ),
   },
   {

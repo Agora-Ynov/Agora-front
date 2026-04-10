@@ -14,6 +14,7 @@ export interface ResourceRequest {
   capacity?: number;
   description?: string;
   depositAmountCents?: number;
+  rentalPriceCents?: number;
   imageUrl?: string;
   accessibilityTags: Array<string>;
 }

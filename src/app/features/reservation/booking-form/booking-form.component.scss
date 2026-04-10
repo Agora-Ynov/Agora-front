@@ -235,6 +235,26 @@
   margin-top: 1.6rem;
 }
 
+.recurrence-fields {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.recurrence-hint {
+  margin: 0;
+}
+
+.field-group__select {
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  border: 1px solid #d9dee6;
+  border-radius: 0.8rem;
+  background: #fff;
+  font: inherit;
+  color: #111827;
+}
+
 .field-group {
   display: grid;
   gap: 0.55rem;
@@ -375,6 +395,31 @@
   margin-top: 0.1rem;
 }
 
+.booking-submit-hint {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.booking-submit-hint--warning {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.booking-submit-error {
+  margin: 0.85rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .submit-button {
   min-height: 3rem;
   border: 0;
@@ -453,6 +498,13 @@
   margin: 0;
   font-size: 0.98rem;
   font-weight: 500;
+}
+
+.summary-pricing-note {
+  margin: 0.65rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #64748b;
 }
 
 .summary-divider {

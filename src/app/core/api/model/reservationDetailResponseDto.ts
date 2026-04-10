@@ -30,6 +30,8 @@ export interface ReservationDetailResponseDto {
   purpose?: string;
   documents?: Array<ReservationDocumentDto>;
   recurringGroupId?: string;
+  bookingReference?: string;
+  userEmail?: string;
 }
 export namespace ReservationDetailResponseDto {
   export const ResourceTypeEnum = {

@@ -1,12 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  Subject,
+  distinctUntilChanged,
+  finalize,
+  map,
+  merge,
+  Observable,
+  switchMap,
+  tap,
+} from 'rxjs';
 
 import { LocalTime } from '../../../core/api/model/localTime';
-import { ReservationListItemDto } from '../../../core/api/model/reservationListItemDto';
+import { PagedResponseReservationSummaryResponseDto } from '../../../core/api/model/pagedResponseReservationSummaryResponseDto';
+import { ReservationSummaryResponseDto } from '../../../core/api/model/reservationSummaryResponseDto';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ReservationService } from '../reservation.service';
 
@@ -27,6 +37,8 @@ type ReservationDepositStatus =
   | 'REFUNDED'
   | 'WAIVED';
 
+type ListRefreshSource = 'route' | 'reload';
+
 interface ReservationTimelineStep {
   label: string;
   date: string;
@@ -35,6 +47,8 @@ interface ReservationTimelineStep {
 
 interface ReservationCard {
   id: string;
+  /** Référence métier affichable (pas l’UUID technique). */
+  bookingReference: string | null;
   resourceName: string;
   status: ReservationDisplayStatus;
   reservationDate: string;
@@ -46,6 +60,8 @@ interface ReservationCard {
   comment: string;
   createdAt: string;
   timeline: ReservationTimelineStep[];
+  /** Serie recurrente : annulation groupe via API DELETE recurring */
+  recurringGroupId: string | null;
 }
 
 @Component({
@@ -57,8 +73,10 @@ interface ReservationCard {
 })
 export class MyReservationsComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly reservationService = inject(ReservationService);
+  private readonly reload$ = new Subject<void>();
 
   readonly currentUser = this.authService.currentUser;
   readonly loading = signal(true);
@@ -68,6 +86,14 @@ export class MyReservationsComponent {
   readonly expandedReservationId = signal<string | null>(null);
   readonly reservationIdToCancel = signal<string | null>(null);
   readonly cancellationInProgressId = signal<string | null>(null);
+  readonly recurringGroupIdToCancel = signal<string | null>(null);
+  readonly recurringCancelBusy = signal(false);
+
+  /** Pagination liste (API paginée). */
+  readonly page = signal(0);
+  readonly pageSize = 6;
+  readonly totalPages = signal(1);
+  readonly totalElements = signal(0);
 
   readonly displayName = computed(() => {
     const user = this.currentUser();
@@ -75,7 +101,41 @@ export class MyReservationsComponent {
   });
 
   constructor() {
-    this.loadReservations();
+    effect(() => {
+      const open = this.isCancellationModalOpen() || this.isSeriesCancelModalOpen();
+      if (typeof document !== 'undefined') {
+        document.body.classList.toggle('agora-modal-open', open);
+      }
+    });
+    merge(
+      this.route.queryParamMap.pipe(
+        map(q => q.toString()),
+        distinctUntilChanged(),
+        map((): ListRefreshSource => 'route')
+      ),
+      this.reload$.pipe(map((): ListRefreshSource => 'reload'))
+    )
+      .pipe(
+        tap(src => {
+          if (src === 'route') {
+            this.page.set(0);
+          }
+        }),
+        switchMap(() => this.fetchReservationList()),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
+  }
+
+  /** Change de page sans réinitialiser l’URL (contrairement à un changement de query). */
+  goToPage(nextPage: number): void {
+    const last = Math.max(0, this.totalPages() - 1);
+    const clamped = Math.max(0, Math.min(nextPage, last));
+    if (clamped === this.page()) {
+      return;
+    }
+    this.page.set(clamped);
+    this.reload$.next();
   }
 
   trackByReservationId(_index: number, reservation: ReservationCard): string {
@@ -83,7 +143,7 @@ export class MyReservationsComponent {
   }
 
   reloadReservations(): void {
-    this.loadReservations();
+    this.reload$.next();
   }
 
   toggleTimeline(reservationId: string): void {
@@ -168,6 +228,50 @@ export class MyReservationsComponent {
     return this.reservations().find(reservation => reservation.id === reservationId) ?? null;
   }
 
+  openCancelSeriesConfirmation(recurringGroupId: string | null): void {
+    if (!recurringGroupId || this.recurringCancelBusy()) {
+      return;
+    }
+    this.recurringGroupIdToCancel.set(recurringGroupId);
+  }
+
+  closeCancelSeriesConfirmation(): void {
+    if (this.recurringCancelBusy()) {
+      return;
+    }
+    this.recurringGroupIdToCancel.set(null);
+  }
+
+  isSeriesCancelModalOpen(): boolean {
+    return this.recurringGroupIdToCancel() !== null;
+  }
+
+  confirmRecurringSeriesCancellation(): void {
+    const groupId = this.recurringGroupIdToCancel();
+    if (!groupId) {
+      return;
+    }
+    this.recurringCancelBusy.set(true);
+    this.feedbackMessage.set(null);
+    this.reservationService
+      .cancelRecurringSeries(groupId)
+      .pipe(
+        finalize(() => {
+          this.recurringCancelBusy.set(false);
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.recurringGroupIdToCancel.set(null);
+          this.feedbackMessage.set('Serie annulee (occurrences futures).');
+          this.reload$.next();
+        },
+        error: () => {
+          this.feedbackMessage.set("Impossible d'annuler la serie.");
+        },
+      });
+  }
+
   formatReservationDate(date: string): string {
     return new Intl.DateTimeFormat('fr-FR', {
       day: 'numeric',
@@ -210,7 +314,16 @@ export class MyReservationsComponent {
     }
   }
 
-  private loadReservations(): void {
+  /**
+   * Un seul chargement à la fois (évite qu’une requête lente vide la liste après une réponse récente)
+   * et désactive le cache de transfert HTTP sur l’appel liste.
+   */
+  private fetchReservationList(): Observable<PagedResponseReservationSummaryResponseDto> {
+    const snap = this.route.snapshot.queryParamMap;
+    const createdReservationId = snap.get('created');
+    const recurringCountRaw = snap.get('recurringCount');
+    const recurringCount = recurringCountRaw ? Number(recurringCountRaw) : 0;
+
     this.loading.set(true);
     this.errorMessage.set(null);
     this.feedbackMessage.set(null);
@@ -218,34 +331,52 @@ export class MyReservationsComponent {
     this.expandedReservationId.set(null);
     this.reservationIdToCancel.set(null);
 
-    this.reservationService
-      .listMyReservations(0, 50)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
+    return this.reservationService.listMyReservations(this.page(), this.pageSize).pipe(
+      tap({
         next: response => {
+          const total = response.totalElements ?? 0;
+          const tp =
+            response.totalPages !== undefined && response.totalPages > 0
+              ? response.totalPages
+              : Math.max(1, Math.ceil(total / this.pageSize) || 1);
+          this.totalElements.set(total);
+          this.totalPages.set(tp);
           const reservations = (response.content ?? []).map(item => this.mapReservation(item));
           this.reservations.set(reservations);
-          this.expandedReservationId.set(reservations[0]?.id ?? null);
-          this.loading.set(false);
+          const highlightId =
+            createdReservationId && reservations.some(r => r.id === createdReservationId)
+              ? createdReservationId
+              : (reservations[0]?.id ?? null);
+          this.expandedReservationId.set(highlightId);
+          if (createdReservationId) {
+            this.feedbackMessage.set(
+              recurringCount > 1
+                ? `Serie de ${recurringCount} reservations creee (meme horaire). La premiere occurrence est mise en avant ci-dessous.`
+                : 'Reservation creee et confirmee. Elle apparait ci-dessous.'
+            );
+          }
         },
         error: (error: HttpErrorResponse) => {
           this.errorMessage.set(
             error.message || 'Impossible de charger vos reservations pour le moment.'
           );
-          this.loading.set(false);
         },
-      });
+      }),
+      finalize(() => this.loading.set(false))
+    );
   }
 
-  private mapReservation(item: ReservationListItemDto): ReservationCard {
+  private mapReservation(item: ReservationSummaryResponseDto): ReservationCard {
     const depositEuros = Math.round((item.depositAmountCents ?? 0) / 100);
     const amountEuros = Math.round(
       Math.max((item.depositAmountFullCents ?? 0) - (item.depositAmountCents ?? 0), 0) / 100
     );
     const status = (item.status ?? 'PENDING_VALIDATION') as ReservationApiStatus;
 
+    const ref = item.bookingReference?.trim();
     return {
       id: item.id ?? '',
+      bookingReference: ref ? ref : null,
       resourceName: item.resourceName ?? '',
       status: this.toDisplayStatus(status),
       reservationDate: item.date ?? '',
@@ -260,6 +391,7 @@ export class MyReservationsComponent {
       comment: this.buildComment(item),
       createdAt: item.createdAt ?? '',
       timeline: this.buildTimeline(item),
+      recurringGroupId: item.recurringGroupId?.trim() ? item.recurringGroupId : null,
     };
   }
 
@@ -304,19 +436,19 @@ export class MyReservationsComponent {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
-  private buildComment(item: ReservationListItemDto): string {
+  private buildComment(item: ReservationSummaryResponseDto): string {
     if (item.discountLabel) {
       return `Tarification appliquee : ${item.discountLabel}`;
     }
 
-    if (item.resourceType === ReservationListItemDto.ResourceTypeEnum.Immobilier) {
+    if (item.resourceType === ReservationSummaryResponseDto.ResourceTypeEnum.Immobilier) {
       return 'Reservation de salle en attente des prochaines etapes administratives.';
     }
 
     return 'Reservation de materiel en cours de traitement.';
   }
 
-  private buildTimeline(item: ReservationListItemDto): ReservationTimelineStep[] {
+  private buildTimeline(item: ReservationSummaryResponseDto): ReservationTimelineStep[] {
     const createdAtLabel = this.formatCreatedAt(item.createdAt ?? '');
     const depositSt = item.depositStatus as ReservationDepositStatus | undefined;
 
@@ -350,7 +482,10 @@ export class MyReservationsComponent {
       { label: 'Instruction en cours', date: 'Analyse de la demande', completed: false },
       {
         label: 'Paiement et caution',
-        date: depositSt === 'DEPOSIT_PENDING' ? 'En attente de validation' : 'A confirmer',
+        date:
+          depositSt === 'DEPOSIT_PENDING'
+            ? 'En attente de validation du dossier'
+            : 'Etapes a valider avec le secretariat (caution / reglement)',
         completed: false,
       },
     ];

@@ -2,18 +2,21 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { JwtService } from '../auth/jwt.service';
 
-const PUBLIC_ROUTES = [
+const PUBLIC_POST_ROUTES = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/refresh',
   '/api/auth/logout',
+  '/api/auth/activate',
 ];
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const jwtService = inject(JwtService);
 
-  const isPublic = req.method === 'POST' && PUBLIC_ROUTES.some(route => req.url.includes(route));
-  if (isPublic) return next(req);
+  const isActivateGet = req.method === 'GET' && req.url.includes('/api/auth/activate');
+  const isPublicPost =
+    req.method === 'POST' && PUBLIC_POST_ROUTES.some(route => req.url.includes(route));
+  if (isActivateGet || isPublicPost) return next(req);
 
   const token = jwtService.getAccessToken();
   if (!token) return next(req);

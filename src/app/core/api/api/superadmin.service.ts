@@ -22,17 +22,9 @@ import { Observable } from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { ApiError } from '../model/apiError';
+import { AdminSupportRequestDto } from '../model/adminSupportRequestDto';
 // @ts-ignore
-import { AuthMeResponseDto } from '../model/authMeResponseDto';
-// @ts-ignore
-import { LoginRequestDto } from '../model/loginRequestDto';
-// @ts-ignore
-import { LoginResponseDto } from '../model/loginResponseDto';
-// @ts-ignore
-import { RegisterRequestDto } from '../model/registerRequestDto';
-// @ts-ignore
-import { RegisterResponseDto } from '../model/registerResponseDto';
+import { AdminSupportUserDto } from '../model/adminSupportUserDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS } from '../variables';
@@ -42,7 +34,7 @@ import { BaseService } from '../api.base.service';
 @Injectable({
   providedIn: 'root',
 })
-export class AuthControllerService extends BaseService {
+export class SuperadminService extends BaseService {
   constructor(
     protected httpClient: HttpClient,
     @Optional() @Inject(BASE_PATH) basePath: string | string[],
@@ -52,39 +44,107 @@ export class AuthControllerService extends BaseService {
   }
 
   /**
-   * @endpoint post /api/auth/login
-   * @param loginRequestDto
+   * Lister les ADMIN_SUPPORT actifs
+   * @endpoint get /api/superadmin/admin-support
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public login(
-    loginRequestDto: LoginRequestDto,
+  public getAdminSupportUsers(
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<LoginResponseDto>;
-  public login(
-    loginRequestDto: LoginRequestDto,
+  ): Observable<Array<AdminSupportUserDto>>;
+  public getAdminSupportUsers(
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<LoginResponseDto>>;
-  public login(
-    loginRequestDto: LoginRequestDto,
+  ): Observable<HttpResponse<Array<AdminSupportUserDto>>>;
+  public getAdminSupportUsers(
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<LoginResponseDto>>;
-  public login(
-    loginRequestDto: LoginRequestDto,
+  ): Observable<HttpEvent<Array<AdminSupportUserDto>>>;
+  public getAdminSupportUsers(
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (loginRequestDto === null || loginRequestDto === undefined) {
+    let localVarHeaders = this.defaultHeaders;
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/superadmin/admin-support`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<Array<AdminSupportUserDto>>(
+      'get',
+      `${basePath}${localVarPath}`,
+      {
+        context: localVarHttpContext,
+        responseType: <any>responseType_,
+        ...(withCredentials ? { withCredentials } : {}),
+        headers: localVarHeaders,
+        observe: observe,
+        ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+        reportProgress: reportProgress,
+      }
+    );
+  }
+
+  /**
+   * Promouvoir un utilisateur actif en ADMIN_SUPPORT
+   * @endpoint post /api/superadmin/admin-support
+   * @param adminSupportRequestDto
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public grantAdminSupport(
+    adminSupportRequestDto: AdminSupportRequestDto,
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<AdminSupportUserDto>;
+  public grantAdminSupport(
+    adminSupportRequestDto: AdminSupportRequestDto,
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<AdminSupportUserDto>>;
+  public grantAdminSupport(
+    adminSupportRequestDto: AdminSupportRequestDto,
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<AdminSupportUserDto>>;
+  public grantAdminSupport(
+    adminSupportRequestDto: AdminSupportRequestDto,
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
+    if (adminSupportRequestDto === null || adminSupportRequestDto === undefined) {
       throw new Error(
-        'Required parameter loginRequestDto was null or undefined when calling login.'
+        'Required parameter adminSupportRequestDto was null or undefined when calling grantAdminSupport.'
       );
     }
 
@@ -119,11 +179,11 @@ export class AuthControllerService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/auth/login`;
+    let localVarPath = `/api/superadmin/admin-support`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<LoginResponseDto>('post', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<AdminSupportUserDto>('post', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
-      body: loginRequestDto,
+      body: adminSupportRequestDto,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,
@@ -134,32 +194,43 @@ export class AuthControllerService extends BaseService {
   }
 
   /**
-   * Déconnexion (supprime le cookie refresh)
-   * @endpoint post /api/auth/logout
+   * Révoquer le rôle ADMIN_SUPPORT
+   * @endpoint delete /api/superadmin/admin-support/{userId}
+   * @param userId
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public logout(
+  public revokeAdminSupport(
+    userId: string,
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any>;
-  public logout(
+  public revokeAdminSupport(
+    userId: string,
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpResponse<any>>;
-  public logout(
+  public revokeAdminSupport(
+    userId: string,
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpEvent<any>>;
-  public logout(
+  public revokeAdminSupport(
+    userId: string,
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
+    if (userId === null || userId === undefined) {
+      throw new Error(
+        'Required parameter userId was null or undefined when calling revokeAdminSupport.'
+      );
+    }
+
     let localVarHeaders = this.defaultHeaders;
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
@@ -183,9 +254,9 @@ export class AuthControllerService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/auth/logout`;
+    let localVarPath = `/api/superadmin/admin-support/${this.configuration.encodeParam({ name: 'userId', value: userId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<any>('post', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
@@ -197,180 +268,47 @@ export class AuthControllerService extends BaseService {
   }
 
   /**
-   * Profil de l\&#39;utilisateur connecté
-   * @endpoint get /api/auth/me
+   * Retirer le rôle SECRETARY_ADMIN (interdit pour le dernier compte actif)
+   * @endpoint delete /api/superadmin/secretary-admin/{userId}
+   * @param userId
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public me(
+  public revokeSecretaryAdmin(
+    userId: string,
     observe?: 'body',
     reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<AuthMeResponseDto>;
-  public me(
+    options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any>;
+  public revokeSecretaryAdmin(
+    userId: string,
     observe?: 'response',
     reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<AuthMeResponseDto>>;
-  public me(
+    options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<any>>;
+  public revokeSecretaryAdmin(
+    userId: string,
     observe?: 'events',
     reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<AuthMeResponseDto>>;
-  public me(
+    options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<any>>;
+  public revokeSecretaryAdmin(
+    userId: string,
     observe: any = 'body',
     reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+    options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    let localVarHeaders = this.defaultHeaders;
-
-    // authentication (bearerAuth) required
-    localVarHeaders = this.configuration.addCredentialToHeaders(
-      'bearerAuth',
-      'Authorization',
-      localVarHeaders,
-      'Bearer '
-    );
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/auth/me`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<AuthMeResponseDto>('get', `${basePath}${localVarPath}`, {
-      context: localVarHttpContext,
-      responseType: <any>responseType_,
-      ...(withCredentials ? { withCredentials } : {}),
-      headers: localVarHeaders,
-      observe: observe,
-      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-      reportProgress: reportProgress,
-    });
-  }
-
-  /**
-   * Renouveler l\&#39;access token (refresh en cookie HttpOnly)
-   * @endpoint post /api/auth/refresh
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   * @param options additional options
-   */
-  public refresh(
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<LoginResponseDto>;
-  public refresh(
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<LoginResponseDto>>;
-  public refresh(
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<LoginResponseDto>>;
-  public refresh(
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    let localVarHeaders = this.defaultHeaders;
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/auth/refresh`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<LoginResponseDto>('post', `${basePath}${localVarPath}`, {
-      context: localVarHttpContext,
-      responseType: <any>responseType_,
-      ...(withCredentials ? { withCredentials } : {}),
-      headers: localVarHeaders,
-      observe: observe,
-      ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-      reportProgress: reportProgress,
-    });
-  }
-
-  /**
-   * @endpoint post /api/auth/register
-   * @param registerRequestDto
-   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-   * @param reportProgress flag to report request and response progress.
-   * @param options additional options
-   */
-  public register(
-    registerRequestDto: RegisterRequestDto,
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<RegisterResponseDto>;
-  public register(
-    registerRequestDto: RegisterRequestDto,
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<RegisterResponseDto>>;
-  public register(
-    registerRequestDto: RegisterRequestDto,
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<RegisterResponseDto>>;
-  public register(
-    registerRequestDto: RegisterRequestDto,
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    if (registerRequestDto === null || registerRequestDto === undefined) {
+    if (userId === null || userId === undefined) {
       throw new Error(
-        'Required parameter registerRequestDto was null or undefined when calling register.'
+        'Required parameter userId was null or undefined when calling revokeSecretaryAdmin.'
       );
     }
 
     let localVarHeaders = this.defaultHeaders;
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([]);
     if (localVarHttpHeaderAcceptSelected !== undefined) {
       localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
     }
@@ -378,14 +316,6 @@ export class AuthControllerService extends BaseService {
     const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
 
     const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    // to determine the Content-Type header
-    const consumes: string[] = ['application/json'];
-    const httpContentTypeSelected: string | undefined =
-      this.configuration.selectHeaderContentType(consumes);
-    if (httpContentTypeSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-    }
 
     let responseType_: 'text' | 'json' | 'blob' = 'json';
     if (localVarHttpHeaderAcceptSelected) {
@@ -398,11 +328,10 @@ export class AuthControllerService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/auth/register`;
+    let localVarPath = `/api/superadmin/secretary-admin/${this.configuration.encodeParam({ name: 'userId', value: userId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<RegisterResponseDto>('post', `${basePath}${localVarPath}`, {
+    return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
-      body: registerRequestDto,
       responseType: <any>responseType_,
       ...(withCredentials ? { withCredentials } : {}),
       headers: localVarHeaders,

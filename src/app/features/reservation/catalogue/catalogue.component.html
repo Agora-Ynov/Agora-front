@@ -57,7 +57,7 @@
           [disabled]="!hasActiveFilters()"
           (click)="resetFilters()"
         >
-          Matériel
+          Réinitialiser les filtres
         </button>
       </div>
 
@@ -73,7 +73,7 @@
               (click)="toggleFeature(option.id)"
             >
               <span class="catalogue-chip__glyph" aria-hidden="true">{{ option.shortLabel }}</span>
-              <span>{{ option.label }}</span>
+              <span class="catalogue-chip__label">{{ option.label }}</span>
             </button>
           }
         </div>
@@ -177,7 +177,8 @@
                   @if (isAuthenticated()) {
                     <a
                       class="catalogue-card__button catalogue-card__button--primary"
-                      [routerLink]="['/catalogue', resource.id, 'reserver']"
+                      [routerLink]="['/calendar']"
+                      [queryParams]="{ resourceId: resource.id }"
                     >
                       Réserver
                     </a>

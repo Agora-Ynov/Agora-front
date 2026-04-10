@@ -22,11 +22,9 @@ import { Observable } from 'rxjs';
 import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
-import { CreateReservationRequestDto } from '../model/createReservationRequestDto';
+import { BlackoutPeriodResponseDto } from '../model/blackoutPeriodResponseDto';
 // @ts-ignore
-import { PagedResponseReservationListItemDto } from '../model/pagedResponseReservationListItemDto';
-// @ts-ignore
-import { ReservationDetailResponseDto } from '../model/reservationDetailResponseDto';
+import { CreateBlackoutRequestDto } from '../model/createBlackoutRequestDto';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS } from '../variables';
@@ -36,7 +34,7 @@ import { BaseService } from '../api.base.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ReservationsControllerService extends BaseService {
+export class AdminBlackoutsService extends BaseService {
   constructor(
     protected httpClient: HttpClient,
     @Optional() @Inject(BASE_PATH) basePath: string | string[],
@@ -46,43 +44,51 @@ export class ReservationsControllerService extends BaseService {
   }
 
   /**
-   * @endpoint post /api/reservations
-   * @param createReservationRequestDto
+   * @endpoint post /api/admin/blackouts
+   * @param createBlackoutRequestDto
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
    * @param options additional options
    */
-  public createReservation(
-    createReservationRequestDto: CreateReservationRequestDto,
+  public create1(
+    createBlackoutRequestDto: CreateBlackoutRequestDto,
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<ReservationDetailResponseDto>;
-  public createReservation(
-    createReservationRequestDto: CreateReservationRequestDto,
+  ): Observable<BlackoutPeriodResponseDto>;
+  public create1(
+    createBlackoutRequestDto: CreateBlackoutRequestDto,
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<ReservationDetailResponseDto>>;
-  public createReservation(
-    createReservationRequestDto: CreateReservationRequestDto,
+  ): Observable<HttpResponse<BlackoutPeriodResponseDto>>;
+  public create1(
+    createBlackoutRequestDto: CreateBlackoutRequestDto,
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<ReservationDetailResponseDto>>;
-  public createReservation(
-    createReservationRequestDto: CreateReservationRequestDto,
+  ): Observable<HttpEvent<BlackoutPeriodResponseDto>>;
+  public create1(
+    createBlackoutRequestDto: CreateBlackoutRequestDto,
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (createReservationRequestDto === null || createReservationRequestDto === undefined) {
+    if (createBlackoutRequestDto === null || createBlackoutRequestDto === undefined) {
       throw new Error(
-        'Required parameter createReservationRequestDto was null or undefined when calling createReservation.'
+        'Required parameter createBlackoutRequestDto was null or undefined when calling create1.'
       );
     }
 
     let localVarHeaders = this.defaultHeaders;
+
+    // authentication (bearerAuth) required
+    localVarHeaders = this.configuration.addCredentialToHeaders(
+      'bearerAuth',
+      'Authorization',
+      localVarHeaders,
+      'Bearer '
+    );
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
       options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
@@ -113,14 +119,14 @@ export class ReservationsControllerService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/reservations`;
+    let localVarPath = `/api/admin/blackouts`;
     const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<ReservationDetailResponseDto>(
+    return this.httpClient.request<BlackoutPeriodResponseDto>(
       'post',
       `${basePath}${localVarPath}`,
       {
         context: localVarHttpContext,
-        body: createReservationRequestDto,
+        body: createBlackoutRequestDto,
         responseType: <any>responseType_,
         ...(withCredentials ? { withCredentials } : {}),
         headers: localVarHeaders,
@@ -132,131 +138,49 @@ export class ReservationsControllerService extends BaseService {
   }
 
   /**
-   * Mes réservations — liste paginée
-   * @endpoint get /api/reservations
+   * @endpoint delete /api/admin/blackouts/{blackoutId}
+   * @param blackoutId
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
    */
-  public listMyReservations(
-    page?: number,
-    size?: number,
-    observe?: 'body',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<PagedResponseReservationListItemDto>;
-  public listMyReservations(
-    page?: number,
-    size?: number,
-    observe?: 'response',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpResponse<PagedResponseReservationListItemDto>>;
-  public listMyReservations(
-    page?: number,
-    size?: number,
-    observe?: 'events',
-    reportProgress?: boolean,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<HttpEvent<PagedResponseReservationListItemDto>>;
-  public listMyReservations(
-    page?: number,
-    size?: number,
-    observe: any = 'body',
-    reportProgress: boolean = false,
-    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
-  ): Observable<any> {
-    let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'page',
-      <any>page,
-      QueryParamStyle.Form,
-      true
-    );
-
-    localVarQueryParameters = this.addToHttpParams(
-      localVarQueryParameters,
-      'size',
-      <any>size,
-      QueryParamStyle.Form,
-      true
-    );
-
-    let localVarHeaders = this.defaultHeaders;
-
-    const localVarHttpHeaderAcceptSelected: string | undefined =
-      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
-    if (localVarHttpHeaderAcceptSelected !== undefined) {
-      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-    }
-
-    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-    const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-    let responseType_: 'text' | 'json' | 'blob' = 'json';
-    if (localVarHttpHeaderAcceptSelected) {
-      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-        responseType_ = 'text';
-      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-        responseType_ = 'json';
-      } else {
-        responseType_ = 'blob';
-      }
-    }
-
-    let localVarPath = `/api/reservations`;
-    const { basePath, withCredentials } = this.configuration;
-    return this.httpClient.request<PagedResponseReservationListItemDto>(
-      'get',
-      `${basePath}${localVarPath}`,
-      {
-        context: localVarHttpContext,
-        params: localVarQueryParameters.toHttpParams(),
-        responseType: <any>responseType_,
-        ...(withCredentials ? { withCredentials } : {}),
-        headers: localVarHeaders,
-        observe: observe,
-        ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-        reportProgress: reportProgress,
-      }
-    );
-  }
-
-  /**
-   * Annuler une réservation
-   * @endpoint delete /api/reservations/{reservationId}
-   */
-  public cancelReservation(
-    reservationId: string,
+  public delete1(
+    blackoutId: string,
     observe?: 'body',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any>;
-  public cancelReservation(
-    reservationId: string,
+  public delete1(
+    blackoutId: string,
     observe?: 'response',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpResponse<any>>;
-  public cancelReservation(
-    reservationId: string,
+  public delete1(
+    blackoutId: string,
     observe?: 'events',
     reportProgress?: boolean,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<HttpEvent<any>>;
-  public cancelReservation(
-    reservationId: string,
+  public delete1(
+    blackoutId: string,
     observe: any = 'body',
     reportProgress: boolean = false,
     options?: { httpHeaderAccept?: undefined; context?: HttpContext; transferCache?: boolean }
   ): Observable<any> {
-    if (reservationId === null || reservationId === undefined) {
-      throw new Error(
-        'Required parameter reservationId was null or undefined when calling cancelReservation.'
-      );
+    if (blackoutId === null || blackoutId === undefined) {
+      throw new Error('Required parameter blackoutId was null or undefined when calling delete1.');
     }
 
     let localVarHeaders = this.defaultHeaders;
+
+    // authentication (bearerAuth) required
+    localVarHeaders = this.configuration.addCredentialToHeaders(
+      'bearerAuth',
+      'Authorization',
+      localVarHeaders,
+      'Bearer '
+    );
 
     const localVarHttpHeaderAcceptSelected: string | undefined =
       options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([]);
@@ -279,7 +203,7 @@ export class ReservationsControllerService extends BaseService {
       }
     }
 
-    let localVarPath = `/api/reservations/${this.configuration.encodeParam({ name: 'reservationId', value: reservationId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
+    let localVarPath = `/api/admin/blackouts/${this.configuration.encodeParam({ name: 'blackoutId', value: blackoutId, in: 'path', style: 'simple', explode: false, dataType: 'string', dataFormat: 'uuid' })}`;
     const { basePath, withCredentials } = this.configuration;
     return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`, {
       context: localVarHttpContext,
@@ -290,5 +214,79 @@ export class ReservationsControllerService extends BaseService {
       ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
       reportProgress: reportProgress,
     });
+  }
+
+  /**
+   * @endpoint get /api/admin/blackouts
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   * @param options additional options
+   */
+  public list5(
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<Array<BlackoutPeriodResponseDto>>;
+  public list5(
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpResponse<Array<BlackoutPeriodResponseDto>>>;
+  public list5(
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<HttpEvent<Array<BlackoutPeriodResponseDto>>>;
+  public list5(
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: { httpHeaderAccept?: '*/*'; context?: HttpContext; transferCache?: boolean }
+  ): Observable<any> {
+    let localVarHeaders = this.defaultHeaders;
+
+    // authentication (bearerAuth) required
+    localVarHeaders = this.configuration.addCredentialToHeaders(
+      'bearerAuth',
+      'Authorization',
+      localVarHeaders,
+      'Bearer '
+    );
+
+    const localVarHttpHeaderAcceptSelected: string | undefined =
+      options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept(['*/*']);
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+    }
+
+    const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+    const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/admin/blackouts`;
+    const { basePath, withCredentials } = this.configuration;
+    return this.httpClient.request<Array<BlackoutPeriodResponseDto>>(
+      'get',
+      `${basePath}${localVarPath}`,
+      {
+        context: localVarHttpContext,
+        responseType: <any>responseType_,
+        ...(withCredentials ? { withCredentials } : {}),
+        headers: localVarHeaders,
+        observe: observe,
+        ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+        reportProgress: reportProgress,
+      }
+    );
   }
 }

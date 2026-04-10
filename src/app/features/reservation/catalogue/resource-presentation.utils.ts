@@ -1,4 +1,5 @@
-import { ResourceDto } from '../../../core/api/model/resourceDto';
+import { ResourceDto } from '../../../core/api/models/resource.model';
+import { normalizeCentsInput } from '../../../core/api/resource-cents.util';
 
 export type ResourceCoverTheme =
   | 'hall'
@@ -77,12 +78,13 @@ export function getResourceCoverTheme(resourceId: string): ResourceCoverTheme {
   return COVER_THEMES[Math.abs(hash) % COVER_THEMES.length];
 }
 
-/**
- * Pas de `basePriceCents` dans l’API actuelle — estimation indicative pour l’UI (à remplacer par le champ backend).
- */
+/** Tarif de location en euros (hors remises groupe) ; 0 si inconnu ou gratuit selon `rentalPriceCents`. */
 export function getResourcePrice(resource: ResourceDto): number {
-  const cents = resource.depositAmountCents ?? 0;
-  return Math.max(0, Math.round(cents / 200));
+  const c = normalizeCentsInput(resource.rentalPriceCents);
+  if (c == null) {
+    return 0;
+  }
+  return c / 100;
 }
 
 export function getResourceTags(resource: ResourceDto): string[] {
@@ -96,9 +98,9 @@ export function getResourceCharacteristics(resource: ResourceDto): string[] {
   return (resource.accessibilityTags ?? []).map(tag => getFeatureLabel(tag));
 }
 
-export function getResourceAvailability(resource: ResourceDto): string[] {
-  void resource;
-  return ['Semaine'];
+/** Pas de plages horaires dans le DTO ressource : l’écran renvoie vers le calendrier. */
+export function getResourceAvailability(_resource: ResourceDto): string[] {
+  return [];
 }
 
 /*

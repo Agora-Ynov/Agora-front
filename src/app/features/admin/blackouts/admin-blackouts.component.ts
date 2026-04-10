@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { BlackoutService } from '../../../core/api/blackout.service';
 import { ResourceService } from '../../../core/api/resource.service';
 import { BlackoutPeriodDto, CreateBlackoutDto } from '../../../core/api/models/blackout.model';
@@ -179,7 +180,6 @@ export class AdminBlackoutsComponent {
       .subscribe({
         next: blackout => {
           this.blackouts.set([...this.blackouts(), blackout]);
-          this.successMessage.set('Fermeture ajoutee avec succes.');
           this.closeModal();
         },
         error: () => {
@@ -226,8 +226,10 @@ export class AdminBlackoutsComponent {
     this.errorMessage.set('');
 
     forkJoin({
-      blackouts: this.blackoutService.getAll(),
-      resources: this.resourceService.getAll(),
+      blackouts: this.blackoutService
+        .getAll()
+        .pipe(catchError(() => of([] as BlackoutPeriodDto[]))),
+      resources: this.resourceService.getAll().pipe(catchError(() => of([] as ResourceDto[]))),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({

@@ -1,0 +1,117 @@
+<div class="waitlist-shell">
+  <main class="waitlist-main">
+    <nav class="waitlist-breadcrumb" aria-label="Fil d'Ariane">
+      <a routerLink="/account">Mon compte</a>
+      <span class="waitlist-breadcrumb__sep" aria-hidden="true">/</span>
+      <span class="waitlist-breadcrumb__here">Liste d'attente</span>
+    </nav>
+
+    <header class="waitlist-hero">
+      <h1>Liste d'attente</h1>
+      <p>
+        Inscrivez-vous lorsqu'un créneau est complet : vous serez notifié si une place se libère
+        pour la ressource et le créneau choisis.
+      </p>
+    </header>
+
+    @if (error(); as err) {
+      <div class="waitlist-alert waitlist-alert--error" role="alert">{{ err }}</div>
+    }
+
+    @if (loading()) {
+      <div class="waitlist-loading" aria-busy="true">
+        <span class="waitlist-loading__dot"></span>
+        Chargement de vos inscriptions…
+      </div>
+    } @else {
+      <section class="waitlist-card">
+        <h2 class="waitlist-card__title">Mes inscriptions</h2>
+        @if (!entries().length) {
+          <p class="waitlist-empty">Aucune inscription en liste d'attente pour le moment.</p>
+        } @else {
+          <ul class="waitlist-entries">
+            @for (e of entries(); track e.id) {
+              <li class="waitlist-entry">
+                <div class="waitlist-entry__body">
+                  <strong class="waitlist-entry__resource">{{ e.resourceName }}</strong>
+                  <span class="waitlist-entry__slot"
+                    >{{ e.slotDate }} · {{ e.slotStart }} – {{ e.slotEnd }}</span
+                  >
+                  <span class="waitlist-entry__position">Position : {{ e.position }}</span>
+                  <span class="waitlist-entry__status">{{ e.status }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="waitlist-btn waitlist-btn--ghost"
+                  (click)="cancelEntry(e.id)"
+                >
+                  Me retirer
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="waitlist-card waitlist-card--form">
+        <h2 class="waitlist-card__title">Nouvelle inscription</h2>
+        <p class="waitlist-card__intro">
+          Sélectionnez une ressource et le créneau souhaité. Les horaires doivent correspondre à un
+          créneau de réservation habituel.
+        </p>
+        <div class="waitlist-form">
+          <label class="waitlist-field">
+            <span class="waitlist-field__label">Ressource</span>
+            <select
+              [(ngModel)]="enrollResourceId"
+              name="resourceId"
+              class="waitlist-field__control"
+            >
+              <option value="">Choisir une ressource…</option>
+              @for (r of resources(); track r.id) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="waitlist-field">
+            <span class="waitlist-field__label">Date du créneau</span>
+            <input
+              type="date"
+              [(ngModel)]="enrollDate"
+              name="slotDate"
+              class="waitlist-field__control"
+            />
+          </label>
+          <div class="waitlist-field-row">
+            <label class="waitlist-field">
+              <span class="waitlist-field__label">Début</span>
+              <input
+                type="time"
+                [(ngModel)]="enrollStart"
+                name="slotStart"
+                class="waitlist-field__control"
+              />
+            </label>
+            <label class="waitlist-field">
+              <span class="waitlist-field__label">Fin</span>
+              <input
+                type="time"
+                [(ngModel)]="enrollEnd"
+                name="slotEnd"
+                class="waitlist-field__control"
+              />
+            </label>
+          </div>
+          <button
+            type="button"
+            class="waitlist-btn waitlist-btn--primary waitlist-btn--block"
+            [disabled]="saving()"
+            (click)="enroll()"
+          >
+            {{ saving() ? 'Inscription en cours…' : "S'inscrire sur ce créneau" }}
+          </button>
+        </div>
+      </section>
+    }
+  </main>
+</div>

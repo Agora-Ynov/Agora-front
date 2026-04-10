@@ -1,16 +1,16 @@
 <section class="affiliation-page">
   <main class="affiliation-main">
-    <nav class="affiliation-breadcrumb" aria-label="Fil d'ariane">
+    <nav class="affiliation-breadcrumb" aria-label="Fil d ariane">
       <a routerLink="/account">Tableau de bord</a>
-      <span aria-hidden="true">›</span>
-      <span>Demande d'affiliation</span>
+      <span aria-hidden="true">></span>
+      <span>Demande d affiliation</span>
     </nav>
 
     <header class="affiliation-hero">
-      <h1>Demande d'affiliation ou d'exoneration</h1>
+      <h1>Demande d affiliation ou d exoneration</h1>
       <p>
-        Soumettez une demande de rattachement a un groupe ou d'exoneration de tarif. Votre dossier
-        sera examine par l'equipe administrative.
+        Soumettez une demande de rattachement a un groupe ou d exoneration de tarif. Votre dossier
+        sera examine par l equipe administrative.
       </p>
     </header>
 
@@ -48,7 +48,7 @@
             <div class="previous-request__content">
               <p class="previous-request__title">
                 <span class="previous-request__type">{{ request.typeLabel }}</span>
-                <span aria-hidden="true">→</span>
+                <span aria-hidden="true">-></span>
                 <span>{{ request.groupLabel }}</span>
               </p>
               <p class="previous-request__meta">{{ request.submittedAt }}</p>
@@ -62,122 +62,522 @@
 
     <section class="stepper" aria-label="Etapes de la demande">
       @for (step of steps; track step.index) {
-        <div class="step" [class.step--active]="currentStep() === step.index">
-          <div class="step__dot">{{ step.index }}</div>
+        <div
+          class="step"
+          [class.step--active]="isStepActive(step.index)"
+          [class.step--completed]="isStepCompleted(step.index)"
+        >
+          <div class="step__dot">
+            @if (isStepCompleted(step.index)) {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7 12.5L10.2 15.7L17 8.9"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            } @else {
+              {{ step.index }}
+            }
+          </div>
           <div class="step__label">{{ step.title }}</div>
         </div>
       }
     </section>
 
-    <section class="request-type">
-      <h2>Que souhaitez-vous demander ?</h2>
+    @if (currentStep() === 1) {
+      <section class="request-type">
+        <h2>Que souhaitez-vous demander ?</h2>
 
-      <div class="request-type__grid">
-        @for (option of requestTypes; track option.id) {
-          <button
-            type="button"
-            class="type-card"
-            [class.type-card--selected]="selectedType() === option.id"
-            (click)="selectType(option.id)"
-          >
-            <span class="type-card__icon" aria-hidden="true">
-              @switch (option.icon) {
-                @case ('heart') {
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 19.25L4.9 12.4C3.5 11.05 3.5 8.85 4.9 7.5C6.3 6.15 8.58 6.15 9.98 7.5L12 9.45L14.02 7.5C15.42 6.15 17.7 6.15 19.1 7.5C20.5 8.85 20.5 11.05 19.1 12.4L12 19.25Z"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
+        <div class="request-type__grid">
+          @for (option of requestTypes; track option.id) {
+            <button
+              type="button"
+              class="type-card"
+              [class.type-card--selected]="selectedType() === option.id"
+              (click)="selectType(option.id)"
+            >
+              <span class="type-card__icon" aria-hidden="true">
+                @switch (option.icon) {
+                  @case ('heart') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 19.25L4.9 12.4C3.5 11.05 3.5 8.85 4.9 7.5C6.3 6.15 8.58 6.15 9.98 7.5L12 9.45L14.02 7.5C15.42 6.15 17.7 6.15 19.1 7.5C20.5 8.85 20.5 11.05 19.1 12.4L12 19.25Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  }
+                  @case ('shield') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 4L18 6.2V11.3C18 15.1 15.58 18.54 12 19.8C8.42 18.54 6 15.1 6 11.3V6.2L12 4Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M9.4 12.2L11.15 13.95L14.7 10.4"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  }
+                  @case ('crown') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M5 18L6.7 8.5L12 12.5L17.3 8.5L19 18H5Z"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linejoin="round"
+                      />
+                      <circle cx="6.5" cy="7.5" r="1.3" fill="currentColor" />
+                      <circle cx="12" cy="5.8" r="1.3" fill="currentColor" />
+                      <circle cx="17.5" cy="7.5" r="1.3" fill="currentColor" />
+                    </svg>
+                  }
+                  @case ('users') {
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="9" cy="9" r="2.75" stroke="currentColor" stroke-width="1.7" />
+                      <circle
+                        cx="16.75"
+                        cy="10"
+                        r="2.15"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                      />
+                      <path
+                        d="M4.5 18.2C5.55 15.6 7.35 14.35 9.55 14.35C11.75 14.35 13.55 15.6 14.6 18.2"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M15.6 17.5C16.2 16.05 17.25 15.25 18.55 15.25C19.35 15.25 20.1 15.55 20.8 16.2"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  }
                 }
-                @case ('shield') {
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 4L18 6.2V11.3C18 15.1 15.58 18.54 12 19.8C8.42 18.54 6 15.1 6 11.3V6.2L12 4Z"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M9.4 12.2L11.15 13.95L14.7 10.4"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                }
-                @case ('crown') {
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M5 18L6.7 8.5L12 12.5L17.3 8.5L19 18H5Z"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linejoin="round"
-                    />
-                    <circle cx="6.5" cy="7.5" r="1.3" fill="currentColor" />
-                    <circle cx="12" cy="5.8" r="1.3" fill="currentColor" />
-                    <circle cx="17.5" cy="7.5" r="1.3" fill="currentColor" />
-                  </svg>
-                }
-                @case ('users') {
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="9" cy="9" r="2.75" stroke="currentColor" stroke-width="1.7" />
-                    <circle cx="16.75" cy="10" r="2.15" stroke="currentColor" stroke-width="1.7" />
-                    <path
-                      d="M4.5 18.2C5.55 15.6 7.35 14.35 9.55 14.35C11.75 14.35 13.55 15.6 14.6 18.2"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="M15.6 17.5C16.2 16.05 17.25 15.25 18.55 15.25C19.35 15.25 20.1 15.55 20.8 16.2"
-                      stroke="currentColor"
-                      stroke-width="1.7"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                }
+              </span>
+
+              <span class="type-card__title">{{ option.title }}</span>
+              <span class="type-card__description">{{ option.description }}</span>
+              <span class="type-card__badge">{{ option.badge }}</span>
+            </button>
+          }
+        </div>
+
+        @if (selectedType()) {
+          <section class="documents-box request-type__documents">
+            <div class="documents-box__title">
+              <span class="documents-box__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
+                  <path
+                    d="M12 11V16"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M12 8.3H12.01"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </span>
+              <strong>{{ requiredDocuments().title }}</strong>
+            </div>
+
+            <ul class="documents-box__list">
+              @for (item of requiredDocuments().items; track item) {
+                <li>
+                  <span class="documents-box__pin" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M14.9 6.1L17.9 9.1"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="M10.8 17.2L6.8 18.2L7.8 14.2L14.9 7.1C15.5 6.5 16.5 6.5 17.1 7.1C17.7 7.7 17.7 8.7 17.1 9.3L10.8 15.6"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span>{{ item }}</span>
+                </li>
               }
-            </span>
-
-            <span class="type-card__title">{{ option.title }}</span>
-            <span class="type-card__description">{{ option.description }}</span>
-            <span class="type-card__badge">{{ option.badge }}</span>
-          </button>
+            </ul>
+          </section>
         }
-      </div>
-    </section>
+      </section>
+    }
 
-    <section class="documents-box">
-      <div class="documents-box__title">
-        <span class="documents-box__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
-            <path d="M12 11V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-            <path
-              d="M12 8.3H12.01"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
+    @if (currentStep() === 2) {
+      <section class="details-step">
+        <div class="details-heading">
+          <span class="details-heading__icon" aria-hidden="true">
+            @if (selectedTypeOption()?.icon === 'heart') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 19.25L4.9 12.4C3.5 11.05 3.5 8.85 4.9 7.5C6.3 6.15 8.58 6.15 9.98 7.5L12 9.45L14.02 7.5C15.42 6.15 17.7 6.15 19.1 7.5C20.5 8.85 20.5 11.05 19.1 12.4L12 19.25Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            } @else if (selectedTypeOption()?.icon === 'shield') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 4L18 6.2V11.3C18 15.1 15.58 18.54 12 19.8C8.42 18.54 6 15.1 6 11.3V6.2L12 4Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            } @else if (selectedTypeOption()?.icon === 'crown') {
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 18L6.7 8.5L12 12.5L17.3 8.5L19 18H5Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="9" cy="9" r="2.75" stroke="currentColor" stroke-width="1.7" />
+                <circle cx="16.75" cy="10" r="2.15" stroke="currentColor" stroke-width="1.7" />
+                <path
+                  d="M4.5 18.2C5.55 15.6 7.35 14.35 9.55 14.35C11.75 14.35 13.55 15.6 14.6 18.2"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+              </svg>
+            }
+          </span>
+          <h2>{{ getDetailsHeading() }}</h2>
+        </div>
+
+        @if (selectedType() === 'ASSOCIATION') {
+          <div class="form-grid">
+            <label class="field-group">
+              <span>Nom de l association *</span>
+              <input
+                type="text"
+                [value]="detailForm().associationName"
+                (input)="updateDetailField('associationName', $any($event.target).value)"
+                placeholder="Ex: Association Culturelle"
+              />
+            </label>
+
+            <label class="field-group">
+              <span>Votre role *</span>
+              <input
+                type="text"
+                [value]="detailForm().associationRole"
+                (input)="updateDetailField('associationRole', $any($event.target).value)"
+                placeholder="Ex: Presidente"
+              />
+            </label>
+          </div>
+        }
+
+        @if (selectedType() === 'SOCIAL_CRITERIA') {
+          <label class="field-group">
+            <span>Aide ou situation concernee *</span>
+            <input
+              type="text"
+              [value]="detailForm().socialSupportLabel"
+              (input)="updateDetailField('socialSupportLabel', $any($event.target).value)"
+              placeholder="Ex: RSA, AAH, APL, accompagnement social..."
             />
-          </svg>
-        </span>
-        <strong>{{ requiredDocuments().title }}</strong>
-      </div>
-
-      <ul class="documents-box__list">
-        @for (item of requiredDocuments().items; track item) {
-          <li>{{ item }}</li>
+          </label>
         }
-      </ul>
-    </section>
+
+        @if (selectedType() === 'ELECTED_MANDATE') {
+          <label class="field-group">
+            <span>Type de mandat *</span>
+            <select
+              [value]="detailForm().mandateRole"
+              (change)="updateDetailField('mandateRole', $any($event.target).value)"
+            >
+              <option value="" disabled>Selectionnez un mandat</option>
+              @for (option of mandateOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        @if (selectedType() === 'GROUP_JOIN') {
+          <label class="field-group">
+            <span>Groupe a rejoindre *</span>
+            <select
+              [value]="detailForm().groupId"
+              (change)="updateDetailField('groupId', $any($event.target).value)"
+            >
+              @for (group of groups; track group.id) {
+                <option [value]="group.id">{{ group.name }}</option>
+              }
+            </select>
+            @if (selectedGroup(); as group) {
+              <small class="field-help">{{ group.subtitle }}</small>
+            }
+          </label>
+        }
+
+        <label class="field-group">
+          <span>Motif de votre demande *</span>
+          <textarea
+            rows="5"
+            [value]="detailForm().reason"
+            (input)="updateDetailField('reason', $any($event.target).value)"
+            placeholder="Expliquez en detail la raison de votre demande, votre situation, et comment vous comptez utiliser les ressources municipales..."
+          ></textarea>
+          <small class="field-error" [class.field-error--valid]="reasonLength() >= 30">
+            {{ reasonLength() }} / 30 caracteres minimum
+          </small>
+        </label>
+      </section>
+    }
+
+    @if (currentStep() === 3) {
+      <section class="justifications-step">
+        <h2>Pieces justificatives</h2>
+
+        <section class="documents-box documents-box--neutral">
+          <div class="documents-box__title documents-box__title--neutral">
+            <span class="documents-box__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
+                <path
+                  d="M12 11V16"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12 8.3H12.01"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <strong>{{ requiredDocuments().title }}</strong>
+          </div>
+
+          <ul class="documents-box__list">
+            @for (item of requiredDocuments().items; track item) {
+              <li>
+                <span class="documents-box__pin" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M14.9 6.1L17.9 9.1"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M10.8 17.2L6.8 18.2L7.8 14.2L14.9 7.1C15.5 6.5 16.5 6.5 17.1 7.1C17.7 7.7 17.7 8.7 17.1 9.3L10.8 15.6"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span>{{ item }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <div class="upload-panel">
+          <label class="field-group">
+            <span>Ajouter un document</span>
+            <div class="upload-row">
+              <input
+                type="text"
+                readonly
+                value="Choisissez un fichier depuis votre appareil"
+                placeholder="Choisissez un fichier"
+              />
+              <input
+                #fileInput
+                hidden
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                (change)="onFileSelected($event)"
+              />
+              <button type="button" class="upload-button" (click)="openFilePicker()">
+                Ajouter
+              </button>
+            </div>
+            <small class="field-help">
+              Dans la version reelle, vous pourrez deposer vos fichiers directement (PDF, JPG, PNG
+              max 10 Mo par fichier).
+            </small>
+            @if (documentErrorMessage()) {
+              <small class="field-error">{{ documentErrorMessage() }}</small>
+            }
+            @if (documentFeedbackMessage()) {
+              <small class="field-success">{{ documentFeedbackMessage() }}</small>
+            }
+          </label>
+
+          @if (attachedDocuments().length) {
+            <div class="document-list">
+              @for (document of attachedDocuments(); track document) {
+                <div class="document-item">
+                  <div class="document-item__meta">
+                    <strong>{{ document.name }}</strong>
+                    <small>{{ document.sizeLabel }}</small>
+                  </div>
+                  <button
+                    type="button"
+                    class="document-remove"
+                    (click)="removeDocument(document.name)"
+                  >
+                    Retirer
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-upload">
+              <strong>Aucune piece jointe ajoutee</strong>
+              <p>
+                @if (requiredDocuments().optional) {
+                  Vous pouvez tout de meme soumettre sans piece jointe. L administration pourra vous
+                  en demander par la suite.
+                } @else {
+                  Ajoutez au moins une piece justificative pour continuer.
+                }
+              </p>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (currentStep() === 4) {
+      <section class="recap-step">
+        <h2>Recapitulatif de votre demande</h2>
+
+        <article class="recap-card">
+          <div class="recap-row">
+            <span class="recap-label">Type de demande</span>
+            <strong>{{ selectedTypeOption()?.title }}</strong>
+          </div>
+
+          <div class="recap-row">
+            <span class="recap-label">Demandeur</span>
+            <strong>{{ displayName() }}</strong>
+            <p>{{ displayEmail() }}</p>
+          </div>
+
+          @if (selectedType() === 'GROUP_JOIN' && selectedGroup(); as group) {
+            <div class="recap-row">
+              <span class="recap-label">Groupe vise</span>
+              <strong>{{ group.name }}</strong>
+              <p>{{ group.subtitle }}</p>
+            </div>
+          }
+
+          @if (selectedType() === 'ASSOCIATION') {
+            <div class="recap-row">
+              <span class="recap-label">Association</span>
+              <strong>{{ detailForm().associationName }}</strong>
+              <p>{{ detailForm().associationRole }}</p>
+            </div>
+          }
+
+          @if (selectedType() === 'SOCIAL_CRITERIA') {
+            <div class="recap-row">
+              <span class="recap-label">Situation declaree</span>
+              <strong>{{ detailForm().socialSupportLabel }}</strong>
+            </div>
+          }
+
+          @if (selectedType() === 'ELECTED_MANDATE') {
+            <div class="recap-row">
+              <span class="recap-label">Mandat</span>
+              <strong>{{ detailForm().mandateRole }}</strong>
+            </div>
+          }
+
+          <div class="recap-row">
+            <span class="recap-label">Motif</span>
+            <p>{{ detailForm().reason }}</p>
+          </div>
+
+          <div class="recap-row">
+            <span class="recap-label">Pieces jointes ({{ attachedDocuments().length }})</span>
+            @if (attachedDocuments().length) {
+              <ul class="recap-list">
+                @for (document of attachedDocuments(); track document) {
+                  <li>{{ document.name }}</li>
+                }
+              </ul>
+            } @else {
+              <p>Aucune piece jointe</p>
+            }
+          </div>
+        </article>
+
+        <article class="info-note">
+          <p>
+            Les informations transmises sont collectees dans le cadre du traitement de votre demande
+            d affiliation ou d exoneration par la mairie. Elles sont conservees pendant la duree
+            necessaire au traitement, conformement au RGPD.
+          </p>
+        </article>
+
+        @if (submissionMessage()) {
+          <div class="success-banner">{{ submissionMessage() }}</div>
+        }
+      </section>
+    }
 
     <footer class="actions-bar">
-      <a class="ghost-button" routerLink="/account">Precedent</a>
-      <button type="button" class="primary-button" (click)="nextStep()">Suivant</button>
+      @if (currentStep() === 1) {
+        <a class="ghost-button" routerLink="/account">Precedent</a>
+      } @else {
+        <button type="button" class="ghost-button" (click)="previousStep()">Precedent</button>
+      }
+
+      @if (currentStep() < 4) {
+        <button
+          type="button"
+          class="primary-button"
+          [disabled]="!isCurrentStepValid()"
+          (click)="nextStep()"
+        >
+          Suivant
+        </button>
+      } @else {
+        <button type="button" class="submit-button" (click)="submitRequest()">
+          Soumettre ma demande
+        </button>
+      }
     </footer>
   </main>
 </section>

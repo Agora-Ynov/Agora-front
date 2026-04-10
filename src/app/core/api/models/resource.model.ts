@@ -4,6 +4,21 @@ import { TimeSlotDto as OpenApiTimeSlotDto } from '../model/timeSlotDto';
 export type ResourceType = 'IMMOBILIER' | 'MOBILIER';
 
 /**
+ * Tags d'équipement / accessibilité : identifiants alignés sur l'enum API.
+ * Source unique pour formulaires admin et filtres catalogue.
+ */
+export const RESOURCE_ACCESSIBILITY_OPTIONS = [
+  { id: 'PMR_ACCESS', label: 'Accès PMR' },
+  { id: 'PARKING', label: 'Parking' },
+  { id: 'SOUND_SYSTEM', label: 'Sonorisation' },
+  { id: 'PROJECTOR', label: 'Vidéoprojecteur' },
+  { id: 'KITCHEN', label: 'Cuisine équipée' },
+  { id: 'STREET_ACCESS', label: 'Accès rue directe' },
+] as const;
+
+export type ResourceAccessibilityTagId = (typeof RESOURCE_ACCESSIBILITY_OPTIONS)[number]['id'];
+
+/**
  * Ressource catalogue / admin : miroir du contrat API (`ResourceDto` généré).
  * Les champs optionnels reflètent la sérialisation JSON (absence possible).
  */
@@ -14,15 +29,16 @@ export interface ResourceDto {
   capacity?: number | null;
   description?: string | null;
   depositAmountCents?: number;
+  /** Tarif de location en centimes ; absent si non renseigné côté catalogue. */
+  rentalPriceCents?: number | null;
   imageUrl?: string | null;
-  /** Tags d’accessibilité (noms d’enum côté back, ex. PMR_ACCESS). */
+  /** Tags d'accessibilité (noms d'enum côté back, ex. PMR_ACCESS). */
   accessibilityTags?: string[];
   isActive?: boolean;
 }
 
 /**
  * Création / mise à jour : aligné sur `ResourceRequest` (backend).
- * Pas de tarif de base ni quantité côté API pour l’instant.
  */
 export interface CreateResourceDto {
   name: string;
@@ -30,20 +46,25 @@ export interface CreateResourceDto {
   description: string;
   capacity: number | null;
   depositAmountCents: number;
+  /** Centimes ; omis ou undefined si le formulaire laisse « non renseigné ». */
+  rentalPriceCents?: number;
   imageUrl?: string | null;
   accessibilityTags: string[];
 }
 
 export type UpdateResourceDto = CreateResourceDto;
 
-/** Formulaire admin : uniquement les champs envoyés au backend. */
+/** Formulaire admin : champs UI avant mapping vers DTO. */
 export interface ResourceFormValue {
   resourceType: ResourceType;
   name: string;
   description: string;
   capacity: number | null;
   depositAmountEuros: number | null;
-  accessibilityTagsText: string;
+  /** Tarif de location (EUR) ; null = non renseigné (API : pas de tarif catalogue). */
+  rentalAmountEuros: number | null;
+  /** Identifiants sélectionnés parmi `RESOURCE_ACCESSIBILITY_OPTIONS`. */
+  accessibilityTags: string[];
   imageUrl?: string | null;
 }
 
@@ -59,11 +80,3 @@ export type ResourceSlotDto = Required<OpenApiTimeSlotDto>;
 export type { CalendarResponseDto as CalendarMonthDto } from '../model/calendarResponseDto';
 export type { CalendarDayDto } from '../model/calendarDayDto';
 export type { CalendarSlotDto } from '../model/calendarSlotDto';
-
-/*
- * Anciens types / champs front-only (non exposés par le backend actuel) — à réintroduire quand l’API les fournira :
- *
- * export type ResourceStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
- * export type AccessibilityTag = 'PMR_ACCESS' | 'PARKING' | ... ;
- * // basePriceCents, quantity, requiresDeposit, depositExemptible, quotas, blackouts embarqués, etc.
- */

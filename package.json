@@ -10,12 +10,16 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:mutation": "stryker run",
     "lint": "eslint src --ext .ts,.html",
     "lint:fix": "eslint src --ext .ts,.html --fix",
     "e2e": "cypress run",
     "e2e:open": "cypress open",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.html\"",
-    "openapi:generate": "npx @openapitools/openapi-generator-cli generate -i http://127.0.0.1:8082/v3/api-docs -g typescript-angular -o src/app/core/api --additional-properties=providedIn=root,ngVersion=17"
+    "openapi:fetch": "curl -sS -o openapi/agora-openapi.json \"http://127.0.0.1:${BACKEND_PORT:-8082}/v3/api-docs\" && node scripts/normalize-openapi-tags.mjs",
+    "openapi:import-from-back-tests": "sh -c 'cd \"${AGORA_BACK_DIR:-../Agora-back}\" && ./mvnw -q test -Dtest=OpenApiExportTest -Dagora.export.openapi=true && cp target/agora-openapi-export.json \"${AGORA_FRONT_DIR:-../Agora-front}/openapi/agora-openapi.json\"' && node scripts/normalize-openapi-tags.mjs",
+    "openapi:sync": "npm run openapi:import-from-back-tests && npm run openapi:generate",
+    "openapi:generate": "npx @openapitools/openapi-generator-cli generate -i openapi/agora-openapi.json -g typescript-angular -o src/app/core/api --additional-properties=providedIn=root,ngVersion=17"
   },
   "private": true,
   "dependencies": {
@@ -39,6 +43,8 @@
     "@angular-eslint/template-parser": "^17.5.3",
     "@angular/cli": "^17.3.17",
     "@angular/compiler-cli": "^17.3.0",
+    "@stryker-mutator/core": "^9.6.0",
+    "@stryker-mutator/jest-runner": "^9.6.0",
     "@types/jasmine": "~5.1.0",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
