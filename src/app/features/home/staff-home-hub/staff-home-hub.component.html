@@ -28,7 +28,8 @@
       <p class="staff-hub__eyebrow">Espace équipe municipale</p>
       <h1 class="staff-hub__title">Bonjour, {{ welcomeLine() }}</h1>
       <p class="staff-hub__subtitle">
-        Votre centre de pilotage : accès rapide au secrétariat, au catalogue usagers et aux indicateurs.
+        Votre centre de pilotage : accès rapide au secrétariat, au catalogue usagers et aux
+        indicateurs.
       </p>
     </div>
     <a routerLink="/account" class="staff-hub__profile-chip">
@@ -51,14 +52,20 @@
         } @else {
           <div class="tile--welcome__progress">
             <span class="tile--welcome__progress-label">Charge du jour (indicatif)</span>
-            <div class="tile--welcome__bar" role="progressbar" [attr.aria-valuenow]="validationRate()">
+            <div
+              class="tile--welcome__bar"
+              role="progressbar"
+              [attr.aria-valuenow]="validationRate()"
+            >
               <span class="tile--welcome__bar-fill" [style.width.%]="validationRate()"></span>
             </div>
             <span class="tile--welcome__progress-value">{{ validationRate() }}%</span>
           </div>
         }
         <div class="tile--welcome__cta">
-          <a routerLink="/admin/reservations" class="hub-btn hub-btn--light">Traiter les réservations</a>
+          <a routerLink="/admin/reservations" class="hub-btn hub-btn--light"
+            >Traiter les réservations</a
+          >
           <a routerLink="/catalogue" class="hub-btn hub-btn--ghost">Voir le catalogue public</a>
         </div>
       </div>
@@ -165,7 +172,10 @@
     </a>
 
     @if (showSuperadminTile()) {
-      <a routerLink="/superadmin/admin-support" class="tile tile--nav tile--nav--super tile--nav--wide">
+      <a
+        routerLink="/superadmin/admin-support"
+        class="tile tile--nav tile--nav--super tile--nav--wide"
+      >
         <span class="tile--nav__icon" aria-hidden="true">✦</span>
         <span class="tile--nav__title">Délégation ADMIN</span>
         <span class="tile--nav__hint">Comptes admin support (superadmin)</span>
@@ -175,7 +185,9 @@
     @if (canStaffExports()) {
       <section class="tile tile--exports">
         <h2 class="tile__heading">Exports CSV</h2>
-        <p class="tile__muted tile__muted--tight">Réservations et paiements sur une plage de dates.</p>
+        <p class="tile__muted tile__muted--tight">
+          Réservations et paiements sur une plage de dates.
+        </p>
         @if (exportMessage(); as exMsg) {
           <p class="staff-hub__inline-msg" role="status">{{ exMsg }}</p>
         }
@@ -190,14 +202,26 @@
           </label>
           <label>
             Au
-            <input type="date" [value]="exportDateTo()" (input)="setExportTo($any($event.target).value)" />
+            <input
+              type="date"
+              [value]="exportDateTo()"
+              (input)="setExportTo($any($event.target).value)"
+            />
           </label>
         </div>
         <div class="exports-actions">
-          <button type="button" class="hub-btn hub-btn--primary" (click)="downloadReservationsExport()">
+          <button
+            type="button"
+            class="hub-btn hub-btn--primary"
+            (click)="downloadReservationsExport()"
+          >
             Réservations
           </button>
-          <button type="button" class="hub-btn hub-btn--secondary" (click)="downloadPaymentsExport()">
+          <button
+            type="button"
+            class="hub-btn hub-btn--secondary"
+            (click)="downloadPaymentsExport()"
+          >
             Paiements
           </button>
         </div>

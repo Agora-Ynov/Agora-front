@@ -244,10 +244,7 @@ export class AdminAuditPageComponent implements OnDestroy {
       if (!e.reservationId || seen.has(e.reservationId)) {
         continue;
       }
-      seen.set(
-        e.reservationId,
-        e.bookingLabel ?? `Résa · ${e.reservationId.substring(0, 8)}`
-      );
+      seen.set(e.reservationId, e.bookingLabel ?? `Résa · ${e.reservationId.substring(0, 8)}`);
     }
     return [...seen.entries()].map(([reservationId, label]) => ({ reservationId, label }));
   });
@@ -324,7 +321,10 @@ export class AdminAuditPageComponent implements OnDestroy {
   }
 
   private syncPaginationFromQueryParams(): void {
-    const page = Math.max(0, parseInt(this.route.snapshot.queryParamMap.get('page') ?? '0', 10) || 0);
+    const page = Math.max(
+      0,
+      parseInt(this.route.snapshot.queryParamMap.get('page') ?? '0', 10) || 0
+    );
     const sizeRaw = parseInt(this.route.snapshot.queryParamMap.get('size') ?? '25', 10) || 25;
     const size = Math.min(100, Math.max(5, sizeRaw));
     this.auditPage.set(page);
@@ -428,7 +428,9 @@ export class AdminAuditPageComponent implements OnDestroy {
       (bookingReference && bookingReference.length > 0 ? `Réf. ${bookingReference}` : null) ??
       (bookingRef ? (bookingRef.startsWith('Réf.') ? bookingRef : `Réf. ${bookingRef}`) : null) ??
       (typeof displayFromApi === 'string' ? (displayFromApi as string) : null) ??
-      (reservationId && reservationId.length >= 8 ? `Résa · ${reservationId.substring(0, 8)}` : null);
+      (reservationId && reservationId.length >= 8
+        ? `Résa · ${reservationId.substring(0, 8)}`
+        : null);
     const ipRaw = details['ipAddress'];
     const ipAddress = typeof ipRaw === 'string' ? ipRaw : '—';
 
@@ -642,7 +644,9 @@ export class AdminAuditPageComponent implements OnDestroy {
     }).format(new Date(value));
   }
 
-  detailRows(details: Record<string, unknown>): Array<{ key: string; label: string; value: string }> {
+  detailRows(
+    details: Record<string, unknown>
+  ): Array<{ key: string; label: string; value: string }> {
     return Object.entries(details)
       .filter(([k]) => !AdminAuditPageComponent.AUDIT_TECH_DETAIL_KEYS.has(k))
       .sort(([a], [b]) => a.localeCompare(b))

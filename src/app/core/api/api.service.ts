@@ -9,7 +9,10 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  get<T>(path: string, params?: Record<string, string | number | boolean | string[]>): Observable<T> {
+  get<T>(
+    path: string,
+    params?: Record<string, string | number | boolean | string[]>
+  ): Observable<T> {
     return this.http.get<T>(`${this.base}${path}`, {
       params: this.buildParams(params),
       withCredentials: true,
@@ -20,7 +23,10 @@ export class ApiService {
    * GET avec Accept application/json : le client OpenAPI utilise souvent un Accept générique
    * et force responseType blob, ce qui empêche d'exploiter le corps comme objet typé.
    */
-  getJson<T>(path: string, params?: Record<string, string | number | boolean | string[]>): Observable<T> {
+  getJson<T>(
+    path: string,
+    params?: Record<string, string | number | boolean | string[]>
+  ): Observable<T> {
     return this.http.get<T>(`${this.base}${path}`, {
       params: this.buildParams(params),
       withCredentials: true,

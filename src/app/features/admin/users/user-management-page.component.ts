@@ -251,7 +251,8 @@ export class UserManagementPageComponent {
   }
 
   pickSearchSuggestion(user: AdminUserRowDto): void {
-    const q = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || (user.email ?? '');
+    const q =
+      [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || (user.email ?? '');
     this.searchTerm.set(q);
     this.searchSuggestions.set([]);
     this.searchReload.next();
@@ -293,7 +294,7 @@ export class UserManagementPageComponent {
         const msg =
           typeof body === 'string'
             ? body
-            : body?.message ?? body?.detail ?? "Impossible de renvoyer l'activation.";
+            : (body?.message ?? body?.detail ?? "Impossible de renvoyer l'activation.");
         this.feedback.set(typeof msg === 'string' ? msg : "Impossible de renvoyer l'activation.");
         this.closeResendActivationModal();
       },

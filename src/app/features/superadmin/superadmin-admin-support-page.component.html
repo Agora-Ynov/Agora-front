@@ -11,7 +11,9 @@
   <section class="superadmin-panel">
     <h2>Rechercher un utilisateur</h2>
     @if (userLookupError(); as uErr) {
-      <div class="superadmin-page__alert superadmin-page__alert--warn" role="status">{{ uErr }}</div>
+      <div class="superadmin-page__alert superadmin-page__alert--warn" role="status">
+        {{ uErr }}
+      </div>
     }
     <div class="superadmin-search-row">
       <label class="superadmin-search superadmin-search--grow">
@@ -176,11 +178,17 @@
           tracée côté serveur.
         </p>
         <p>
-          <strong>{{ rt.firstName }} {{ rt.lastName }}</strong><br />
+          <strong>{{ rt.firstName }} {{ rt.lastName }}</strong
+          ><br />
           <span class="superadmin-page__muted">{{ rt.email ?? '—' }}</span>
         </p>
         <div class="superadmin-revoke-modal__actions">
-          <button type="button" class="superadmin-btn" (click)="closeRevokeModal()" [disabled]="revokeBusy()">
+          <button
+            type="button"
+            class="superadmin-btn"
+            (click)="closeRevokeModal()"
+            [disabled]="revokeBusy()"
+          >
             Annuler
           </button>
           <button

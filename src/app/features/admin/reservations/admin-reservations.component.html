@@ -311,7 +311,9 @@
         </section>
 
         <section class="modal-section">
-          <label class="field-label" for="adminComment">Commentaire pour l’historique interne</label>
+          <label class="field-label" for="adminComment"
+            >Commentaire pour l’historique interne</label
+          >
           <textarea
             id="adminComment"
             class="field-control field-control--textarea"
@@ -401,8 +403,9 @@
 
         <div class="warning-box">
           Vous allez refuser la réservation
-          <strong>{{ reservationReject.displayReference }}</strong> ({{ reservationReject.resourceName }}).
-          Indiquez un motif clair pour l’usager.
+          <strong>{{ reservationReject.displayReference }}</strong> ({{
+            reservationReject.resourceName
+          }}). Indiquez un motif clair pour l’usager.
         </div>
 
         <label class="field-label" for="rejectReason">Motif *</label>

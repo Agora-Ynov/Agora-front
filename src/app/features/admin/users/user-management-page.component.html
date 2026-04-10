@@ -910,9 +910,12 @@
         <p class="resend-activation-modal__intro">
           Vous allez demander un <strong>nouveau lien d’activation</strong> pour le compte suivant.
         </p>
-        <p><strong>{{ getUserLabel(ru) }}</strong></p>
         <p>
-          E-mail utilisé pour l’envoi : <strong>{{ ru.email?.trim() ? ru.email : '— aucun —' }}</strong>
+          <strong>{{ getUserLabel(ru) }}</strong>
+        </p>
+        <p>
+          E-mail utilisé pour l’envoi :
+          <strong>{{ ru.email?.trim() ? ru.email : '— aucun —' }}</strong>
         </p>
         <ul class="resend-activation-modal__bullets">
           <li>Le lien généré a une durée de vie limitée (souvent 72 h, selon configuration).</li>
@@ -926,7 +929,11 @@
           </p>
         }
         <div class="resend-activation-modal__actions">
-          <button type="button" class="resend-activation-modal__btn" (click)="closeResendActivationModal()">
+          <button
+            type="button"
+            class="resend-activation-modal__btn"
+            (click)="closeResendActivationModal()"
+          >
             Annuler
           </button>
           <button

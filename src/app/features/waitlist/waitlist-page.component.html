@@ -9,8 +9,8 @@
     <header class="waitlist-hero">
       <h1>Liste d'attente</h1>
       <p>
-        Inscrivez-vous lorsqu'un créneau est complet : vous serez notifié si une place se libère pour la
-        ressource et le créneau choisis.
+        Inscrivez-vous lorsqu'un créneau est complet : vous serez notifié si une place se libère
+        pour la ressource et le créneau choisis.
       </p>
     </header>
 
@@ -40,7 +40,11 @@
                   <span class="waitlist-entry__position">Position : {{ e.position }}</span>
                   <span class="waitlist-entry__status">{{ e.status }}</span>
                 </div>
-                <button type="button" class="waitlist-btn waitlist-btn--ghost" (click)="cancelEntry(e.id)">
+                <button
+                  type="button"
+                  class="waitlist-btn waitlist-btn--ghost"
+                  (click)="cancelEntry(e.id)"
+                >
                   Me retirer
                 </button>
               </li>
@@ -52,13 +56,17 @@
       <section class="waitlist-card waitlist-card--form">
         <h2 class="waitlist-card__title">Nouvelle inscription</h2>
         <p class="waitlist-card__intro">
-          Sélectionnez une ressource et le créneau souhaité. Les horaires doivent correspondre à un créneau
-          de réservation habituel.
+          Sélectionnez une ressource et le créneau souhaité. Les horaires doivent correspondre à un
+          créneau de réservation habituel.
         </p>
         <div class="waitlist-form">
           <label class="waitlist-field">
             <span class="waitlist-field__label">Ressource</span>
-            <select [(ngModel)]="enrollResourceId" name="resourceId" class="waitlist-field__control">
+            <select
+              [(ngModel)]="enrollResourceId"
+              name="resourceId"
+              class="waitlist-field__control"
+            >
               <option value="">Choisir une ressource…</option>
               @for (r of resources(); track r.id) {
                 <option [value]="r.id">{{ r.name }}</option>

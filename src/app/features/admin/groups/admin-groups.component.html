@@ -153,8 +153,8 @@
 
             <p>
               Les associations locales peuvent beneficier d'exonerations automatiques lorsqu'elles
-              reservent des ressources. Les membres d'une association peuvent reserver au nom de leur
-              groupe.
+              reservent des ressources. Les membres d'une association peuvent reserver au nom de
+              leur groupe.
             </p>
           </article>
         </div>
@@ -357,11 +357,7 @@
               <ul class="user-suggest" role="listbox">
                 @for (u of userSuggestions(); track u.id) {
                   <li>
-                    <button
-                      type="button"
-                      class="user-suggest__row"
-                      (click)="pickUserForGroup(u)"
-                    >
+                    <button type="button" class="user-suggest__row" (click)="pickUserForGroup(u)">
                       <strong>{{ u.firstName }} {{ u.lastName }}</strong>
                       <span class="user-suggest__email">{{ u.email || 'Sans e-mail' }}</span>
                     </button>
@@ -476,7 +472,11 @@
                         (createGroupForm.get('groupTypeDraft')?.value ?? '').toString().trim() === s
                       "
                     >
-                      <button type="button" class="group-type-combo__opt" (click)="pickGroupTypeSuggestion(s)">
+                      <button
+                        type="button"
+                        class="group-type-combo__opt"
+                        (click)="pickGroupTypeSuggestion(s)"
+                      >
                         {{ s }}
                       </button>
                     </li>
@@ -485,9 +485,9 @@
               }
             </div>
             <small class="create-group-field__hint">
-              Profils rapides : Service municipal, Association ou Autre (insensible à la casse). Tout
-              autre libellé crée un groupe « Autre » ; les types affichés existants sont proposés sans
-              doublon.
+              Profils rapides : Service municipal, Association ou Autre (insensible à la casse).
+              Tout autre libellé crée un groupe « Autre » ; les types affichés existants sont
+              proposés sans doublon.
             </small>
           </label>
 

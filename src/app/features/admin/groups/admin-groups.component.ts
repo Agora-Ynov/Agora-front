@@ -211,9 +211,7 @@ export class AdminGroupsComponent {
 
     effect(() => {
       const locked =
-        this.selectedGroup() !== null ||
-        this.isEditModalOpen() ||
-        this.isCreateModalOpen();
+        this.selectedGroup() !== null || this.isEditModalOpen() || this.isCreateModalOpen();
       const { documentElement: html, body } = document;
       if (locked) {
         html.style.overflow = 'hidden';
@@ -429,11 +427,7 @@ export class AdminGroupsComponent {
   }
 
   private static normalizeTypeKey(raw: string): string {
-    return raw
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/\p{M}/gu, '');
+    return raw.trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
   }
 
   submitCreateGroup(): void {

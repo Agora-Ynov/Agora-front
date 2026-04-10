@@ -92,7 +92,7 @@
             <span class="resource-row__meta-sep" aria-hidden="true">·</span>
             <span>Caution : {{ getPriceEuros(resource.depositAmountCents) }} €</span>
             <span class="resource-row__meta-sep" aria-hidden="true">·</span>
-            <span class="resource-row__meta-id">#{{ resource.id | slice : 0 : 8 }}</span>
+            <span class="resource-row__meta-id">#{{ resource.id | slice: 0 : 8 }}</span>
           </p>
 
           <p class="resource-row__desc">
@@ -108,7 +108,11 @@
         <div class="resource-row__aside">
           <div class="resource-row__admin">
             <button type="button" class="text-btn" (click)="openEditModal(resource)">Éditer</button>
-            <button type="button" class="text-btn text-btn--danger" (click)="deleteResource(resource.id)">
+            <button
+              type="button"
+              class="text-btn text-btn--danger"
+              (click)="deleteResource(resource.id)"
+            >
               Supprimer
             </button>
           </div>

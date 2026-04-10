@@ -23,7 +23,12 @@
       </div>
 
       <div class="audit-hero__actions">
-        <button type="button" class="audit-hero__refresh" (click)="refreshAudit()" [disabled]="loading()">
+        <button
+          type="button"
+          class="audit-hero__refresh"
+          (click)="refreshAudit()"
+          [disabled]="loading()"
+        >
           @if (loading()) {
             <span>Mise à jour…</span>
           } @else {
@@ -456,7 +461,9 @@
         @if (tm.loading) {
           <p class="audit-timeline-modal__status">Chargement…</p>
         } @else if (tm.error) {
-          <p class="audit-timeline-modal__status audit-timeline-modal__status--error">{{ tm.error }}</p>
+          <p class="audit-timeline-modal__status audit-timeline-modal__status--error">
+            {{ tm.error }}
+          </p>
         } @else if (!tm.entries.length) {
           <p class="audit-timeline-modal__status">Aucun événement pour cette réservation.</p>
         } @else {

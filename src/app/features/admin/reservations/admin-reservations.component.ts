@@ -111,7 +111,11 @@ export class AdminReservationsComponent implements OnInit {
     const z = 0;
     return [
       { id: 'ALL' as ReservationFilter, label: 'Toutes', count: s?.total ?? z },
-      { id: 'PENDING_GROUP' as ReservationFilter, label: 'En attente', count: s?.pendingGroup ?? z },
+      {
+        id: 'PENDING_GROUP' as ReservationFilter,
+        label: 'En attente',
+        count: s?.pendingGroup ?? z,
+      },
       {
         id: ReservationSummaryResponseDto.StatusEnum.Confirmed,
         label: 'Confirmees',
@@ -497,9 +501,7 @@ export class AdminReservationsComponent implements OnInit {
   }
 
   /** L’API renvoie en principe un tableau ; on accepte aussi un corps paginé ou invalide sans planter. */
-  private normalizePaymentHistoryPayload(
-    raw: unknown
-  ): AdminPaymentHistoryEntryResponseDto[] {
+  private normalizePaymentHistoryPayload(raw: unknown): AdminPaymentHistoryEntryResponseDto[] {
     if (Array.isArray(raw)) {
       return raw as AdminPaymentHistoryEntryResponseDto[];
     }
