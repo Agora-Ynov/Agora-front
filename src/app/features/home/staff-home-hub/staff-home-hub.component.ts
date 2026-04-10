@@ -47,8 +47,6 @@ export class StaffHomeHubComponent implements OnInit {
   readonly statMinis = signal<StatMini[]>([]);
   readonly recentReservations = signal<RecentReservation[]>([]);
 
-  readonly validationRate = signal(0);
-
   readonly welcomeLine = computed(() => {
     const u = this.auth.currentUser();
     const name = `${u?.firstName ?? ''} ${u?.lastName ?? ''}`.trim();
@@ -97,10 +95,6 @@ export class StaffHomeHubComponent implements OnInit {
             { label: 'Documents à traiter', value: pendingDoc, tone: 'sky' },
             { label: 'Comptes sous tutelle', value: tutored, tone: 'violet' },
           ]);
-
-          const total = today + pendingDep + pendingDoc + 1;
-          const validated = Math.min(100, Math.round((today / Math.max(total, 1)) * 100));
-          this.validationRate.set(Number.isFinite(validated) ? validated : 0);
         },
         error: () => this.loadError.set('Chargement impossible.'),
       });

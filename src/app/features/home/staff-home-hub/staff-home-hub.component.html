@@ -49,18 +49,6 @@
         <h2 class="tile__heading">Vue d’ensemble</h2>
         @if (loading()) {
           <p class="tile__muted">Chargement des indicateurs…</p>
-        } @else {
-          <div class="tile--welcome__progress">
-            <span class="tile--welcome__progress-label">Charge du jour (indicatif)</span>
-            <div
-              class="tile--welcome__bar"
-              role="progressbar"
-              [attr.aria-valuenow]="validationRate()"
-            >
-              <span class="tile--welcome__bar-fill" [style.width.%]="validationRate()"></span>
-            </div>
-            <span class="tile--welcome__progress-value">{{ validationRate() }}%</span>
-          </div>
         }
         <div class="tile--welcome__cta">
           <a routerLink="/admin/reservations" class="hub-btn hub-btn--light"
